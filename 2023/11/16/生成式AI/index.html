@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>生成式AI - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="回归问题：通过一个函式，算出一个连续的数值。 分类问题：通过一个函式，算出一个类别。 结构性学习（Structured Learning），生成有结构的文件（如影响、文句），又称“生成式学习”（Generative Learning）。 chatGPT把生成式学习问题简化，拆成了多个分类问题。 深度学习中 找函式的三个步骤：  设定范围：定出候选函式的集合。Model 设定标准Loss 达成目标："><meta property="og:type" content="blog"><meta property="og:title" content="生成式AI"><meta property="og:url" content="http://symbol23441.top/2023/11/16/%E7%94%9F%E6%88%90%E5%BC%8FAI/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="回归问题：通过一个函式，算出一个连续的数值。 分类问题：通过一个函式，算出一个类别。 结构性学习（Structured Learning），生成有结构的文件（如影响、文句），又称“生成式学习”（Generative Learning）。 chatGPT把生成式学习问题简化，拆成了多个分类问题。 深度学习中 找函式的三个步骤：  设定范围：定出候选函式的集合。Model 设定标准Loss 达成目标："><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/2023/11/16/%E7%94%9F%E6%88%90%E5%BC%8FAI/image-20231116140416292.png"><meta property="article:published_time" content="2023-11-16T04:35:34.000Z"><meta property="article:modified_time" content="2023-11-16T04:35:34.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/2023/11/16/%E7%94%9F%E6%88%90%E5%BC%8FAI/image-20231116140416292.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2023/11/16/%E7%94%9F%E6%88%90%E5%BC%8FAI/"},"headline":"生成式AI","image":["http://symbol23441.top/2023/11/16/%E7%94%9F%E6%88%90%E5%BC%8FAI/image-20231116140416292.png"],"datePublished":"2023-11-16T04:35:34.000Z","dateModified":"2023-11-16T04:35:34.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"回归问题：通过一个函式，算出一个连续的数值。 分类问题：通过一个函式，算出一个类别。 结构性学习（Structured Learning），生成有结构的文件（如影响、文句），又称“生成式学习”（Generative Learning）。 chatGPT把生成式学习问题简化，拆成了多个分类问题。 深度学习中 找函式的三个步骤：  设定范围：定出候选函式的集合。Model 设定标准Loss 达成目标："}</script><link rel="canonical" href="http://symbol23441.top/2023/11/16/%E7%94%9F%E6%88%90%E5%BC%8FAI/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-11-16T04:35:34.000Z" title="11/16/2023, 12:35:34 PM">2023-11-16</time>发表</span><span class="level-item"><time dateTime="2023-11-16T04:35:34.000Z" title="11/16/2023, 12:35:34 PM">2023-11-16</time>更新</span><span class="level-item">2 分钟读完 (大约337个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">生成式AI</h1><div class="content"><p>回归问题：通过一个函式，算出一个连续的数值。</p>
+<p>分类问题：通过一个函式，算出一个类别。</p>
+<p>结构性学习（Structured Learning），生成有结构的文件（如影响、文句），又称“生成式学习”（Generative Learning）。</p>
+<p>chatGPT把生成式学习问题简化，拆成了多个分类问题。</p>
+<p>深度学习中</p>
+<p>找函式的三个步骤：</p>
+<ol>
+<li>设定范围：定出候选函式的集合。Model</li>
+<li>设定标准Loss</li>
+<li>达成目标：找出最好的函式。Gradient Descent（Adam等）</li>
+</ol>
+<p>常见的结构性文件:</p>
+<p><img src="/2023/11/16/%E7%94%9F%E6%88%90%E5%BC%8FAI/image-20231116140416292.png" alt="image-20231116140416292"></p>
+<p>生成结构的额策略：</p>
+<p>策略一：各个击破</p>
+<p>​        文字一个一个预测，图像4x4像素逐一生成。</p>
+<p>策略二：一次到位</p>
+<p>​        例如：每次固定生成固定时间长的文字。</p>
+<p>策略三：混合模式</p>
+<p>​    以语音生成为例，先通过文字每秒生成100个向量作为大方向，在通过这100个向量做一次到位，生成对应的语音。</p>
+<p>​    或者以图像为例，一次生成一个较为模糊的图像，在一次一次是的图像颜色更丰富，更清晰。</p>
+</div><div class="article-licensing box"><div class="licensing-title"><p>生成式AI</p><p><a href="http://symbol23441.top/2023/11/16/生成式AI/">http://symbol23441.top/2023/11/16/生成式AI/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2023-11-16</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2023-11-16</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2023/11/16/self-attention-transformer/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">self- attention&amp;&amp;transformer</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2023/11/16/chatGPT/"><span class="level-item">chatGPT</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><!--!--></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2023 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/js/lightgallery.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script><script type="text/javascript" src="/js/imaegoo/universe.js"></script></body></html>
