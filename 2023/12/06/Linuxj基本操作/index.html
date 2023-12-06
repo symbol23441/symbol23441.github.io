@@ -1,9 +1,10 @@
 <!doctype html>
-<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>Linuxj基本操作 - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="虚拟机网络连接的三种模式 1 桥接模式 虚拟系统可以喝外部系统通信，但是容易造成IP冲突 2 NAT模式 网络地址转换模式，虚拟系统可以和外部通讯，由主机再次路由转发 3 主机模式：独立系统 虚拟机克隆 虚拟机快照 Linux 目录结构 &amp;#x2F;bin    常用命令 &amp;#x2F;sbin    系统管理员使用的系统管理程序 &amp;#x2F;home    普通用户主目录 &amp;#x2F;boot  启动相关 &amp;#x2F;last+found"><meta property="og:type" content="blog"><meta property="og:title" content="Linuxj基本操作"><meta property="og:url" content="http://symbol23441.top/2023/12/06/Linuxj%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="虚拟机网络连接的三种模式 1 桥接模式 虚拟系统可以喝外部系统通信，但是容易造成IP冲突 2 NAT模式 网络地址转换模式，虚拟系统可以和外部通讯，由主机再次路由转发 3 主机模式：独立系统 虚拟机克隆 虚拟机快照 Linux 目录结构 &amp;#x2F;bin    常用命令 &amp;#x2F;sbin    系统管理员使用的系统管理程序 &amp;#x2F;home    普通用户主目录 &amp;#x2F;boot  启动相关 &amp;#x2F;last+found"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/img/og_image.png"><meta property="article:published_time" content="2023-12-06T08:07:40.000Z"><meta property="article:modified_time" content="2023-12-06T08:07:40.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/img/og_image.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2023/12/06/Linuxj%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/"},"headline":"Linuxj基本操作","image":["http://symbol23441.top/img/og_image.png"],"datePublished":"2023-12-06T08:07:40.000Z","dateModified":"2023-12-06T08:07:40.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"虚拟机网络连接的三种模式 1 桥接模式 虚拟系统可以喝外部系统通信，但是容易造成IP冲突 2 NAT模式 网络地址转换模式，虚拟系统可以和外部通讯，由主机再次路由转发 3 主机模式：独立系统 虚拟机克隆 虚拟机快照 Linux 目录结构 &#x2F;bin    常用命令 &#x2F;sbin    系统管理员使用的系统管理程序 &#x2F;home    普通用户主目录 &#x2F;boot  启动相关 &#x2F;last+found"}</script><link rel="canonical" href="http://symbol23441.top/2023/12/06/Linuxj%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>Linuxj基本操作 - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="linux基本操作"><meta property="og:type" content="blog"><meta property="og:title" content="Linuxj基本操作"><meta property="og:url" content="http://symbol23441.top/2023/12/06/Linuxj%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="linux基本操作"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/2023/12/06/Linuxj%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/image-20231206194535699.png"><meta property="og:image" content="http://symbol23441.top/2023/12/06/Linuxj%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/image-20231206201726201.png"><meta property="og:image" content="http://symbol23441.top/2023/12/06/Linuxj%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/image-20231206202012880.png"><meta property="og:image" content="http://symbol23441.top/2023/12/06/Linuxj%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/image-20231206202226734.png"><meta property="og:image" content="http://symbol23441.top/2023/12/06/Linuxj%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/image-20231206214831849.png"><meta property="og:image" content="http://symbol23441.top/2023/12/06/Linuxj%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/image-20231206214853554.png"><meta property="article:published_time" content="2023-12-06T08:07:40.000Z"><meta property="article:modified_time" content="2023-12-06T08:07:40.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/2023/12/06/Linuxj%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/image-20231206194535699.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2023/12/06/Linuxj%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/"},"headline":"Linuxj基本操作","image":["http://symbol23441.top/2023/12/06/Linuxj%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/image-20231206194535699.png","http://symbol23441.top/2023/12/06/Linuxj%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/image-20231206201726201.png","http://symbol23441.top/2023/12/06/Linuxj%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/image-20231206202012880.png","http://symbol23441.top/2023/12/06/Linuxj%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/image-20231206202226734.png","http://symbol23441.top/2023/12/06/Linuxj%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/image-20231206214831849.png","http://symbol23441.top/2023/12/06/Linuxj%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/image-20231206214853554.png"],"datePublished":"2023-12-06T08:07:40.000Z","dateModified":"2023-12-06T08:07:40.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"linux基本操作"}</script><link rel="canonical" href="http://symbol23441.top/2023/12/06/Linuxj%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
-<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-12-06T08:07:40.000Z" title="12/6/2023, 4:07:40 PM">2023-12-06</time>发表</span><span class="level-item"><time dateTime="2023-12-06T08:07:40.000Z" title="12/6/2023, 4:07:40 PM">2023-12-06</time>更新</span><span class="level-item">31 分钟读完 (大约4635个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">Linuxj基本操作</h1><div class="content"><span id="more"></span>
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-12-06T08:07:40.000Z" title="12/6/2023, 4:07:40 PM">2023-12-06</time>发表</span><span class="level-item"><time dateTime="2023-12-06T08:07:40.000Z" title="12/6/2023, 4:07:40 PM">2023-12-06</time>更新</span><span class="level-item">1 小时读完 (大约9307个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">Linuxj基本操作</h1><div class="content"><p>linux基本操作</p>
+<span id="more"></span>
 
 
 
@@ -445,7 +446,369 @@
 <p>例如：</p>
 <p>pstree    -p</p>
 <p>pstree    -u</p>
-</div><div class="article-licensing box"><div class="licensing-title"><p>Linuxj基本操作</p><p><a href="http://symbol23441.top/2023/12/06/Linuxj基本操作/">http://symbol23441.top/2023/12/06/Linuxj基本操作/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2023-12-06</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2023-12-06</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2023/12/03/Linux%E6%96%87%E4%BB%B6%E9%94%81/"><span class="level-item">Linux文件锁</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><!--!--></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2023 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+<p>服务管理</p>
+<p>服务(service)本质就是进程，但是是运行在后台的，通常都会监听某个端口，等待其它程序的请求，比如(mysgld,sshd 防火墙等)，因此我们又称为守护进程，是Linux中非常重要的知识点。</p>
+<p>service管理指令<br>service 服务名 [start | stop |restart | reload | status]</p>
+<p>1.在CentOS7.0后 很多服务不再使用service ,而是 systemctl<br>2.service 指令管理的服务在 /etc/init.d 查看 </p>
+<p>service管理指令案例</p>
+<p>请使用service指令，查看，关闭，启动network</p>
+<p>service network    status</p>
+<p>service    network     stop</p>
+<p>service network restart</p>
+<p>查看服务名</p>
+<p>方式1；</p>
+<p>setup</p>
+<p>方式2：/etc/init.d 看到service指令管理的服务</p>
+<p>ls -l /etc/init.d</p>
+<p>服务的运行级别（runlevel）</p>
+<p>Linux系统有7种运行级别(runlevel): 常用的是级别3和5<br>运行级别0:系统停机状态，系统默认运行级别不能设为0，否则不能正常启动运行级别1: 单用户工作状态，root权限，用于系统维护，禁止远程登陆运行级别</p>
+<p>2: 多用户状态(没有NFS)，不支持网络运行级别</p>
+<p>3:完全的多用户状态(有NFS)，无界面，登陆后进入控制台命令行模式运行级别</p>
+<p>4 :系统未使用，保留运行级别</p>
+<p>5 :X11控制台，登陆后进入图形GUI模式运行级别</p>
+<p>6: 系统正常关闭并重启，默认运行级别不能设为6，否则不能正常启动</p>
+<p>开机流程：</p>
+<p>开机-&gt;BIOS-&gt;/boot -&gt; /systemd进程1 -&gt;运行级别 -&gt;运行级对应的服务</p>
+<p>查看当前运行级别</p>
+<p>systemctl    get-default</p>
+<p>设置运行级别</p>
+<p>systemctl    set-default TARGET.targert</p>
+<p>systemctl    set-default graphical.targert</p>
+<p>chkconfig指令</p>
+<p>1、通过chkconfig命令可以给服务的各个运行级别设置 启动/关闭</p>
+<p>2、chkconfig指令的服务在/etc/init.d查看</p>
+<p>3、centos7.0后，很多服务用systemctl进行管理</p>
+<p>基本语法：</p>
+<p>chkconfig    –list</p>
+<p>chkconfig    –level 5 服务名 on/off</p>
+<p>案例演示：对network服务，进行各种操作，把network在3运行级别，关闭自启动</p>
+<p>chkconfig    –level 3 network off</p>
+<p>chkconfig    –level 3 network on</p>
+<p>chkconfig重新设置服务后自启动或关闭，需要重启机器reboot生效</p>
+<p>systemctl指令</p>
+<p>systemctl 对3和5运行级别同时设置，为此不必指明。</p>
+<p>1、基本语法</p>
+<p>systemctl    [start|stop|restart|status]    服务名</p>
+<p>systemctl指令管理的服务在/usr/lib/systemd/system 查看</p>
+<p>systemctl设置服务的<strong>自启动状态</strong></p>
+<p>1.systemctl list-unit-files [lgrep 服务名](查看服务开机启动状态, grep 可以进行过滤2.systemctl enable 服务名(设置服务开机启动)</p>
+<p>3.systemctl disable 服务名(关闭服务开机启动)</p>
+<p>4.systemctl is-enabled 服务名 (查询某个服务是否是自启动的</p>
+<p>应用案例：</p>
+<p>查看防火墙的状况，关闭防火墙和重启防火墙</p>
+<p>systemctl    status    firewalld</p>
+<p>systemctl    stop    firewalld</p>
+<p>systemctl    start    firewalld</p>
+<p>基本指令的start、stop当系统重启后便失效了，按照自动启动内容生效。若要保证重启后生效，使用自启动状态设置即可，如systemctl enable 服务名</p>
+<p>防火墙打开或关闭指定端口</p>
+<p>firewall指令：</p>
+<p>打开端口： firewall-cmd –permanent –add-port=端口号/协议</p>
+<p>关闭端口： firewall-cmd –permanent –remove-port=端口号/协议</p>
+<p>重新载入，才能生效： firewall-cmd    –reload</p>
+<p>查询端口是否开放：firewall-cmd –query-port=端口/协议</p>
+<p>例如：开放111端口</p>
+<p>firewall-cmd    –permanent –add-port=111/tcp</p>
+<p>firewall-cmd    –reload</p>
+<p>firewall-cmd –query-port=111/tcp</p>
+<p>动态监控进程：</p>
+<p>top指令</p>
+<p>top与ps命令很相似。它们都用来显示正在执行的进程。Top与ps最大的不同之处，在于top在执行一段时间可以更新正在运行的的进程。</p>
+<p>top [选项]</p>
+<p>选项：</p>
+<p>-d    秒数    指定top命令每隔几秒更新。默认是3秒</p>
+<p>-i    是top不显示任何闲置或者僵死进程</p>
+<p>-p    通过指定监控进程ID来仅仅监控某个进程的状态</p>
+<p>动态监控交互操作</p>
+<p>P    以CPU使用率排序，默认就是此项</p>
+<p>M    以内存的使用率排序<br>N    以PID排序<br>q    退出top</p>
+<p>应用示例：</p>
+<p>1、监控特定用户，比如我们监控tom用户</p>
+<p>top输入回车</p>
+<p>然后输入u回车</p>
+<p>在输入用户名</p>
+<p>2、终止指定进程</p>
+<p>top</p>
+<p>kill</p>
+<p>进程ID</p>
+<p>3、10秒更新top</p>
+<p>top -d 10</p>
+<p>网络监控状态</p>
+<p>查看系统网络使用情况netstat</p>
+<p>netstat    [选项]</p>
+<p>选项：</p>
+<p>-an    按一定顺序排序输出</p>
+<p>-p    显示哪个进程在调用</p>
+<p>例：请查看服务名为sshd的服务信息</p>
+<p>netstat    -anp | grep sshd</p>
+<p>检测主机连接的命令ping</p>
+<p>主要用于检测元辰主机是否正常，或者两部主机间的网线或网卡故障</p>
+<p>如：ping    对方ip地址</p>
+<p>网络配置</p>
+<p>查看网络配置</p>
+<p>linux             ifconfig</p>
+<p>windows        ipconfig</p>
+<p>Linux网络环境配置</p>
+<p>第一种（DHCP自动获取）：每次获取的Ip不一样</p>
+<p>第二种（指定ip）：直接修改配置文件来指定IP，并可以连接到外网（程序员推荐）</p>
+<p>编辑 vi    /etc/sysconfig/network-scripts/ifcfg-ens33</p>
+<p>要求：将ip地址配置的静态的，比如：ip地址为192.168.20.130</p>
+<p>ifcif-ens33    文件说明</p>
+<p>DEVICE=etho#接口名(设备,网卡）</p>
+<p>HWADDR=00:0C:2x:6x:0x:xx #MAC地址</p>
+<p>TYPE=Ethernet #网络类型(通常是Ethemet )</p>
+<p>UUID=926a57ba-92c6-4231-bacb-f27e5e6a9f44#随机id</p>
+<p>#系统启动的时候网络接口是否有效 (yes/no )<br>ONBOOT=yes</p>
+<p>#IP的配置方法[nonelstatic bootpldhcp](引导时不使用协议|静态分配IP|BOOTP协议|DHCP协议）</p>
+<p>BOOTPROTO=static</p>
+<p>#IP地址</p>
+<p>IPADDR=192.168.200.130<br>#网关</p>
+<p>GATEWAY=192.168.200.2</p>
+<p>#域名解析器DNS1=192.168.200.2</p>
+<p>重启网络服务或者重启系统生效</p>
+<p>service network restart 或 reboot</p>
+<p>设置主机名和hosts映射</p>
+<p>1、为了方便记忆，可以给linux系统设置主机名,也可以根据需要修改主机名<br>2、指令 hostname :查看主机名</p>
+<p>3、修改文件在 /etc/hostname 指定</p>
+<p>4、修改后，重启生效</p>
+<p>设置主机映射</p>
+<p>思考：如何通过主机名能够找到（比如ping）摸个linux系统</p>
+<p>windows </p>
+<p>在C:\Windows\System32\drivers\etc\hosts 文件指定即可</p>
+<p>例如：192.168.200.130     hspedu100</p>
+<p>linux</p>
+<p>在/etc/hosts文件指定</p>
+<p>案例：192.168.200.1    thinkpad-pc</p>
+<p>测试：ping hespedu100</p>
+<p>Hosts是一个文本文件，用来记录IP和Hostname（主机名）的映射关系</p>
+<p>DNS：</p>
+<p>1、DNS，Domain Name System的缩写，翻译过来是域名系统</p>
+<p>2、是互联网上域名和IP相互映射的分布式数据库</p>
+<p>浏览器先检查浏览器缓存中有没有该域名解析IP地址，有就先调用这个IP完成解析，如果没有检查操作系统DNS解析器缓存，如果有直接返回IP完成解析。这两个缓存，可以理解为 本地解析器缓存。</p>
+<p>一般来说，当电脑第一次成功访问某一网站后，在一定时间内，浏览器或操作系统会缓存他的IP地址(DNS解析记录).如 在cmd窗口中输入。</p>
+<p>ipconfig /displaydns        //DNS域名解析缓存</p>
+<p>ipconfig /flushdns            //手动清理dns缓存<br>如果本地解析器缓存没有找到对应映射，检查系统中hosts文件中有没有配置对应的域名IP映射，如果有，则完成解析并返回。<br>如果 本地DNS解析器缓存 和 hosts文件 中均没有找到对应的IP则到域名服务DNS进行解析域。</p>
+<p><img src="/2023/12/06/Linuxj%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/image-20231206194535699.png" alt="image-20231206194535699"></p>
+<p>apt命令</p>
+<p>advanced package tools</p>
+<p><strong>apt-get update                更新源</strong></p>
+<p><strong>apt-get install package     安装包</strong></p>
+<p><strong>apt-get remove package    删除包</strong></p>
+<p><strong>apt-cache search package     搜索包</strong></p>
+<p><strong>apt-cache show package        获取包的相关信息如说明、大小、版本</strong></p>
+<p>apt-get remove package –purge 删除、包括配置文件</p>
+<p>apt-get build-dep package    安装相关的编译环境</p>
+<p>apt-get upgrade                    更新已经安装的包</p>
+<p>apt-get  dist-update        升级系统</p>
+<p>apt-cache depends package    了解使用依赖了哪些包</p>
+<p>apt-cache rdepends package     查看被哪些包依赖</p>
+<p><strong>apt-get source package    下载该包的源代码</strong></p>
+<p>更换镜像源</p>
+<p>/etc/apt/sources.list</p>
+<p>1、备份上述文件，修改上述文件，查找清华镜像源写入</p>
+<p>2、apt-get update     更新源地址</p>
+<p>crond定时任务调度(周期性)</p>
+<p>crontab定时任务的设置</p>
+<p>任务调度：系统在某个时间执行的特定命令或程序</p>
+<p>任务调度分类：1、系统工作 2、用户任务：如定时mysql备份</p>
+<p>crontab [选项]</p>
+<p>常用选项：</p>
+<p>-e    编辑crontab定时任务</p>
+<p>-l    列出crontab任务</p>
+<p>-r    删除当前用户的所有crontab任务</p>
+<p>设置任务调度文件：/etc/crontab</p>
+<p>设置个人任务调度：</p>
+<p>1、crontab -e命令</p>
+<p>2、内容输入，如：*/1**** ls -l /etc/ &gt; /temp/to.txt</p>
+<p>解释：每小时的每分钟执行ls -l /etc/ &gt; /temp/to.txt命令</p>
+<p>cron规则：</p>
+<p><img src="/2023/12/06/Linuxj%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/image-20231206201726201.png" alt="image-20231206201726201"></p>
+<p>特殊符号的说明</p>
+<p><img src="/2023/12/06/Linuxj%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/image-20231206202012880.png" alt="image-20231206202012880"></p>
+<p>示例：</p>
+<p><img src="/2023/12/06/Linuxj%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/image-20231206202226734.png" alt="image-20231206202226734"></p>
+<p>案例1：每隔一分钟，就将当前日期信息，追加到/tmp/mydate文件中</p>
+<p>*/1 * * * *  data&gt;&gt;/temp/mydate</p>
+<p>案例2：每隔一分钟，将当前日期和日立都追加到/home/mycal 文件中</p>
+<p>Vim /home/my.sh    写入内容 data &gt;&gt; /home/mycal 和 cal &gt;&gt; /home/mycal</p>
+<p>给my.sh 增加执行权限，chmod u+x /home/my.sh</p>
+<p>crontab    -e         增加： */1 * * * *  /home/my.sh</p>
+<p>crontab相关命令</p>
+<p>crontab    -r : 终止调度</p>
+<p>crontab    -l ：列出当前有哪些任务调度</p>
+<p>at定时任务</p>
+<p>只执行一次</p>
+<p>at命令是一次性定时计划任务，at的守护进程atd会以后台模式运行。</p>
+<p>检查作业队列来运行默认情况下，atd守护进程每60秒检查作业队列，有作业时，会检查作业运行时间，如果时间与当前时间匹配，则运行此作业</p>
+<p>at命令是一次性定时计划任务，执行完一个任务后不再执行此任务了</p>
+<p>在使用at命令的时候，一定要保证atd进程的启动，可以使用相关指令来查看</p>
+<p>ps -ef I grep atd //可以检测atd是否在运行</p>
+<p>查看已有任务命令</p>
+<p>atq</p>
+<p>at命令格式</p>
+<p>at [选项] [时间]</p>
+<p>ctrl+D 结束at命令输入</p>
+<p>例如：两天后的下午5点执行 ls /home</p>
+<p>at 5pm + 2 days</p>
+<p>at&gt; /bin/ls /home</p>
+<p>例如：两分钟红输出时间到指定文件内</p>
+<p>at now + 2 minutes</p>
+<p>at&gt;data &gt; /root/data200.log</p>
+<p>Shell 编程</p>
+<p>Shell是一个命令行解释器，它为用户提供了一个向Linux内核发送请求以便运行程序的界面系统级程序，用户可以用Shell来启动、挂起、停止甚至是编写一些程序。</p>
+<p>脚本格式要求：</p>
+<p>1、脚本以#!/bin/bash开头</p>
+<p>例如：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/bash</span></span><br><span class="line">echo &quot;hello,world!&quot;</span><br></pre></td></tr></table></figure>
+
+<p>sh hello.sh</p>
+<p>chmod u+x hello.sh</p>
+<p>./hello.sh</p>
+<p>脚本常用的执行方式：</p>
+<p>方式1（输入相应路径）</p>
+<p>说明：需要赋予helloworld.sh 脚本执行权限，在执行脚本</p>
+<p>方式2（sh+脚本）</p>
+<p>说明：不用赋予脚本+x权限，直接执行</p>
+<p>Shell 变量:</p>
+<p>1、Linux Shell中的变量分为，系统变量和用户自定义变量<br>2、系统变量: $HOME、$PWD、$SHELL、$USER等等，比如: echo $HOME 等等.</p>
+<p>3、显示当前shell中所有变量: set</p>
+<p>shell变量的定义：</p>
+<p>1、定义变量：变量名=值</p>
+<p>2、撤销变量：unset 变量</p>
+<p>3、声明静态变量： readonly变量，注意：不能unset</p>
+<p>定义变量的规则<br>1、变量名称可以由字母、数字和下划线组成，但是不能以数字开头。5A=200(x)</p>
+<p>2、等号两侧不能有空格<br>3、变量名称一般习惯为大写，这是一个规范，我们遵守即可</p>
+<p>将命令的返回值赋给变量</p>
+<p>1、A=`date`反引号，运行里面的命令，并把结果返回给变量</p>
+<p>2、A=$(date) 等价于A=`date`</p>
+<p>示例</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/bash</span></span><br><span class="line"><span class="meta">#</span><span class="bash">定义变量A</span></span><br><span class="line"><span class="meta">#</span><span class="bash">!!!等号两侧不能有空格</span></span><br><span class="line">A=100</span><br><span class="line"><span class="meta">#</span><span class="bash">输出变需要加上$</span></span><br><span class="line">echo A=$A</span><br><span class="line">echo &quot;A=$A&quot;</span><br><span class="line"><span class="meta">#</span><span class="bash">撤销变量A</span></span><br><span class="line">unset A</span><br><span class="line">echo &quot;A=$A&quot;</span><br><span class="line"><span class="meta">#</span><span class="bash">声明静态变量B=2,不能<span class="built_in">unset</span></span></span><br><span class="line">readonly B=2</span><br><span class="line">echo &quot;B=$B&quot;</span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="built_in">unset</span> B</span></span><br><span class="line">C=`date`</span><br><span class="line">echo $C</span><br><span class="line">D=$(date)</span><br><span class="line">echo $D</span><br></pre></td></tr></table></figure>
+
+
+
+<p>设置环境变量（全局变量）</p>
+<p>基本语法<br>1、export 变量名=变量值(功能描述:将shell变量输出为环境变量/全局变量</p>
+<p>2、source 配置文件 (功能描述:让修改后的配置信息立即生效 )</p>
+<p>3、echo $变量名  （功能描述:查询环境变量的值 )</p>
+<p>快速入门</p>
+<p>1、在/etc/profile文件中定义TOMCAT_HOME环境变量</p>
+<p>2、查看环境变量TOMCAT_HOME的值</p>
+<p>3、在另外一个shell程序中使用 TOMCAT_HOME<br>注意: 在输出TOMCAT_HOME 环境变量前，需要让其生效<strong>source /etc/profile</strong></p>
+<p>shelI脚本的多行注释</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">:&lt;&lt;!</span><br><span class="line"> 内容</span><br><span class="line">!</span><br></pre></td></tr></table></figure>
+
+
+
+<p>位置参数：</p>
+<p>介绍</p>
+<p>当我们执行一个shelI脚本时，如果希望获取到命令行的参数信息，就可以使用到位置参数变量比如 :./myshell.sh 100 200，这个就是一个执行shell的命令行，可以在myshell 脚本中获取到参数</p>
+<p>信息<br>基本语法</p>
+<ul>
+<li>$n (功能描述 :n为数字，$0代表命令本身，$1-$9代表第一到第九个参数，十以上的参数，十以上的参数需要用大括号包含，如${10])</li>
+<li>$*(功能描述:这个变量代表命令行中所有的参数，$*把所有的参数看成一个整体)</li>
+<li>$@(功能描述:这个变量也代表命令行中所有的参数，不过$@把每个参数区分对待)</li>
+<li>$# (功能描述:这个变量代表命令行中所有参数的个数)</li>
+</ul>
+<p>案例：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/bash</span></span><br><span class="line">echo &quot;0=$0 1=$1 2=$2&quot;</span><br><span class="line">echo &quot;所有参数=$*&quot;</span><br><span class="line">echo &quot;$@&quot;</span><br><span class="line">echo &quot;参数的个数=$#&quot;</span><br></pre></td></tr></table></figure>
+
+<p>sh cavr.sh 100 200 </p>
+<p>预定义变量</p>
+<p><img src="/2023/12/06/Linuxj%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/image-20231206214831849.png" alt="image-20231206214831849"></p>
+<p>运算符</p>
+<p><img src="/2023/12/06/Linuxj%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/image-20231206214853554.png" alt="image-20231206214853554"></p>
+<p>以下内容如在过多介绍：</p>
+<p>条件判断</p>
+<p>单分支多分支</p>
+<p>基本语法如下：</p>
+<p>单分支：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">if  [ 条件判断式 ]; then</span><br><span class="line">         当条件成立时，可以进行的命令工作内容</span><br><span class="line">fi  # 将if 反过来写，就成为fi，意思就是结束if</span><br></pre></td></tr></table></figure>
+
+<p>多分支：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">if [ 条件判断式 ]; then</span><br><span class="line">      当条件判断式成立时，可执行的命令</span><br><span class="line">elif [ 条件判断式2 ]; then</span><br><span class="line">       当条件判断式2成立时，可执行的命令</span><br><span class="line">else </span><br><span class="line">       当条件判断式1与2均不成立时，可执行的命令</span><br><span class="line">fi</span><br></pre></td></tr></table></figure>
+
+<p>示例</p>
+<h1 id><a href="#" class="headerlink" title></a></h1><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/bash</span></span><br><span class="line"><span class="meta">#</span><span class="bash"></span></span><br><span class="line"><span class="bash"><span class="built_in">echo</span> <span class="string">&quot;----选择下列的系统----&quot;</span></span></span><br><span class="line">echo &quot;linux&quot;</span><br><span class="line">echo &quot;windows&quot;</span><br><span class="line">echo &quot;mac&quot;</span><br><span class="line">echo &quot;----------------------&quot;</span><br><span class="line">read -p &quot;请输入系统：&quot; system</span><br><span class="line">if [ &quot;$system&quot; = &quot;linux&quot; ]; then</span><br><span class="line">    echo &quot;该系统为：RedHat System&quot;</span><br><span class="line">elif [ &quot;$system&quot; = &quot;windows&quot; ]; then</span><br><span class="line">    echo &quot;该系统为：Microsoft System&quot;</span><br><span class="line">elif [ &quot;$system&quot; = &quot;mac&quot; ]; then</span><br><span class="line">    echo &quot;该系统为：Apple System&quot;</span><br><span class="line">else</span><br><span class="line">    echo &quot;其他操作系统&quot;</span><br><span class="line">fi</span><br></pre></td></tr></table></figure>
+
+
+
+<p>case语句</p>
+<p><code>case</code> 语句是 Shell 脚本中用于多重条件判断的一种结构。它可以对变量的不同值进行匹配，并执行相应的操作。通常与 <code>esac</code> 配对使用，用于结束 <code>case</code> 语句块。</p>
+<p>语法大致如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">case expression in</span><br><span class="line">    pattern1)</span><br><span class="line">        # 如果 expression 匹配 pattern1，执行对应操作</span><br><span class="line">        # 可以包含多条命令</span><br><span class="line">        ;;</span><br><span class="line">    pattern2)</span><br><span class="line">        # 如果 expression 匹配 pattern2，执行对应操作</span><br><span class="line">        ;;</span><br><span class="line">    ...</span><br><span class="line">    *)</span><br><span class="line">        # 默认情况，如果 expression 与上述所有 pattern 都不匹配，执行对应操作</span><br><span class="line">        ;;</span><br><span class="line">esac</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>expression</code> 是要进行匹配的值或变量。</li>
+<li><code>pattern1</code>, <code>pattern2</code>, … 是要匹配的模式。</li>
+<li><code>;;</code> 用于结束每个模式的操作，类似于 <code>break</code> 的作用，表示当前模式匹配结束。</li>
+<li><code>*)</code> 表示默认情况，如果 <code>expression</code> 与之前的模式都不匹配，则执行对应的操作。</li>
+</ul>
+<p>示例1：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">echo &quot;请选择一个数字（1-3）：&quot;</span><br><span class="line">read num</span><br><span class="line"></span><br><span class="line">case $num in</span><br><span class="line">    1)</span><br><span class="line">        echo &quot;你选择了数字 1&quot;</span><br><span class="line">        ;;</span><br><span class="line">    2)</span><br><span class="line">        echo &quot;你选择了数字 2&quot;</span><br><span class="line">        ;;</span><br><span class="line">    3)</span><br><span class="line">        echo &quot;你选择了数字 3&quot;</span><br><span class="line">        ;;</span><br><span class="line">    *)</span><br><span class="line">        echo &quot;请在 1 到 3 之间做出选择&quot;</span><br><span class="line">        ;;</span><br><span class="line">esac</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>示例2：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">echo &quot;请输入一个字符：&quot;</span><br><span class="line">read char</span><br><span class="line"></span><br><span class="line">case $char in</span><br><span class="line">    [a-z])</span><br><span class="line">        echo &quot;小写字母&quot;</span><br><span class="line">        ;;</span><br><span class="line">    [A-Z])</span><br><span class="line">        echo &quot;大写字母&quot;</span><br><span class="line">        ;;</span><br><span class="line">    [0-9])</span><br><span class="line">        echo &quot;数字&quot;</span><br><span class="line">        ;;</span><br><span class="line">    *)</span><br><span class="line">        echo &quot;其他字符&quot;</span><br><span class="line">        ;;</span><br><span class="line">esac</span><br></pre></td></tr></table></figure>
+
+<p>for循环</p>
+<p><code>for</code> 循环是 Shell 编程中用于重复执行一系列命令的结构。它能够遍历一组值或集合中的每个元素，并对每个元素执行指定的操作。</p>
+<p>基本语法如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">for var in value1 value2 value3 ... valuen</span><br><span class="line">do</span><br><span class="line">    # 执行针对每个值的操作</span><br><span class="line">    command1 using $var</span><br><span class="line">    command2 using $var</span><br><span class="line">    # ...</span><br><span class="line">done</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>var</code> 是循环中的变量名，用于存储每次循环中的当前值。</li>
+<li><code>value1 value2 ... valuen</code> 是一个值列表或集合，<code>for</code> 循环将遍历这些值并执行相应的操作。</li>
+</ul>
+<p>示例1：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">echo &quot;遍历数组中的值：&quot;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 定义一个数组</span></span><br><span class="line">fruits=(&quot;apple&quot; &quot;banana&quot; &quot;orange&quot;)</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 使用 <span class="keyword">for</span> 循环遍历数组元素</span></span><br><span class="line">for fruit in &quot;$&#123;fruits[@]&#125;&quot;</span><br><span class="line">do</span><br><span class="line">    echo &quot;水果：$fruit&quot;</span><br><span class="line">done</span><br></pre></td></tr></table></figure>
+
+<p>示例2：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">echo &quot;打印数字 1 到 5：&quot;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 使用 <span class="keyword">for</span> 循环遍历数字范围</span></span><br><span class="line">for num in &#123;1..5&#125;</span><br><span class="line">do</span><br><span class="line">    echo &quot;$num&quot;</span><br><span class="line">done</span><br></pre></td></tr></table></figure>
+
+
+
+<p>while循环</p>
+<p><code>while</code> 循环是 Shell 脚本中用于重复执行一系列命令的结构，它会在给定条件为真时执行循环体。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">while [ condition ]</span><br><span class="line">do</span><br><span class="line">    # 在条件为真时执行的命令或操作</span><br><span class="line">    command1</span><br><span class="line">    command2</span><br><span class="line">    # ...</span><br><span class="line">done</span><br></pre></td></tr></table></figure>
+
+
+
+<p>示例：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">echo &quot;倒计时开始：&quot;</span><br><span class="line"></span><br><span class="line">count=5</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 使用 <span class="keyword">while</span> 循环进行倒计时</span></span><br><span class="line">while [ $count -gt 0 ]</span><br><span class="line">do</span><br><span class="line">    echo &quot;$count&quot;</span><br><span class="line">    count=$((count - 1))  # 更新 count 的值</span><br><span class="line">    sleep 1  # 暂停 1 秒</span><br><span class="line">done</span><br><span class="line"></span><br><span class="line">echo &quot;倒计时结束&quot;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>read获取输入</p>
+<p>在 Shell 脚本中，<code>read</code> 命令用于从标准输入（键盘）中读取用户的输入，并将输入的内容赋值给一个变量。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">read [-options] [variable...]</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>-options</code> 是 <code>read</code> 命令的选项，常用的选项包括 <code>-p</code>（用于显示提示信息）和 <code>-r</code>（用于禁止反斜杠转义）等。</li>
+<li><code>variable</code> 是一个或多个变量名，用于存储用户输入的内容。</li>
+</ul>
+<p>示例：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">read -p &quot;请输入您的年龄：&quot; age</span><br><span class="line"></span><br><span class="line">echo &quot;您的年龄是 $age 岁。&quot;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>自定义函数</p>
+<p>语法如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">function name() &#123;</span><br><span class="line">statements</span><br><span class="line">[return value]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>示例</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/bash</span></span><br><span class="line"><span class="meta">#</span><span class="bash">函数定义</span></span><br><span class="line">function url()&#123;</span><br><span class="line">echo &quot;http://c.biancheng.net/shell/&quot;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">函数调用</span></span><br><span class="line">url</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div><div class="article-licensing box"><div class="licensing-title"><p>Linuxj基本操作</p><p><a href="http://symbol23441.top/2023/12/06/Linuxj基本操作/">http://symbol23441.top/2023/12/06/Linuxj基本操作/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2023-12-06</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2023-12-06</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2023/12/03/Linux%E6%96%87%E4%BB%B6%E9%94%81/"><span class="level-item">Linux文件锁</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#"><span class="level-left"><span class="level-item"> </span></span></a></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2023 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
             article: {
                 highlight: {
                     clipboard: true,
