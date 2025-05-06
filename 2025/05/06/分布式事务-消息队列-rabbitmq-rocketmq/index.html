@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>分布式事务--消息队列(rabbitmq\rocketmq) - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="一、为什么使用消息队列解决分布式事务？在微服务架构中，一个完整的业务流程往往需要多个服务协作完成，例如：  用户下单 ➝ 扣减库存 ➝ 扣减余额 ➝ 派单 ➝ 发送通知  可通过异步解耦 + 最终一致性的方式，借助 消息队列（MQ） 实现分布式事务。具有重试、消息持久化机制。 二、基于 RabbitMQ 实现分布式事务🧱 原理概述RabbitMQ 本身不具备分布式事务的内置机制，但我们可以借助"><meta property="og:type" content="blog"><meta property="og:title" content="分布式事务--消息队列(rabbitmq\rocketmq)"><meta property="og:url" content="http://symbol23441.top/2025/05/06/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1-%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97-rabbitmq-rocketmq/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="一、为什么使用消息队列解决分布式事务？在微服务架构中，一个完整的业务流程往往需要多个服务协作完成，例如：  用户下单 ➝ 扣减库存 ➝ 扣减余额 ➝ 派单 ➝ 发送通知  可通过异步解耦 + 最终一致性的方式，借助 消息队列（MQ） 实现分布式事务。具有重试、消息持久化机制。 二、基于 RabbitMQ 实现分布式事务🧱 原理概述RabbitMQ 本身不具备分布式事务的内置机制，但我们可以借助"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/2025/05/06/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1-%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97-rabbitmq-rocketmq/e0e9dc18848bc9a26b4b0a9f88f09c9c.png"><meta property="og:image" content="http://symbol23441.top/2025/05/06/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1-%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97-rabbitmq-rocketmq/332865ed86ebdb3b42ec195e4f605cc3.png"><meta property="article:published_time" content="2025-05-06T07:20:40.000Z"><meta property="article:modified_time" content="2025-05-06T07:20:40.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="article:tag" content="数据库"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/2025/05/06/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1-%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97-rabbitmq-rocketmq/e0e9dc18848bc9a26b4b0a9f88f09c9c.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2025/05/06/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1-%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97-rabbitmq-rocketmq/"},"headline":"分布式事务--消息队列(rabbitmq\\rocketmq)","image":["http://symbol23441.top/2025/05/06/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1-%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97-rabbitmq-rocketmq/e0e9dc18848bc9a26b4b0a9f88f09c9c.png","http://symbol23441.top/2025/05/06/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1-%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97-rabbitmq-rocketmq/332865ed86ebdb3b42ec195e4f605cc3.png"],"datePublished":"2025-05-06T07:20:40.000Z","dateModified":"2025-05-06T07:20:40.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"一、为什么使用消息队列解决分布式事务？在微服务架构中，一个完整的业务流程往往需要多个服务协作完成，例如：  用户下单 ➝ 扣减库存 ➝ 扣减余额 ➝ 派单 ➝ 发送通知  可通过异步解耦 + 最终一致性的方式，借助 消息队列（MQ） 实现分布式事务。具有重试、消息持久化机制。 二、基于 RabbitMQ 实现分布式事务🧱 原理概述RabbitMQ 本身不具备分布式事务的内置机制，但我们可以借助"}</script><link rel="canonical" href="http://symbol23441.top/2025/05/06/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1-%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97-rabbitmq-rocketmq/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2025-05-06T07:20:40.000Z" title="5/6/2025, 3:20:40 PM">2025-05-06</time>发表</span><span class="level-item"><time dateTime="2025-05-06T07:20:40.000Z" title="5/6/2025, 3:20:40 PM">2025-05-06</time>更新</span><span class="level-item">8 分钟读完 (大约1253个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">分布式事务--消息队列(rabbitmq\rocketmq)</h1><div class="content"><h2 id="一、为什么使用消息队列解决分布式事务？"><a href="#一、为什么使用消息队列解决分布式事务？" class="headerlink" title="一、为什么使用消息队列解决分布式事务？"></a>一、为什么使用消息队列解决分布式事务？</h2><p>在微服务架构中，一个完整的业务流程往往需要多个服务协作完成，例如：</p>
+<ul>
+<li>用户下单 ➝ 扣减库存 ➝ 扣减余额 ➝ 派单 ➝ 发送通知</li>
+</ul>
+<p>可通过<strong>异步解耦 + 最终一致性</strong>的方式，借助 <strong>消息队列（MQ）</strong> 实现分布式事务。具有重试、消息持久化机制。</p>
+<h2 id="二、基于-RabbitMQ-实现分布式事务"><a href="#二、基于-RabbitMQ-实现分布式事务" class="headerlink" title="二、基于 RabbitMQ 实现分布式事务"></a>二、基于 RabbitMQ 实现分布式事务</h2><h3 id="🧱-原理概述"><a href="#🧱-原理概述" class="headerlink" title="🧱 原理概述"></a>🧱 原理概述</h3><p>RabbitMQ 本身<strong>不具备分布式事务的内置机制</strong>，但我们可以借助 <strong>确认机制 + 手动 ACK + 补单队列</strong> 实现一个可靠的事务解决方案。</p>
+<span id="more"></span>
+
+
+
+<p><img src="/2025/05/06/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1-%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97-rabbitmq-rocketmq/e0e9dc18848bc9a26b4b0a9f88f09c9c.png" alt="RabbitMQ分布式事务"></p>
+<h3 id="实现流程详解"><a href="#实现流程详解" class="headerlink" title="实现流程详解"></a>实现流程详解</h3><h4 id="1-消息生产者端：确保消息发送成功"><a href="#1-消息生产者端：确保消息发送成功" class="headerlink" title="1. 消息生产者端：确保消息发送成功"></a>1. 消息生产者端：确保消息发送成功</h4><ul>
+<li>使用 <strong>Confirm 确认机制</strong> 确保消息成功投递到 Exchange：<ul>
+<li>成功：进入正常消费流程；</li>
+<li>失败：记录日志 + 人工补偿；</li>
+</ul>
+</li>
+<li><strong>注意</strong>：生产者发送的是一个包含业务数据的消息（如订单信息 + 派单标识）。</li>
+</ul>
+<h4 id="2-消息消费者端：确保业务消费成功"><a href="#2-消息消费者端：确保业务消费成功" class="headerlink" title="2. 消息消费者端：确保业务消费成功"></a>2. 消息消费者端：确保业务消费成功</h4><ul>
+<li>使用 <strong>手动 ACK 确认机制</strong>；</li>
+<li>如果业务处理失败，NACK，由 RabbitMQ 自动重试；</li>
+<li>超过重试次数 ➝ 进入死信队列 ➝ 后期人工补偿。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">channel.basicAck(deliveryTag, <span class="keyword">false</span>);  <span class="comment">// 成功确认</span></span><br><span class="line">channel.basicNack(deliveryTag, <span class="keyword">false</span>, <span class="keyword">true</span>);  <span class="comment">// 失败，重新入队</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="3-补单机制：解决“事务回滚但消息已发”问题"><a href="#3-补单机制：解决“事务回滚但消息已发”问题" class="headerlink" title="3. 补单机制：解决“事务回滚但消息已发”问题"></a>3. 补单机制：解决“事务回滚但消息已发”问题</h4><blockquote>
+<p>订单服务事务回滚，但派单消息已成功发出，导致下游派单失败</p>
+</blockquote>
+<p>解决方式：派单消息中<strong>带上订单号/核心数据</strong>，并设置一个“补单队列”：</p>
+<p>派单消费者在消费时，<strong>先查订单表是否存在该订单</strong></p>
+<ul>
+<li>不存在 → 是异常消息，触发补单逻辑（调用接口重建订单或记录待补单日志）</li>
+<li>存在 → 正常执行派单逻辑</li>
+</ul>
+<h4 id="优点："><a href="#优点：" class="headerlink" title="优点："></a>优点：</h4><ul>
+<li>确保下游服务对“幻影消息”有自我恢复能力</li>
+<li>异步补偿，而不是依赖 2PC</li>
+</ul>
+<h2 id="三、基于-RocketMQ-实现分布式事务"><a href="#三、基于-RocketMQ-实现分布式事务" class="headerlink" title="三、基于 RocketMQ 实现分布式事务"></a>三、基于 RocketMQ 实现分布式事务</h2><h3 id="🚀-RocketMQ-支持原生的“事务消息”"><a href="#🚀-RocketMQ-支持原生的“事务消息”" class="headerlink" title="🚀 RocketMQ 支持原生的“事务消息”"></a>🚀 RocketMQ 支持原生的“事务消息”</h3><p>RocketMQ 是阿里巴巴开发的高性能消息中间件，<strong>原生支持分布式事务消息（事务型消息）机制</strong>，是目前较为成熟的 MQ 事务解决方案。</p>
+<p><img src="/2025/05/06/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1-%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97-rabbitmq-rocketmq/332865ed86ebdb3b42ec195e4f605cc3.png" alt="rocketMq分布式事务"></p>
+<h3 id="实现流程详解-1"><a href="#实现流程详解-1" class="headerlink" title="实现流程详解"></a>实现流程详解</h3><h4 id="1️⃣-步骤一：发送半消息（Prepare-Message）"><a href="#1️⃣-步骤一：发送半消息（Prepare-Message）" class="headerlink" title="1️⃣ 步骤一：发送半消息（Prepare Message）"></a>1️⃣ 步骤一：发送<strong>半消息（Prepare Message）</strong></h4><ul>
+<li>生产者向 RocketMQ Broker 发送一个“事务预消息”；</li>
+<li>此消息处于<strong>暂时不可消费状态</strong>，Broker 持久化存储该消息；</li>
+</ul>
+<h4 id="2️⃣-步骤二：执行本地事务逻辑"><a href="#2️⃣-步骤二：执行本地事务逻辑" class="headerlink" title="2️⃣ 步骤二：执行本地事务逻辑"></a>2️⃣ 步骤二：执行本地事务逻辑</h4><ul>
+<li>比如写入订单、扣库存等数据库操作；</li>
+<li>成功或失败后返回执行结果给 RocketMQ（<code>COMMIT</code> / <code>ROLLBACK</code>）；</li>
+</ul>
+<h4 id="3️⃣-步骤三：RocketMQ-Broker-处理事务结果"><a href="#3️⃣-步骤三：RocketMQ-Broker-处理事务结果" class="headerlink" title="3️⃣ 步骤三：RocketMQ Broker 处理事务结果"></a>3️⃣ 步骤三：RocketMQ Broker 处理事务结果</h4><ul>
+<li>若收到 <code>COMMIT</code> ➝ 允许消费者正式消费该消息；</li>
+<li>若收到 <code>ROLLBACK</code> ➝ 删除该半消息，消费者永不感知；</li>
+</ul>
+<h4 id="4️⃣-异常补偿机制"><a href="#4️⃣-异常补偿机制" class="headerlink" title="4️⃣ 异常补偿机制"></a>4️⃣ 异常补偿机制</h4><ul>
+<li>若 RocketMQ 未收到事务执行结果（如网络中断）：<ul>
+<li>Broker 每 1 分钟回查一次生产者事务状态；</li>
+<li>最多重试 15 次（默认配置）；</li>
+<li>确保消息最终状态可靠。</li>
+</ul>
+</li>
+</ul>
+<p>流程总结：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1. 订单服务发送“预发货消息” ➝ RocketMQ 半消息</span><br><span class="line">2. 订单服务执行本地事务：插入订单表、锁库存</span><br><span class="line">3. 本地事务成功，返回 COMMIT ➝ RocketMQ 允许发货服务消费消息</span><br><span class="line">4. 发货服务收到消息，执行发货操作</span><br></pre></td></tr></table></figure>
+
+<h3 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h3><ul>
+<li>原生支持分布式事务；</li>
+<li>自动回查补偿机制，开发简单；</li>
+<li>高性能、高并发，分区机制强大；</li>
+<li>消息持久化、高可用设计；</li>
+</ul>
+<h2 id="四、RabbitMQ-vs-RocketMQ：事务能力对比"><a href="#四、RabbitMQ-vs-RocketMQ：事务能力对比" class="headerlink" title="四、RabbitMQ vs RocketMQ：事务能力对比"></a>四、RabbitMQ vs RocketMQ：事务能力对比</h2><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>RabbitMQ</th>
+<th>RocketMQ</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>原生事务支持</td>
+<td>❌ 无</td>
+<td>✅ 有</td>
+</tr>
+<tr>
+<td>消息确认</td>
+<td>需要开发者自行实现（Confirm + 手动 ACK）</td>
+<td>内置事务消息机制</td>
+</tr>
+<tr>
+<td>补偿机制</td>
+<td>补单消费者、死信队列</td>
+<td>自动回查事务状态</td>
+</tr>
+<tr>
+<td>实现复杂度</td>
+<td>相对较高</td>
+<td>相对简单</td>
+</tr>
+<tr>
+<td>适合场景</td>
+<td>通用异步消息、轻量任务</td>
+<td>分布式事务、强一致性</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>MQ 模式</th>
+<th>特点</th>
+<th>场景推荐</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>RabbitMQ + 补单队列</strong></td>
+<td>灵活可控，但需要人工兜底</td>
+<td>轻量场景、团队已有 RabbitMQ 基础</td>
+</tr>
+<tr>
+<td><strong>RocketMQ 事务消息</strong></td>
+<td>原生支持、自动补偿、强一致性</td>
+<td>金融、电商等强事务需求系统</td>
+</tr>
+</tbody></table>
+</div><div class="article-licensing box"><div class="licensing-title"><p>分布式事务--消息队列(rabbitmq\rocketmq)</p><p><a href="http://symbol23441.top/2025/05/06/分布式事务-消息队列-rabbitmq-rocketmq/">http://symbol23441.top/2025/05/06/分布式事务-消息队列-rabbitmq-rocketmq/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2025-05-06</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2025-05-06</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2025/05/06/Redis%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">Redis分布式锁</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2025/05/06/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1-TCC/"><span class="level-item">分布式事务--TCC</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#一、为什么使用消息队列解决分布式事务？"><span class="level-left"><span class="level-item">一、为什么使用消息队列解决分布式事务？</span></span></a></li><li><a class="level is-mobile" href="#二、基于-RabbitMQ-实现分布式事务"><span class="level-left"><span class="level-item">二、基于 RabbitMQ 实现分布式事务</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#🧱-原理概述"><span class="level-left"><span class="level-item">🧱 原理概述</span></span></a></li><li><a class="level is-mobile" href="#实现流程详解"><span class="level-left"><span class="level-item">实现流程详解</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#1-消息生产者端：确保消息发送成功"><span class="level-left"><span class="level-item">1. 消息生产者端：确保消息发送成功</span></span></a></li><li><a class="level is-mobile" href="#2-消息消费者端：确保业务消费成功"><span class="level-left"><span class="level-item">2. 消息消费者端：确保业务消费成功</span></span></a></li><li><a class="level is-mobile" href="#3-补单机制：解决“事务回滚但消息已发”问题"><span class="level-left"><span class="level-item">3. 补单机制：解决“事务回滚但消息已发”问题</span></span></a></li><li><a class="level is-mobile" href="#优点："><span class="level-left"><span class="level-item">优点：</span></span></a></li></ul></li></ul></li><li><a class="level is-mobile" href="#三、基于-RocketMQ-实现分布式事务"><span class="level-left"><span class="level-item">三、基于 RocketMQ 实现分布式事务</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#🚀-RocketMQ-支持原生的“事务消息”"><span class="level-left"><span class="level-item">🚀 RocketMQ 支持原生的“事务消息”</span></span></a></li><li><a class="level is-mobile" href="#实现流程详解-1"><span class="level-left"><span class="level-item">实现流程详解</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#1️⃣-步骤一：发送半消息（Prepare-Message）"><span class="level-left"><span class="level-item">1️⃣ 步骤一：发送半消息（Prepare Message）</span></span></a></li><li><a class="level is-mobile" href="#2️⃣-步骤二：执行本地事务逻辑"><span class="level-left"><span class="level-item">2️⃣ 步骤二：执行本地事务逻辑</span></span></a></li><li><a class="level is-mobile" href="#3️⃣-步骤三：RocketMQ-Broker-处理事务结果"><span class="level-left"><span class="level-item">3️⃣ 步骤三：RocketMQ Broker 处理事务结果</span></span></a></li><li><a class="level is-mobile" href="#4️⃣-异常补偿机制"><span class="level-left"><span class="level-item">4️⃣ 异常补偿机制</span></span></a></li></ul></li><li><a class="level is-mobile" href="#优点"><span class="level-left"><span class="level-item">优点</span></span></a></li></ul></li><li><a class="level is-mobile" href="#四、RabbitMQ-vs-RocketMQ：事务能力对比"><span class="level-left"><span class="level-item">四、RabbitMQ vs RocketMQ：事务能力对比</span></span></a></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/js/lightgallery.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script><script type="text/javascript" src="/js/imaegoo/universe.js"></script></body></html>

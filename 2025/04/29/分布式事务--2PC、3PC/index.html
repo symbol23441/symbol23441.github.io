@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>分布式事务--2PC、3PC - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="一、什么是分布式事务？分布式事务是指涉及多个数据库或多个服务节点的事务处理。它将单库事务的概念扩展到多个库，目的是保证分布式系统中的数据一致性。分布式事务的核心挑战在于，必须确保所有子事务最终达到统一的提交或回滚决策，否则就可能出现数据不一致问题。 在分布式系统中，各个节点物理上独立，通过网络协调。每个节点的本地事务可以满足 ACID 特性，但节点之间无法直接知晓彼此的执行状态。因此，需要引入一个"><meta property="og:type" content="blog"><meta property="og:title" content="分布式事务--2PC、3PC"><meta property="og:url" content="http://symbol23441.top/2025/04/29/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1--2PC%E3%80%813PC/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="一、什么是分布式事务？分布式事务是指涉及多个数据库或多个服务节点的事务处理。它将单库事务的概念扩展到多个库，目的是保证分布式系统中的数据一致性。分布式事务的核心挑战在于，必须确保所有子事务最终达到统一的提交或回滚决策，否则就可能出现数据不一致问题。 在分布式系统中，各个节点物理上独立，通过网络协调。每个节点的本地事务可以满足 ACID 特性，但节点之间无法直接知晓彼此的执行状态。因此，需要引入一个"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://www.hollischuang.com/wp-content/uploads/2015/12/success.png"><meta property="og:image" content="http://www.hollischuang.com/wp-content/uploads/2015/12/fail.png"><meta property="og:image" content="http://www.hollischuang.com/wp-content/uploads/2015/12/3.png"><meta property="article:published_time" content="2025-04-29T07:34:12.000Z"><meta property="article:modified_time" content="2025-04-29T07:34:12.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="article:tag" content="数据库"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="http://www.hollischuang.com/wp-content/uploads/2015/12/success.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2025/04/29/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1--2PC%E3%80%813PC/"},"headline":"分布式事务--2PC、3PC","image":["http://www.hollischuang.com/wp-content/uploads/2015/12/success.png","http://www.hollischuang.com/wp-content/uploads/2015/12/fail.png","http://www.hollischuang.com/wp-content/uploads/2015/12/3.png"],"datePublished":"2025-04-29T07:34:12.000Z","dateModified":"2025-04-29T07:34:12.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"一、什么是分布式事务？分布式事务是指涉及多个数据库或多个服务节点的事务处理。它将单库事务的概念扩展到多个库，目的是保证分布式系统中的数据一致性。分布式事务的核心挑战在于，必须确保所有子事务最终达到统一的提交或回滚决策，否则就可能出现数据不一致问题。 在分布式系统中，各个节点物理上独立，通过网络协调。每个节点的本地事务可以满足 ACID 特性，但节点之间无法直接知晓彼此的执行状态。因此，需要引入一个"}</script><link rel="canonical" href="http://symbol23441.top/2025/04/29/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1--2PC%E3%80%813PC/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2025-04-29T07:34:12.000Z" title="4/29/2025, 3:34:12 PM">2025-04-29</time>发表</span><span class="level-item"><time dateTime="2025-04-29T07:34:12.000Z" title="4/29/2025, 3:34:12 PM">2025-04-29</time>更新</span><span class="level-item">8 分钟读完 (大约1254个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">分布式事务--2PC、3PC</h1><div class="content"><h2 id="一、什么是分布式事务？"><a href="#一、什么是分布式事务？" class="headerlink" title="一、什么是分布式事务？"></a>一、什么是分布式事务？</h2><p>分布式事务是指涉及多个数据库或多个服务节点的事务处理。它将单库事务的概念扩展到多个库，目的是<strong>保证分布式系统中的数据一致性</strong>。分布式事务的核心挑战在于，必须确保所有子事务最终达到统一的提交或回滚决策，否则就可能出现数据不一致问题。</p>
+<p>在分布式系统中，各个节点物理上独立，通过网络协调。每个节点的本地事务可以满足 ACID 特性，但节点之间无法直接知晓彼此的执行状态。因此，需要引入一个<strong>协调者（Coordinator）</strong>来统一调度事务操作。</p>
+<p>为了解决分布式事务一致性问题，<strong>二阶段提交（2PC）</strong>和<strong>三阶段提交（3PC）</strong>协议应运而生。</p>
+<h2 id="二、2PC（二阶段提交协议）"><a href="#二、2PC（二阶段提交协议）" class="headerlink" title="二、2PC（二阶段提交协议）"></a>二、2PC（二阶段提交协议）</h2><p>2PC（Two-Phase Commit）是一种用于保证分布式系统事务一致性的经典协议。其核心思想是：</p>
+<blockquote>
+<p><strong>由协调者统一收集所有参与者的执行结果，再决定是否提交整个事务。</strong></p>
+</blockquote>
+<h3 id="✅-两个阶段详解"><a href="#✅-两个阶段详解" class="headerlink" title="✅ 两个阶段详解"></a>✅ 两个阶段详解</h3><h4 id="1️⃣-准备阶段（Prepare-投票阶段）"><a href="#1️⃣-准备阶段（Prepare-投票阶段）" class="headerlink" title="1️⃣ 准备阶段（Prepare / 投票阶段）"></a>1️⃣ 准备阶段（Prepare / 投票阶段）</h4><ul>
+<li>协调者发送 <code>Prepare</code> 请求给所有参与者；</li>
+<li>参与者执行事务操作（但不提交），写入日志并返回“是否可以提交”；</li>
+<li>状态：每个参与者处于“准备提交”状态，锁定资源。</li>
+</ul>
+<h4 id="2️⃣-提交阶段（Commit-执行阶段）"><a href="#2️⃣-提交阶段（Commit-执行阶段）" class="headerlink" title="2️⃣ 提交阶段（Commit / 执行阶段）"></a>2️⃣ 提交阶段（Commit / 执行阶段）</h4><ul>
+<li><strong>如果所有参与者返回 Yes</strong>：<ul>
+<li>协调者发送 <code>Commit</code> 请求，所有参与者正式提交；</li>
+</ul>
+</li>
+<li><strong>如果任一参与者返回 No 或超时未响应</strong>：<ul>
+<li>协调者发送 <code>Rollback</code> 请求，所有参与者回滚事务。</li>
+</ul>
+</li>
+</ul>
+<p>流程图:</p>
+<p><img src="http://www.hollischuang.com/wp-content/uploads/2015/12/success.png" alt="成功执行"></p>
+<p><img src="http://www.hollischuang.com/wp-content/uploads/2015/12/fail.png" alt="失败回滚"></p>
+<span id="more"></span>
+
+<h3 id="❌-存在的问题"><a href="#❌-存在的问题" class="headerlink" title="❌ 存在的问题"></a>❌ 存在的问题</h3><ol>
+<li><strong>同步阻塞</strong>：<ul>
+<li>所有参与者都要等待协调者决策，资源锁定时间长；</li>
+</ul>
+</li>
+<li><strong>协调者单点故障</strong>：<ul>
+<li>若协调者在提交前宕机，参与者不知事务是否成功，无法继续；</li>
+</ul>
+</li>
+<li><strong>数据不一致</strong>：<ul>
+<li>在提交阶段发生部分网络丢包或故障时，可能导致部分参与者提交，部分未提交；</li>
+</ul>
+</li>
+<li><strong>不可恢复状态</strong>：<ul>
+<li>协调者崩溃后无事务状态持久化，无法恢复决策。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="三、3PC（三阶段提交协议）"><a href="#三、3PC（三阶段提交协议）" class="headerlink" title="三、3PC（三阶段提交协议）"></a>三、3PC（三阶段提交协议）</h2><h3 id="🎯-改进目的"><a href="#🎯-改进目的" class="headerlink" title="🎯 改进目的"></a>🎯 改进目的</h3><p>3PC（Three-Phase Commit）是对 2PC 的增强，<strong>引入中间阶段 + 超时机制</strong>，降低阻塞风险，让参与者在协调者宕机时也能自行决策。</p>
+<p>对2PC的准备阶段进行拆分，引入CanCommit阶段，仅做验证检查。</p>
+<h3 id="🔁-三个阶段详解"><a href="#🔁-三个阶段详解" class="headerlink" title="🔁 三个阶段详解"></a>🔁 三个阶段详解</h3><h4 id="1️⃣-CanCommit-阶段（询问提交）"><a href="#1️⃣-CanCommit-阶段（询问提交）" class="headerlink" title="1️⃣ CanCommit 阶段（询问提交）"></a>1️⃣ CanCommit 阶段（询问提交）</h4><ul>
+<li>协调者向参与者发送 <code>CanCommit?</code> 请求；</li>
+<li>参与者仅检查是否可以提交，<strong>不执行实际事务、不锁资源</strong>；</li>
+<li>返回 Yes / No；</li>
+<li>✅ <strong>优势：不占资源，可过滤无法提交的参与者</strong>。</li>
+</ul>
+<h4 id="2️⃣-PreCommit-阶段（预提交）"><a href="#2️⃣-PreCommit-阶段（预提交）" class="headerlink" title="2️⃣ PreCommit 阶段（预提交）"></a>2️⃣ PreCommit 阶段（预提交）</h4><ul>
+<li>如果所有参与者返回 Yes，协调者发送 <code>PreCommit</code> 请求；</li>
+<li>参与者正式执行事务操作、写入日志（但<strong>尚未提交</strong>），返回 ACK；</li>
+<li>进入“<strong>准备提交状态</strong>”。</li>
+</ul>
+<h4 id="3️⃣-DoCommit-阶段（提交执行）"><a href="#3️⃣-DoCommit-阶段（提交执行）" class="headerlink" title="3️⃣ DoCommit 阶段（提交执行）"></a>3️⃣ DoCommit 阶段（提交执行）</h4><ul>
+<li>协调者发送 <code>DoCommit</code> 指令，参与者提交事务；</li>
+<li>若协调者未发 DoCommit，参与者超时后可自主提交或回滚；</li>
+<li>⚠️ <strong>此阶段支持参与者的超时判断与自主处理</strong>。</li>
+</ul>
+<p><img src="http://www.hollischuang.com/wp-content/uploads/2015/12/3.png" alt="3PC"></p>
+<p>超时相关：<br>协调者#CanCommit、PreCommit 如果收不到参与者的反馈，则向参与者发送中断</p>
+<p>参与者#PreCommit，参与者自行执行中断；do commit ，参与者提交事务。（原因：概率因素）</p>
+<h3 id="2PC与3PC区别"><a href="#2PC与3PC区别" class="headerlink" title="2PC与3PC区别"></a>2PC与3PC区别</h3><table>
+<thead>
+<tr>
+<th></th>
+<th>2PC</th>
+<th>3PC</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>阶段数</td>
+<td>两阶段</td>
+<td>三阶段（CanCommit + PreCommit + DoCommit）</td>
+</tr>
+<tr>
+<td>超时机制</td>
+<td>仅协调者有</td>
+<td>协调者与参与者都具备</td>
+</tr>
+<tr>
+<td>宕机容错</td>
+<td>差，容易阻塞</td>
+<td>好，参与者可恢复并决策</td>
+</tr>
+<tr>
+<td>提交前资源占用</td>
+<td>有，提前锁资源</td>
+<td>减少，第一阶段不占资源</td>
+</tr>
+<tr>
+<td>参与者自主性</td>
+<td>无</td>
+<td>有，预提交后有判断依据</td>
+</tr>
+</tbody></table>
+<p>虽然 3PC 相较于 2PC 更具容错性与弹性，但它仍然存在问题：</p>
+<ul>
+<li>引入了更多通信步骤，<strong>性能开销大</strong>；</li>
+<li>复杂的状态控制与超时判断，<strong>实现成本高</strong>；</li>
+<li>如果参与者的状态不可靠或日志丢失，仍可能造成数据不一致。</li>
+</ul>
+</div><div class="article-licensing box"><div class="licensing-title"><p>分布式事务--2PC、3PC</p><p><a href="http://symbol23441.top/2025/04/29/分布式事务--2PC、3PC/">http://symbol23441.top/2025/04/29/分布式事务--2PC、3PC/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2025-04-29</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2025-04-29</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2025/05/06/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1-TCC/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">分布式事务--TCC</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2025/04/28/InnoDB%E7%B4%A2%E5%BC%95%E6%B7%B1%E5%BA%A6%E5%89%96%E6%9E%90%EF%BC%9A%E4%BB%A3%E4%BB%B7%E3%80%81%E5%9B%9E%E8%A1%A8%E3%80%81%E7%B4%A2%E5%BC%95%E4%BC%98%E5%8C%96%E6%8C%87%E5%8D%97/"><span class="level-item">InnoDB索引深度剖析：代价、回表、索引优化指南</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#一、什么是分布式事务？"><span class="level-left"><span class="level-item">一、什么是分布式事务？</span></span></a></li><li><a class="level is-mobile" href="#二、2PC（二阶段提交协议）"><span class="level-left"><span class="level-item">二、2PC（二阶段提交协议）</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#✅-两个阶段详解"><span class="level-left"><span class="level-item">✅ 两个阶段详解</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#1️⃣-准备阶段（Prepare-投票阶段）"><span class="level-left"><span class="level-item">1️⃣ 准备阶段（Prepare / 投票阶段）</span></span></a></li><li><a class="level is-mobile" href="#2️⃣-提交阶段（Commit-执行阶段）"><span class="level-left"><span class="level-item">2️⃣ 提交阶段（Commit / 执行阶段）</span></span></a></li></ul></li><li><a class="level is-mobile" href="#❌-存在的问题"><span class="level-left"><span class="level-item">❌ 存在的问题</span></span></a></li></ul></li><li><a class="level is-mobile" href="#三、3PC（三阶段提交协议）"><span class="level-left"><span class="level-item">三、3PC（三阶段提交协议）</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#🎯-改进目的"><span class="level-left"><span class="level-item">🎯 改进目的</span></span></a></li><li><a class="level is-mobile" href="#🔁-三个阶段详解"><span class="level-left"><span class="level-item">🔁 三个阶段详解</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#1️⃣-CanCommit-阶段（询问提交）"><span class="level-left"><span class="level-item">1️⃣ CanCommit 阶段（询问提交）</span></span></a></li><li><a class="level is-mobile" href="#2️⃣-PreCommit-阶段（预提交）"><span class="level-left"><span class="level-item">2️⃣ PreCommit 阶段（预提交）</span></span></a></li><li><a class="level is-mobile" href="#3️⃣-DoCommit-阶段（提交执行）"><span class="level-left"><span class="level-item">3️⃣ DoCommit 阶段（提交执行）</span></span></a></li></ul></li><li><a class="level is-mobile" href="#2PC与3PC区别"><span class="level-left"><span class="level-item">2PC与3PC区别</span></span></a></li></ul></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/js/lightgallery.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script><script type="text/javascript" src="/js/imaegoo/universe.js"></script></body></html>
