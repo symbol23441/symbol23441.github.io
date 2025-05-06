@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>JVM沙箱机制 - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="我们现在来讲讲 JVM 沙箱机制（Java Sandbox Mechanism），这是 Java 提供安全执行环境的核心之一，尤其在运行来自不可信源的代码时至关重要。 一、什么是沙箱机制？ JVM 的“沙箱”是一种 安全隔离机制，用于防止 Java 程序（尤其是不受信任的代码）访问系统资源或进行破坏性操作。  📌关键词：限制能力 + 隔离资源 + 控制权限它就像一个“沙盒”：你可以在里面玩，但你"><meta property="og:type" content="blog"><meta property="og:title" content="JVM沙箱机制"><meta property="og:url" content="http://symbol23441.top/2025/04/24/JVM%E6%B2%99%E7%AE%B1%E6%9C%BA%E5%88%B6/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="我们现在来讲讲 JVM 沙箱机制（Java Sandbox Mechanism），这是 Java 提供安全执行环境的核心之一，尤其在运行来自不可信源的代码时至关重要。 一、什么是沙箱机制？ JVM 的“沙箱”是一种 安全隔离机制，用于防止 Java 程序（尤其是不受信任的代码）访问系统资源或进行破坏性操作。  📌关键词：限制能力 + 隔离资源 + 控制权限它就像一个“沙盒”：你可以在里面玩，但你"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/img/og_image.png"><meta property="article:published_time" content="2025-04-24T05:33:29.000Z"><meta property="article:modified_time" content="2025-04-24T05:33:29.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="article:tag" content="JVM"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/img/og_image.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2025/04/24/JVM%E6%B2%99%E7%AE%B1%E6%9C%BA%E5%88%B6/"},"headline":"JVM沙箱机制","image":["http://symbol23441.top/img/og_image.png"],"datePublished":"2025-04-24T05:33:29.000Z","dateModified":"2025-04-24T05:33:29.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"我们现在来讲讲 JVM 沙箱机制（Java Sandbox Mechanism），这是 Java 提供安全执行环境的核心之一，尤其在运行来自不可信源的代码时至关重要。 一、什么是沙箱机制？ JVM 的“沙箱”是一种 安全隔离机制，用于防止 Java 程序（尤其是不受信任的代码）访问系统资源或进行破坏性操作。  📌关键词：限制能力 + 隔离资源 + 控制权限它就像一个“沙盒”：你可以在里面玩，但你"}</script><link rel="canonical" href="http://symbol23441.top/2025/04/24/JVM%E6%B2%99%E7%AE%B1%E6%9C%BA%E5%88%B6/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2025-04-24T05:33:29.000Z" title="4/24/2025, 1:33:29 PM">2025-04-24</time>发表</span><span class="level-item"><time dateTime="2025-04-24T05:33:29.000Z" title="4/24/2025, 1:33:29 PM">2025-04-24</time>更新</span><span class="level-item">7 分钟读完 (大约987个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">JVM沙箱机制</h1><div class="content"><p>我们现在来讲讲 <strong>JVM 沙箱机制（Java Sandbox Mechanism）</strong>，这是 Java 提供安全执行环境的核心之一，尤其在运行来自不可信源的代码时至关重要。</p>
+<h2 id="一、什么是沙箱机制？"><a href="#一、什么是沙箱机制？" class="headerlink" title="一、什么是沙箱机制？"></a>一、什么是沙箱机制？</h2><blockquote>
+<p>JVM 的“沙箱”是一种 <strong>安全隔离机制</strong>，用于防止 Java 程序（尤其是不受信任的代码）访问系统资源或进行破坏性操作。</p>
+</blockquote>
+<h3 id="📌关键词：限制能力-隔离资源-控制权限"><a href="#📌关键词：限制能力-隔离资源-控制权限" class="headerlink" title="📌关键词：限制能力 + 隔离资源 + 控制权限"></a>📌关键词：<strong>限制能力 + 隔离资源 + 控制权限</strong></h3><p>它就像一个“沙盒”：你可以在里面玩，但你出不去，不能动外面的系统资源。</p>
+<span id="more"></span>
+
+<h2 id="二、为什么需要沙箱机制？"><a href="#二、为什么需要沙箱机制？" class="headerlink" title="二、为什么需要沙箱机制？"></a>二、为什么需要沙箱机制？</h2><p>在早期 Java 应用中，特别是：</p>
+<ul>
+<li>Java Applet（网页小程序）</li>
+<li>动态加载的第三方代码</li>
+<li>插件系统</li>
+</ul>
+<p>我们不能信任所有代码，所以需要 JVM <strong>强制隔离权限</strong>，以防止恶意操作，比如：</p>
+<ul>
+<li>删除文件</li>
+<li>发送网络请求</li>
+<li>修改系统属性</li>
+<li>执行本地命令（<code>Runtime.exec()</code>）</li>
+</ul>
+<hr>
+<h2 id="三、JVM-沙箱机制的组成（3-大核心组件）"><a href="#三、JVM-沙箱机制的组成（3-大核心组件）" class="headerlink" title="三、JVM 沙箱机制的组成（3 大核心组件）"></a>三、JVM 沙箱机制的组成（3 大核心组件）</h2><p>JVM 的沙箱机制主要通过以下三个系统组件实现：</p>
+<hr>
+<h3 id="1-类加载器（ClassLoader）"><a href="#1-类加载器（ClassLoader）" class="headerlink" title="1. 类加载器（ClassLoader）"></a>1. <strong>类加载器（ClassLoader）</strong></h3><blockquote>
+<p>负责隔离代码来源，决定谁可以加载什么类。</p>
+</blockquote>
+<ul>
+<li>自定义类加载器可以限制只加载指定路径下的类</li>
+<li>不同加载器加载的类是“隔离”的（类名一样也不等于同一个类）</li>
+</ul>
+<p>📌 是沙箱的第一道防线，起到<strong>代码来源的隔离作用</strong>。</p>
+<hr>
+<h3 id="2-字节码验证器（Bytecode-Verifier）"><a href="#2-字节码验证器（Bytecode-Verifier）" class="headerlink" title="2. 字节码验证器（Bytecode Verifier）"></a>2. <strong>字节码验证器（Bytecode Verifier）</strong></h3><blockquote>
+<p>加载 <code>.class</code> 文件后，JVM 会验证其字节码是否合法、安全。</p>
+</blockquote>
+<p>包括：</p>
+<ul>
+<li>不允许访问非法内存</li>
+<li>方法调用是否合法</li>
+<li>操作数栈类型匹配</li>
+<li>不允许越界访问数组</li>
+</ul>
+<p>📌 这是第二道防线，防止恶意或损坏的字节码搞破坏。</p>
+<hr>
+<h3 id="3-安全管理器（SecurityManager）-权限控制器（AccessController）"><a href="#3-安全管理器（SecurityManager）-权限控制器（AccessController）" class="headerlink" title="3. 安全管理器（SecurityManager）+ 权限控制器（AccessController）"></a>3. <strong>安全管理器（SecurityManager）+ 权限控制器（AccessController）</strong></h3><blockquote>
+<p>控制运行时行为权限（如文件、网络、反射等）。</p>
+</blockquote>
+<ul>
+<li><p>通过 <code>SecurityManager</code> 检查：是否允许操作系统资源</p>
+</li>
+<li><p>结合 <code>AccessController.doPrivileged()</code> 机制，细粒度控制权限范围</p>
+</li>
+<li><p>权限策略配置文件如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">grant &#123;</span><br><span class="line">  permission java.io.FilePermission <span class="string">&quot;/tmp/*&quot;</span>, <span class="string">&quot;read&quot;</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>📌 这是沙箱的最后防线，用于<strong>权限控制</strong>。</p>
+<hr>
+<h2 id="四、沙箱中的典型限制行为（除非被授权）"><a href="#四、沙箱中的典型限制行为（除非被授权）" class="headerlink" title="四、沙箱中的典型限制行为（除非被授权）"></a>四、沙箱中的典型限制行为（除非被授权）</h2><table>
+<thead>
+<tr>
+<th>操作</th>
+<th>是否允许（默认）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>读取系统属性</td>
+<td>❌ 被拦截</td>
+</tr>
+<tr>
+<td>访问文件系统</td>
+<td>❌ 被拦截</td>
+</tr>
+<tr>
+<td>打开网络连接</td>
+<td>❌ 被拦截</td>
+</tr>
+<tr>
+<td>使用反射访问私有字段</td>
+<td>❌ 被拦截</td>
+</tr>
+<tr>
+<td>退出 JVM</td>
+<td>❌ 被拦截</td>
+</tr>
+<tr>
+<td>加载 native 本地代码</td>
+<td>❌ 被拦截</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="五、真实应用中的沙箱场景"><a href="#五、真实应用中的沙箱场景" class="headerlink" title="五、真实应用中的沙箱场景"></a>五、真实应用中的沙箱场景</h2><h3 id="✔️-1-Applet（网页-Java-小程序）"><a href="#✔️-1-Applet（网页-Java-小程序）" class="headerlink" title="✔️ 1. Applet（网页 Java 小程序）"></a>✔️ 1. <strong>Applet（网页 Java 小程序）</strong></h3><ul>
+<li>浏览器中执行的 Java 代码不允许接触用户硬盘或系统</li>
+</ul>
+<h3 id="✔️-2-Java-插件机制-动态脚本"><a href="#✔️-2-Java-插件机制-动态脚本" class="headerlink" title="✔️ 2. Java 插件机制 / 动态脚本"></a>✔️ 2. <strong>Java 插件机制 / 动态脚本</strong></h3><ul>
+<li>比如 Groovy、JavaScript 脚本，运行在 JVM 中需沙箱保护</li>
+</ul>
+<h3 id="✔️-3-企业系统的插件平台"><a href="#✔️-3-企业系统的插件平台" class="headerlink" title="✔️ 3. 企业系统的插件平台"></a>✔️ 3. <strong>企业系统的插件平台</strong></h3><ul>
+<li>大型系统允许用户扩展插件，但必须沙箱运行（不能越权）</li>
+</ul>
+<hr>
+<h2 id="六、现代沙箱机制的演变"><a href="#六、现代沙箱机制的演变" class="headerlink" title="六、现代沙箱机制的演变"></a>六、现代沙箱机制的演变</h2><ul>
+<li><code>SecurityManager</code> 和 <code>AccessController</code> 是 Java 传统沙箱核心</li>
+<li><strong>JDK 17 开始，SecurityManager 被标记为 “Deprecated”（弃用）</strong><ul>
+<li>原因：管理复杂、滥用反射绕过</li>
+<li>替代方案：更推荐使用 <strong>模块系统（JPMS）</strong>、<strong>容器技术（Docker）</strong> 来做隔离</li>
+<li>更细粒度的控制可用 <code>java.policy</code> 文件 + 安全框架（如 OSGi）</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="七、总结一句话："><a href="#七、总结一句话：" class="headerlink" title="七、总结一句话："></a>七、总结一句话：</h2><blockquote>
+<p><strong>JVM 沙箱机制是由类加载器、字节码校验器和安全管理器组成的一套系统，用于隔离、限制不可信代码的行为，确保 Java 运行环境的安全性。</strong></p>
+</blockquote>
+</div><div class="article-licensing box"><div class="licensing-title"><p>JVM沙箱机制</p><p><a href="http://symbol23441.top/2025/04/24/JVM沙箱机制/">http://symbol23441.top/2025/04/24/JVM沙箱机制/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2025-04-24</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2025-04-24</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/JVM/">JVM</a></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2025/04/24/JMM-Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">JMM(Java内存模型)</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2025/04/24/JVM-GC-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/"><span class="level-item">JVM GC(垃圾回收)</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#一、什么是沙箱机制？"><span class="level-left"><span class="level-item">一、什么是沙箱机制？</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#📌关键词：限制能力-隔离资源-控制权限"><span class="level-left"><span class="level-item">📌关键词：限制能力 + 隔离资源 + 控制权限</span></span></a></li></ul></li><li><a class="level is-mobile" href="#二、为什么需要沙箱机制？"><span class="level-left"><span class="level-item">二、为什么需要沙箱机制？</span></span></a></li><li><a class="level is-mobile" href="#三、JVM-沙箱机制的组成（3-大核心组件）"><span class="level-left"><span class="level-item">三、JVM 沙箱机制的组成（3 大核心组件）</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#1-类加载器（ClassLoader）"><span class="level-left"><span class="level-item">1. 类加载器（ClassLoader）</span></span></a></li><li><a class="level is-mobile" href="#2-字节码验证器（Bytecode-Verifier）"><span class="level-left"><span class="level-item">2. 字节码验证器（Bytecode Verifier）</span></span></a></li><li><a class="level is-mobile" href="#3-安全管理器（SecurityManager）-权限控制器（AccessController）"><span class="level-left"><span class="level-item">3. 安全管理器（SecurityManager）+ 权限控制器（AccessController）</span></span></a></li></ul></li><li><a class="level is-mobile" href="#四、沙箱中的典型限制行为（除非被授权）"><span class="level-left"><span class="level-item">四、沙箱中的典型限制行为（除非被授权）</span></span></a></li><li><a class="level is-mobile" href="#五、真实应用中的沙箱场景"><span class="level-left"><span class="level-item">五、真实应用中的沙箱场景</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#✔️-1-Applet（网页-Java-小程序）"><span class="level-left"><span class="level-item">✔️ 1. Applet（网页 Java 小程序）</span></span></a></li><li><a class="level is-mobile" href="#✔️-2-Java-插件机制-动态脚本"><span class="level-left"><span class="level-item">✔️ 2. Java 插件机制 / 动态脚本</span></span></a></li><li><a class="level is-mobile" href="#✔️-3-企业系统的插件平台"><span class="level-left"><span class="level-item">✔️ 3. 企业系统的插件平台</span></span></a></li></ul></li><li><a class="level is-mobile" href="#六、现代沙箱机制的演变"><span class="level-left"><span class="level-item">六、现代沙箱机制的演变</span></span></a></li><li><a class="level is-mobile" href="#七、总结一句话："><span class="level-left"><span class="level-item">七、总结一句话：</span></span></a></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/js/lightgallery.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script><script type="text/javascript" src="/js/imaegoo/universe.js"></script></body></html>

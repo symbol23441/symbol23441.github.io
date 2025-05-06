@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>编译与链接 - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="本文介绍了c语言的编译、链接、动态链接、PIC地址无关代码、PLT延迟绑定、以及一些gcc指令与ELF分析指令。"><meta property="og:type" content="blog"><meta property="og:title" content="编译与链接"><meta property="og:url" content="http://symbol23441.top/2023/12/07/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="本文介绍了c语言的编译、链接、动态链接、PIC地址无关代码、PLT延迟绑定、以及一些gcc指令与ELF分析指令。"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/2023/12/07/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/image-20231207172211972.png"><meta property="og:image" content="http://symbol23441.top/2023/12/07/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/image-20231207172559890.png"><meta property="og:image" content="http://symbol23441.top/2023/12/07/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/%E6%88%AA%E5%B1%8F%202023-12-07%2017.54.10-1942903.jpeg"><meta property="og:image" content="http://symbol23441.top/2023/12/07/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/image-20231207175648361.png"><meta property="og:image" content="http://symbol23441.top/2023/12/07/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/image-20231207222558995.png"><meta property="og:image" content="http://symbol23441.top/2023/12/07/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/image-20231208004653382.png"><meta property="og:image" content="http://symbol23441.top/2023/12/07/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/image-20231208011046599.png"><meta property="og:image" content="http://symbol23441.top/2023/12/07/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/image-20231208010642671.png"><meta property="article:published_time" content="2023-12-07T08:21:25.000Z"><meta property="article:modified_time" content="2023-12-07T08:21:25.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="article:tag" content="编译与链接"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/2023/12/07/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/image-20231207172211972.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2023/12/07/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/"},"headline":"编译与链接","image":["http://symbol23441.top/2023/12/07/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/image-20231207172211972.png","http://symbol23441.top/2023/12/07/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/image-20231207172559890.png","http://symbol23441.top/2023/12/07/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/image-20231207175648361.png","http://symbol23441.top/2023/12/07/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/image-20231207222558995.png","http://symbol23441.top/2023/12/07/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/image-20231208004653382.png","http://symbol23441.top/2023/12/07/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/image-20231208011046599.png","http://symbol23441.top/2023/12/07/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/image-20231208010642671.png"],"datePublished":"2023-12-07T08:21:25.000Z","dateModified":"2023-12-07T08:21:25.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"本文介绍了c语言的编译、链接、动态链接、PIC地址无关代码、PLT延迟绑定、以及一些gcc指令与ELF分析指令。"}</script><link rel="canonical" href="http://symbol23441.top/2023/12/07/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-12-07T08:21:25.000Z" title="12/7/2023, 4:21:25 PM">2023-12-07</time>发表</span><span class="level-item"><time dateTime="2023-12-07T08:21:25.000Z" title="12/7/2023, 4:21:25 PM">2023-12-07</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/Linux-C%E7%BC%96%E7%A8%8B/">Linux C编程</a></span><span class="level-item">23 分钟读完 (大约3473个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">编译与链接</h1><div class="content"><p>本文介绍了c语言的编译、链接、动态链接、PIC地址无关代码、PLT延迟绑定、以及一些gcc指令与ELF分析指令。</p>
+<span id="more"></span>
+
+<h1 id="1、编译"><a href="#1、编译" class="headerlink" title="1、编译"></a>1、编译</h1><p>c语言中，编译是将.c文件(文本文件)编译为机器指令。</p>
+<p>我们将以如下add.c和main.c进行分析：</p>
+<p>add.c</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span> a,<span class="keyword">int</span> b)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> a+b;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>main.c</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span> a,<span class="keyword">int</span> b)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">        <span class="keyword">int</span> a=<span class="number">2</span>,b=<span class="number">3</span>;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;satrt!\n&quot;</span>);</span><br><span class="line">        a=add(a,b);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;a+b:%d\n&quot;</span>,a);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>我们将这两个文件仅编译,目标文件为对应.o文件：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">root@VM-4-3-ubuntu:~/c<span class="comment"># gcc -c main.c</span></span><br><span class="line">root@VM-4-3-ubuntu:~/c<span class="comment"># gcc -c add.c</span></span><br><span class="line">root@VM-4-3-ubuntu:~/c<span class="comment"># ls *.o</span></span><br><span class="line">add.o  main.o</span><br><span class="line">root@VM-4-3-ubuntu:~/c<span class="comment"># file add.o</span></span><br><span class="line">add.o: ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped</span><br></pre></td></tr></table></figure>
+
+<p>我们可以通过    查看main.o二进制的反汇编结果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">root@VM-4-3-ubuntu:~/c# objdump -S main.o                                         main.o:     file format elf64-x86-64                                             Disassembly of section .text:                                                     0000000000000000&lt;main&gt;:                                                            0:   f3 0f 1e fa             endbr64                                             4:   55                      push   %rbp                                         5:   48 89 e5                mov    %rsp,%rbp                                     8:   48 83 ec 10             sub    $0x10,%rsp                                   c:   c7 45 f8 02 00 00 00    movl   $0x2,-0x8(%rbp)                               13:   c7 45 fc 03 00 00 00    movl   $0x3,-0x4(%rbp)                             1a:   48 8d 3d 00 00 00 00    lea    0x0(%rip),%rdi        # 21                   21:   e8 00 00 00 00          callq  26                                           26:   8b 55 fc                mov    -0x4(%rbp),%edx                             29:   8b 45 f8                mov    -0x8(%rbp),%eax                             2c:   89 d6                   mov    %edx,%esi                                   2e:   89 c7                   mov    %eax,%edi                                   30:   e8 00 00 00 00          callq  35                                           35:   89 45 f8                mov    %eax,-0x8(%rbp)                             38:   8b 45 f8                mov    -0x8(%rbp),%eax                             3b:   89 c6                   mov    %eax,%esi                                   3d:   48 8d 3d 00 00 00 00    lea    0x0(%rip),%rdi        # 44                   44:   b8 00 00 00 00          mov    $0x0,%eax                                   49:   e8 00 00 00 00          callq  4e                                           4e:   b8 00 00 00 00          mov    $0x0,%eax                                   53:   c9                      leaveq                                             54:   c3                      retq    </span><br></pre></td></tr></table></figure>
+
+<p>这便是编译</p>
+<p>以下是执行文件的一些信息查看</p>
+<p>通过<code>readelf -h</code>，我们可以找到可执行文件的头部进本信息，结果如下：</p>
+<p><img src="/2023/12/07/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/image-20231207172211972.png" alt="image-20231207172211972"></p>
+<p>以及<code>readelf -s</code> 查看区块（selection）信息</p>
+<p><img src="/2023/12/07/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/image-20231207172559890.png" alt="image-20231207172559890"></p>
+<h1 id="2、链接（静态）"><a href="#2、链接（静态）" class="headerlink" title="2、链接（静态）"></a>2、链接（静态）</h1><p>事实上，链接就是将编译生成的目标文件，连同静态库、动态库，组合拼装成一个独立的可执行文件。</p>
+<p><img src="/2023/12/07/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/%E6%88%AA%E5%B1%8F%202023-12-07%2017.54.10-1942903.jpeg" alt="链接"></p>
+<p>链接的过程其中包括，一些地址的修正。链接器需要根据重定位表，找到那些需要被重定位的<strong>函数</strong>、<strong>全局变量</strong>，从而修正他们的地址（<strong>重定位</strong>）。</p>
+<p><img src="/2023/12/07/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/image-20231207175648361.png" alt="重定位"></p>
+<p>我们在main.o 的机器指令中看</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">21:   e8 00 00 00 00          callq  26                                         </span><br><span class="line">30:   e8 00 00 00 00          callq  35</span><br><span class="line">49:   e8 00 00 00 00          callq  4e        </span><br></pre></td></tr></table></figure>
+
+<p>这三条指令是printf和add函数的调用。因为add和printf分别是在add.o和库函数中定义，在main.c中仅有声明，为此这里的指向地址为<code>00 00 00 00</code>空。这里的函数地址会在链接的时候被修正。</p>
+<p>另外，为了让链接器可以找到这些需要被修正的地址。在代码块中，存有<strong>重定位表</strong>（Relocation Table）指向需要被修改地址。</p>
+<p>我们可以通过<code>objdump -r main.o</code> 查看，结果如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">root@VM-4-3-ubuntu:~/c<span class="comment"># objdump -r main.o</span></span><br><span class="line"></span><br><span class="line">main.o:     file format elf64-x86-64</span><br><span class="line"></span><br><span class="line">RELOCATION RECORDS FOR [.text]:</span><br><span class="line">OFFSET           TYPE              VALUE </span><br><span class="line">000000000000001d R_X86_64_PC32     .rodata-0x0000000000000004</span><br><span class="line">0000000000000022 R_X86_64_PLT32    puts-0x0000000000000004</span><br><span class="line">0000000000000031 R_X86_64_PLT32    add-0x0000000000000004</span><br><span class="line">0000000000000040 R_X86_64_PC32     .rodata+0x0000000000000003</span><br><span class="line">000000000000004a R_X86_64_PLT32    printf-0x0000000000000004</span><br><span class="line"></span><br><span class="line">RELOCATION RECORDS FOR [.eh_frame]:</span><br><span class="line">OFFSET           TYPE              VALUE </span><br><span class="line">0000000000000020 R_X86_64_PC32     .text</span><br></pre></td></tr></table></figure>
+
+<p>其中22、31、4a的偏移量分别与main.o中三个调用对应。</p>
+<p>我们如下编译：<code>gcc main.o add.o -o main</code>。在目录下我们可以找到生成的可执行文件main。</p>
+<p>main可以直接运行，结果如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">root@VM-4-3-ubuntu:~/c<span class="comment"># ./main                                            </span></span><br><span class="line">satrt!                                     </span><br><span class="line">a+b:5    </span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="3、动态链接"><a href="#3、动态链接" class="headerlink" title="3、动态链接"></a>3、动态链接</h1><p><strong>静态链接</strong>会将编译产生的所有目标文件、连同用到所有库合并成<strong>独立的可执行文件</strong>。他不需要依赖任何其他的文件，便可独立运行。</p>
+<p>但静态链接最大的问题在于生成的文件体积大，耗费内存资源。比如，libc.so是我们c语言程序基本都会用到的运行时库，大约在2M左右，如果计算机上有大量的进程，那都需要将这2M的代码放进内存，重复冗余。</p>
+<p><strong>动态链接</strong>，将共享的代码单独提取出来，保存成一个独立的动态运行库。等到程序<strong>运行时</strong>再把它加载到内存，这样可以节省内存空间。因为，同一模块在内存中只需要保存一份副本，可以被不同的进程<strong>共享</strong>。</p>
+<h2 id="1、基本动态库的创建和使用"><a href="#1、基本动态库的创建和使用" class="headerlink" title="1、基本动态库的创建和使用"></a>1、基本动态库的创建和使用</h2><p>我们的上述main 可执行文件中，使用了printf函数，该函数便在libc的动态库中。我们通过<code>readelf -d main</code> 指令，结果如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">root@VM-4-3-ubuntu:~/c# readelf -d main | grep NEEDED</span><br><span class="line">0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]</span><br></pre></td></tr></table></figure>
+
+
+
+<p>接下来，我们改造我们的add.o,将其编译为动态链接库。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">gcc -shared -fPIC add.c -o libadd.so</span><br><span class="line">gcc main.c -ladd -L. -o main1</span><br></pre></td></tr></table></figure>
+
+<p><code>-shared</code>是指Shared Object（共享对象）。<code>-fPIC</code></p>
+<p><code>-ladd</code>指定了所需动态链接的库，省略了<code>libadd.so</code> 的lib和.so。<code>-L.</code>指定了动态链接库所在的目录。</p>
+<p>当我们执行<code>./main1</code>的时候，有如下错误：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">root@VM<span class="number">-4</span><span class="number">-3</span>-ubuntu:~/c# ./main1</span><br><span class="line">./main1: error <span class="keyword">while</span> loading shared libraries: libadd.so: cannot open shared object file: No such file <span class="keyword">or</span> directory</span><br></pre></td></tr></table></figure>
+
+<p>这是因为Linux默认只会在系统路径<code>/usr/local/lib</code>下搜索动态库。有如下解决方案：</p>
+<ol>
+<li><p>将我们的动态库<code>libadd.so</code>拷贝到<code>/usr/local/lib</code>路径下</p>
+</li>
+<li><p>将当前路径添加到LD_LIBRARY_PATH中。这样系统会现在指定的路径下搜索，找不到在去系统路径搜索。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> LD_LIBRARY_PATH=<span class="string">&quot;<span class="subst">$(pwd)</span>&quot;</span></span><br><span class="line"><span class="built_in">echo</span> <span class="variable">$LD_LIBRARY_PATH</span></span><br><span class="line">./main1</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>以上，我们我们说清了一个基本动态库的创建和使用。</p>
+<h2 id="2、PIC技术"><a href="#2、PIC技术" class="headerlink" title="2、PIC技术"></a>2、PIC技术</h2><p>静态链接将编译所产生的目标文件、所用到库合并成一整个可执行文件。动态链接，将共同的代码提取出来，作为共享代码段。在程序载入内存时，将相应的动态库（共享代码）加载到内存中，并可被多个进程所应用，即该部分代码在内存中仅有一份副本。</p>
+<p>但是仍有一个问题需被解决，共享代码的重定向问题。</p>
+<p>静态编译的过程中，我们将不同的模块整合到一块，并且修改相互调用（函数、全局变量）的地址，这便是<strong>重定位</strong>。</p>
+<p><img src="/2023/12/07/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/image-20231207222558995.png" alt="image-20231207222558995"></p>
+<p>然而，如果动态连接时，我们继续在共享代码载入时对代码进行重定位（修改代码段中的跳转地址），这便会出现一些问题。并且，一般共享代码代码段都仅为只读。</p>
+<p>为此PIC（Postion Independent Code，地址无关代码）给出了一个解决方案。</p>
+<ul>
+<li>对于模块内部的代码、数据的调用，由于位置固定，所以采用<strong>相对寻址</strong>。</li>
+<li>对于代码外部的跨模块调用，采用<strong>间接寻址</strong>，在数据段创建了GOT表（Global Offset Table），GOT表的条目保存了正确的指向地址。</li>
+</ul>
+<img src="/2023/12/07/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/image-20231208004653382.png" alt="image-20231208004653382" style="zoom:50%;">
+
+<p>这样共享代码段就不必被修改了。</p>
+<p>在Linux2.x以后，每个进程都有独立的进程空间，具有<strong>进程内存空间独立性</strong>。为此，全局偏移表（GOT）在每个进程中都有一个副本，这是因为每个进程都可能包含不同的内存映射和地址空间，而全局偏移表中存储的地址需要根据当前进程的内存布局和加载地址来进行调整。GOT表很小，开销是可以接收到。</p>
+<p>如下指令，可以看到.got 区块。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">readelf -S libadd.so</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="3、PLT（过程链接表、延迟绑定）"><a href="#3、PLT（过程链接表、延迟绑定）" class="headerlink" title="3、PLT（过程链接表、延迟绑定）"></a>3、PLT（过程链接表、延迟绑定）</h2><p>由于程序加载的时候需要对大量的函数进行重定位，这将会耗费大量的时间。</p>
+<p>PLT（Procedure Linkage Table，过程链接表），PLT 实际上是一组代码段，其中包含一系列桩（Stub）代码，这些桩代码负责在程序运行时进行动态链接和重定位。</p>
+<p>PLC机制将程序载入时对函数的地址的绑定，推迟到程序第一次调用该动态库，因为绝大多数函数在程序的运行期间并不会被使用。</p>
+<p>它的大致思路如下：</p>
+<p>got全局偏移表每个表项都指向一段桩程序，当该函数第一次被调用的时候，该桩程序代码会查询真正函数的跳转地址，并且更新GOT表。当函数再次被调用的时候，便正确指向了函数的真实地址。</p>
+<img src="/2023/12/07/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/image-20231208011046599.png" alt="image-20231208011046599" style="zoom:50%;">
+
+<img src="/2023/12/07/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/image-20231208010642671.png" alt="image-20231208010642671" style="zoom:50%;">
+
+
+
+
+
+
+
+<h1 id="相关指令"><a href="#相关指令" class="headerlink" title="相关指令"></a>相关指令</h1><h2 id="1、gcc指令"><a href="#1、gcc指令" class="headerlink" title="1、gcc指令"></a>1、gcc指令</h2><p><code>gcc</code> 是 GNU 编译器集合中的一个，用于编译 C、C++、Objective-C 和其他相关语言的程序。它实际上会根据源文件的类型自动调用相应的编译器。</p>
+<p>基本的 <code>gcc</code> 指令的格式如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc [options] source_files -o output_file</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>[options]</code> 是编译器的选项，用于指定编译的参数、标志和特定行为。</li>
+<li><code>source_files</code> 是要编译的源文件列表，可以是一个或多个源文件。</li>
+</ul>
+<p>常用选项：</p>
+<ul>
+<li><p><code>-o output_file</code> 用于指定生成的可执行文件或目标文件的名称。</p>
+</li>
+<li><p><code>-c</code>：只编译源文件，生成目标文件。（不链接）</p>
+</li>
+<li><p><code>-g</code>：生成调试信息。</p>
+</li>
+<li><p><code>-O</code>：开启优化。</p>
+</li>
+<li><p><code>-l&lt;library&gt;</code>：链接特定的库文件。</p>
+</li>
+<li><p><code>-I&lt;include_path&gt;</code>：指定头文件搜索路径。</p>
+</li>
+<li><p><code>-L&lt;library_path&gt;</code>：指定库文件搜索路径。</p>
+</li>
+</ul>
+<p>示例：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc -Wall -o hello hello.c</span><br></pre></td></tr></table></figure>
+
+<p>这个命令编译名为 <code>hello.c</code> 的源文件，生成一个可执行文件 <code>hello</code>。<code>-Wall</code> 是一个编译器选项，表示开启所有警告信息。</p>
+<h2 id="2、objdump指令"><a href="#2、objdump指令" class="headerlink" title="2、objdump指令"></a>2、objdump指令</h2><p><code>objdump</code> 是一个用于显示目标文件或可执行文件内容的命令行工具。</p>
+<p><code>objdump</code> 是一个强大的工具，用于分析 ELF 格式文件，可以提供文件头信息、节信息、符号表、反汇编代码等多种信息，有助于理解程序的结构和内部细节。</p>
+<p>基本的 <code>objdump</code> 命令格式如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">objdump [options] file</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>[options]</code> 是 <code>objdump</code> 命令的选项，用于控制输出内容的格式和信息。</li>
+<li><code>file</code> 是要分析的 ELF 格式文件（目标文件、可执行文件等）的路径。</li>
+</ul>
+<p>常用选项：</p>
+<ul>
+<li><code>-f</code>：显示文件头信息（ELF 文件的基本信息）。</li>
+<li><code>-h</code>：显示节（Section）头表信息。</li>
+<li><code>-S</code>：显示反汇编代码。</li>
+<li><code>-t</code>：显示符号表信息。</li>
+<li><code>-d</code>：显示全部可执行指令的反汇编代码。</li>
+<li><code>-r</code>：显示重定位信息。</li>
+<li><code>-x</code>：以十六进制形式显示所有数据。</li>
+<li><code>-l</code>：显示线号信息。</li>
+</ul>
+<p>示例：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">objdump -d a.out </span><br></pre></td></tr></table></figure>
+
+<p>查看a.out 的反汇编代码</p>
+<h2 id="3、readelf指令"><a href="#3、readelf指令" class="headerlink" title="3、readelf指令"></a>3、readelf指令</h2><p><code>readelf</code> 是一个命令行工具，用于显示 ELF（Executable and Linkable Format，可执行与可链接格式）文件的信息，包括文件头、节头表、符号表、重定位表等。</p>
+<p>基本的 <code>readelf</code> 命令格式如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">readelf [options] file</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>[options]</code> 是 <code>readelf</code> 命令的选项，用于控制输出内容的格式和信息。</li>
+<li><code>file</code> 是要显示信息的 ELF 文件的路径。</li>
+</ul>
+<p>常用选项：</p>
+<ul>
+<li><code>-h</code>：显示 ELF 文件的文件头（ELF Header）信息。</li>
+<li><code>-S</code>：显示节头表（Section Headers）信息。</li>
+<li><code>-s</code>：显示符号表（Symbol Table）信息。</li>
+<li><code>-r</code>：显示重定位表（Relocation Entries）信息。</li>
+<li><code>-d</code>：显示动态段（Dynamic Sections）信息。</li>
+<li><code>-x &lt;number or name&gt;</code>：显示特定的节内容。</li>
+<li><code>-p &lt;name&gt;</code>：显示特定的节内容（字符串节）。</li>
+</ul>
+<p>示例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">readelf -h executable_file</span><br></pre></td></tr></table></figure>
+
+<p>这个命令将显示名为 <code>executable_file</code> 的可执行文件的 ELF 文件头信息。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">readelf -s object_file</span><br></pre></td></tr></table></figure>
+
+<p>这个命令将显示名为 <code>object_file</code> 的目标文件的符号表信息。</p>
+<p><code>readelf</code> 是一个强大的工具，用于分析和了解 ELF 格式的文件，提供文件的结构、节信息、符号表、重定位表等各种详细信息，对于调试、分析和了解文件非常有帮助。</p>
+<h2 id="4、hexdump指令"><a href="#4、hexdump指令" class="headerlink" title="4、hexdump指令"></a>4、hexdump指令</h2><p><code>hexdump</code> 是一个用于查看文件内容的工具，可以将文件内容以十六进制和ASCII码的形式显示出来，有助于查看文件的二进制内容和结构。</p>
+<p>基本的 <code>hexdump</code> 命令格式如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexdump [options] file</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>[options]</code> 是 <code>hexdump</code> 命令的选项，用于控制输出格式和显示的内容。</li>
+<li><code>file</code> 是要显示内容的文件路径。</li>
+</ul>
+<p>常用选项：</p>
+<ul>
+<li><code>-C</code>：以十六进制和ASCII码组合的形式显示。</li>
+<li><code>-b</code>：按字节（byte）显示，每个字节显示一个地址。</li>
+<li><code>-c</code>：按字符显示。</li>
+<li><code>-n &lt;length&gt;</code>：限制显示的字节数。</li>
+<li><code>-s &lt;offset&gt;</code>：从指定的偏移量开始显示。</li>
+</ul>
+<p>示例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexdump -C your_file</span><br></pre></td></tr></table></figure>
+
+<p>这个命令将以十六进制和ASCII码组合的形式显示 <code>your_file</code> 文件的内容。每一行显示16个字节的内容，前8列显示十六进制值，后8列显示对应的ASCII字符表示。</p>
+</div><div class="article-licensing box"><div class="licensing-title"><p>编译与链接</p><p><a href="http://symbol23441.top/2023/12/07/编译与链接/">http://symbol23441.top/2023/12/07/编译与链接/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2023-12-07</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2023-12-07</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/">编译与链接</a></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2023/12/18/unix-xv6-%E7%8E%AF%E5%A2%83/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">unix xv6 环境</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2023/12/06/Linux%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/"><span class="level-item">Linux基本操作</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#1、编译"><span class="level-left"><span class="level-item">1、编译</span></span></a></li><li><a class="level is-mobile" href="#2、链接（静态）"><span class="level-left"><span class="level-item">2、链接（静态）</span></span></a></li><li><a class="level is-mobile" href="#3、动态链接"><span class="level-left"><span class="level-item">3、动态链接</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#1、基本动态库的创建和使用"><span class="level-left"><span class="level-item">1、基本动态库的创建和使用</span></span></a></li><li><a class="level is-mobile" href="#2、PIC技术"><span class="level-left"><span class="level-item">2、PIC技术</span></span></a></li><li><a class="level is-mobile" href="#3、PLT（过程链接表、延迟绑定）"><span class="level-left"><span class="level-item">3、PLT（过程链接表、延迟绑定）</span></span></a></li></ul></li><li><a class="level is-mobile" href="#相关指令"><span class="level-left"><span class="level-item">相关指令</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#1、gcc指令"><span class="level-left"><span class="level-item">1、gcc指令</span></span></a></li><li><a class="level is-mobile" href="#2、objdump指令"><span class="level-left"><span class="level-item">2、objdump指令</span></span></a></li><li><a class="level is-mobile" href="#3、readelf指令"><span class="level-left"><span class="level-item">3、readelf指令</span></span></a></li><li><a class="level is-mobile" href="#4、hexdump指令"><span class="level-left"><span class="level-item">4、hexdump指令</span></span></a></li></ul></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/js/lightgallery.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script><script type="text/javascript" src="/js/imaegoo/universe.js"></script></body></html>

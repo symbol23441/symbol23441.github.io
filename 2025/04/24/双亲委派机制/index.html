@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>双亲委派机制 - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="我们来讲讲 Java 中非常经典的一个机制：双亲委派机制（Parent Delegation Model）。 这个机制是 Java 类加载器体系的基石，它决定了 类加载器是如何查找并加载类的。 一、什么是双亲委派机制？双亲委派机制是一种类加载器的工作模式，它规定：  当某个类加载器需要加载一个类时，它首先不会尝试自己加载，而是把这个请求委托给它的“父类加载器”去完成，只有当父加载器无法加载这个类时"><meta property="og:type" content="blog"><meta property="og:title" content="双亲委派机制"><meta property="og:url" content="http://symbol23441.top/2025/04/24/%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%B4%BE%E6%9C%BA%E5%88%B6/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="我们来讲讲 Java 中非常经典的一个机制：双亲委派机制（Parent Delegation Model）。 这个机制是 Java 类加载器体系的基石，它决定了 类加载器是如何查找并加载类的。 一、什么是双亲委派机制？双亲委派机制是一种类加载器的工作模式，它规定：  当某个类加载器需要加载一个类时，它首先不会尝试自己加载，而是把这个请求委托给它的“父类加载器”去完成，只有当父加载器无法加载这个类时"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/img/og_image.png"><meta property="article:published_time" content="2025-04-24T03:32:07.000Z"><meta property="article:modified_time" content="2025-04-24T03:32:07.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="article:tag" content="JVM"><meta property="article:tag" content="Java"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/img/og_image.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2025/04/24/%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%B4%BE%E6%9C%BA%E5%88%B6/"},"headline":"双亲委派机制","image":["http://symbol23441.top/img/og_image.png"],"datePublished":"2025-04-24T03:32:07.000Z","dateModified":"2025-04-24T03:32:07.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"我们来讲讲 Java 中非常经典的一个机制：双亲委派机制（Parent Delegation Model）。 这个机制是 Java 类加载器体系的基石，它决定了 类加载器是如何查找并加载类的。 一、什么是双亲委派机制？双亲委派机制是一种类加载器的工作模式，它规定：  当某个类加载器需要加载一个类时，它首先不会尝试自己加载，而是把这个请求委托给它的“父类加载器”去完成，只有当父加载器无法加载这个类时"}</script><link rel="canonical" href="http://symbol23441.top/2025/04/24/%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%B4%BE%E6%9C%BA%E5%88%B6/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2025-04-24T03:32:07.000Z" title="4/24/2025, 11:32:07 AM">2025-04-24</time>发表</span><span class="level-item"><time dateTime="2025-04-24T03:32:07.000Z" title="4/24/2025, 11:32:07 AM">2025-04-24</time>更新</span><span class="level-item">8 分钟读完 (大约1203个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">双亲委派机制</h1><div class="content"><p>我们来讲讲 Java 中非常经典的一个机制：<strong>双亲委派机制（Parent Delegation Model）</strong>。</p>
+<p>这个机制是 Java 类加载器体系的基石，它决定了 <strong>类加载器是如何查找并加载类的</strong>。</p>
+<h2 id="一、什么是双亲委派机制？"><a href="#一、什么是双亲委派机制？" class="headerlink" title="一、什么是双亲委派机制？"></a>一、什么是双亲委派机制？</h2><p><strong>双亲委派机制是一种类加载器的工作模式，它规定：</strong></p>
+<blockquote>
+<p>当某个类加载器需要加载一个类时，它首先不会尝试自己加载，而是把这个请求委托给它的“父类加载器”去完成，<strong>只有当父加载器无法加载这个类时，它才尝试自己加载。</strong></p>
+</blockquote>
+<p>这个“委托”的过程是<strong>层层向上递归</strong>，直到最顶层（<code>Bootstrap ClassLoader</code>），然后再层层向下尝试加载。</p>
+<p>双亲委派机制的<strong>目标</strong>是确保系统核心类的安全、类的加载一致性，以及模块之间的隔离和稳定运行。</p>
+<span id="more"></span>
+
+<h2 id="二、类加载器的体系结构"><a href="#二、类加载器的体系结构" class="headerlink" title="二、类加载器的体系结构"></a>二、类加载器的体系结构</h2><p>Java 有以下几个主要的类加载器（从底层到高层，父到子）：</p>
+<table>
+<thead>
+<tr>
+<th>类加载器</th>
+<th>负责加载</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Bootstrap ClassLoader（引导类加载器）</strong></td>
+<td><code>java.*</code> 包（rt.jar）</td>
+<td>用 C++ 写的，JVM 自带的，不是 Java 类</td>
+</tr>
+<tr>
+<td><strong>Extension ClassLoader（扩展类加载器）</strong></td>
+<td><code>ext</code> 目录下的类，如 <code>javax.*</code></td>
+<td>加载 <code>lib/ext</code> 下的 jar 包</td>
+</tr>
+<tr>
+<td><strong>App ClassLoader（应用类加载器）</strong></td>
+<td>应用程序的类路径 <code>classpath</code> 下的类</td>
+<td>是我们最常用的，默认使用它加载用户代码</td>
+</tr>
+<tr>
+<td>（用户自定义类加载器）</td>
+<td>特殊需求下自定义逻辑</td>
+<td>一般用于框架（如 Tomcat、Spring）中实现类隔离、热部署等</td>
+</tr>
+</tbody></table>
+<p>📌 每个类加载器都有一个“父加载器”，除了最顶层的 <code>Bootstrap ClassLoader</code>。</p>
+<h2 id="三、双亲委派机制的执行流程"><a href="#三、双亲委派机制的执行流程" class="headerlink" title="三、双亲委派机制的执行流程"></a>三、双亲委派机制的执行流程</h2><p>以应用类加载器 <code>AppClassLoader</code> 加载一个类为例：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Class.forName(<span class="string">&quot;java.lang.String&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>加载过程如下：</p>
+<ol>
+<li>AppClassLoader 收到请求加载 <code>&quot;java.lang.String&quot;</code>。</li>
+<li>它先将请求委托给 <strong>父加载器 ExtensionClassLoader</strong>。</li>
+<li>ExtensionClassLoader 再将请求委托给 <strong>BootstrapClassLoader</strong>。</li>
+<li>BootstrapClassLoader 尝试加载 <code>java.lang.String</code>，发现它在 <code>rt.jar</code> 中，加载成功。</li>
+<li>加载器链路停止，返回 <code>Class</code> 对象，<strong>下层加载器不再重复加载。</strong></li>
+</ol>
+<h2 id="四、双亲委派机制的优点"><a href="#四、双亲委派机制的优点" class="headerlink" title="四、双亲委派机制的优点"></a>四、双亲委派机制的优点</h2><ol>
+<li><strong>防止类重复加载（类的唯一性）</strong><ul>
+<li>同一个类只能由一个类加载器加载一次，保证类的全局唯一性。</li>
+</ul>
+</li>
+<li><strong>保护核心类库不被篡改</strong><ul>
+<li>比如你不能自定义一个 <code>java.lang.String</code> 类，即使路径一样，父加载器已经加载了真正的 <code>String</code>，你的不会被加载。</li>
+</ul>
+</li>
+<li><strong>模块隔离、可插拔</strong><ul>
+<li>Tomcat、WebLogic、Spring Boot 中，<strong>不同模块可能使用不同的类加载器</strong></li>
+</ul>
+</li>
+</ol>
+<h2 id="五、打破双亲委派：为什么要“破坏”它？"><a href="#五、打破双亲委派：为什么要“破坏”它？" class="headerlink" title="五、打破双亲委派：为什么要“破坏”它？"></a>五、打破双亲委派：为什么要“破坏”它？</h2><p><strong>JVM 会认为“同一个类的字节码文件”，如果是由</strong>不同的类加载器（ClassLoader）<strong>加载的，那它们就是两个</strong>完全不同的类</p>
+<p>虽然双亲委派很安全，但某些场景下我们<strong>需要打破它</strong>：</p>
+<ul>
+<li><strong>Tomcat、Spring Boot、OSGi、JDBC 驱动等框架</strong><ul>
+<li>它们需要 <strong>不同类加载器加载不同模块或插件</strong>，实现类隔离、热部署。</li>
+</ul>
+</li>
+<li><strong>破坏方式：</strong><ul>
+<li>自定义类加载器重写 <code>loadClass()</code> 方法时，不调用 <code>super.loadClass()</code>。</li>
+<li>或者先尝试自己加载，失败再委托父加载器（即 “<strong>先自己后父亲</strong>” 模式）。</li>
+</ul>
+</li>
+</ul>
+<p>JDBC 驱动加载常常与 <strong>类加载器和双亲委派机制</strong> 发生冲突，尤其在如下场景中：</p>
+<p><strong>1.JDBC 驱动无法被加载</strong></p>
+<p>当你调用 <code>Class.forName(&quot;com.mysql.cj.jdbc.Driver&quot;)</code> 时，如果该类不在 <strong>系统类加载器或其父加载器</strong> 的路径中，加载就会失败。</p>
+<p><strong>2.多个 ClassLoader 导致 <code>DriverManager</code> 无法识别驱动</strong></p>
+<p><code>DriverManager</code> 是由 <strong>系统类加载器</strong> 加载的。如果你用 <strong>自定义类加载器</strong> 加载 JDBC 驱动类，它就<strong>不会被注册到 DriverManager 的驱动列表中</strong>，因为 <code>DriverManager</code> 看不到它。</p>
+<p>解决方式有两种：</p>
+<ul>
+<li>显式调用 <code>DriverManager.registerDriver(new com.mysql.cj.jdbc.Driver());</code></li>
+<li>使用 JDBC 4.0 的 <strong>SPI（服务提供者机制）</strong>，自动注册驱动。</li>
+</ul>
+<h2 id="六、简易源码"><a href="#六、简易源码" class="headerlink" title="六、简易源码"></a>六、简易源码</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> Class&lt;?&gt; loadClass(String name, <span class="keyword">boolean</span> resolve) <span class="keyword">throws</span> ClassNotFoundException &#123;</span><br><span class="line">    <span class="comment">// 检查是否已被加载</span></span><br><span class="line">    Class&lt;?&gt; c = findLoadedClass(name);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 1. 委托父加载器</span></span><br><span class="line">    <span class="keyword">if</span> (c == <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            c = getParent().loadClass(name);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</span><br><span class="line">            <span class="comment">// 忽略，由当前类加载器继续尝试</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 2. 自己尝试加载</span></span><br><span class="line">    <span class="keyword">if</span> (c == <span class="keyword">null</span>) &#123;</span><br><span class="line">        c = findClass(name);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 链接</span></span><br><span class="line">    <span class="keyword">if</span> (resolve) &#123;</span><br><span class="line">        resolveClass(c);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> c;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</div><div class="article-licensing box"><div class="licensing-title"><p>双亲委派机制</p><p><a href="http://symbol23441.top/2025/04/24/双亲委派机制/">http://symbol23441.top/2025/04/24/双亲委派机制/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2025-04-24</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2025-04-24</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/JVM/">JVM</a><a class="link-muted mr-2" rel="tag" href="/tags/Java/">Java</a></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2025/04/24/JVM%E8%BF%90%E8%A1%8C%E6%97%B6%E6%95%B0%E6%8D%AE%E5%8C%BA%E5%92%8C%E5%AF%B9%E8%B1%A1%E5%AE%9E%E4%BE%8B%E5%8C%96%E8%BF%87%E7%A8%8B/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">JVM运行时数据区和对象实例化过程</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2025/04/23/%E5%A4%84%E7%90%86Http%E8%AF%B7%E6%B1%82%E7%9A%84%E5%AE%8C%E6%95%B4%E8%BF%87%E7%A8%8B-Tomcat-SpringMVC/"><span class="level-item">处理Http请求的完整过程(Tomcat + SpringMVC)</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#一、什么是双亲委派机制？"><span class="level-left"><span class="level-item">一、什么是双亲委派机制？</span></span></a></li><li><a class="level is-mobile" href="#二、类加载器的体系结构"><span class="level-left"><span class="level-item">二、类加载器的体系结构</span></span></a></li><li><a class="level is-mobile" href="#三、双亲委派机制的执行流程"><span class="level-left"><span class="level-item">三、双亲委派机制的执行流程</span></span></a></li><li><a class="level is-mobile" href="#四、双亲委派机制的优点"><span class="level-left"><span class="level-item">四、双亲委派机制的优点</span></span></a></li><li><a class="level is-mobile" href="#五、打破双亲委派：为什么要“破坏”它？"><span class="level-left"><span class="level-item">五、打破双亲委派：为什么要“破坏”它？</span></span></a></li><li><a class="level is-mobile" href="#六、简易源码"><span class="level-left"><span class="level-item">六、简易源码</span></span></a></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/js/lightgallery.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script><script type="text/javascript" src="/js/imaegoo/universe.js"></script></body></html>

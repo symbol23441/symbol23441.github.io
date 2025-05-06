@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>深度学习 - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="神经网络各种参数的设置随机梯度下降SGD对一个batch或minibatch求出平均值后调整参数。"><meta property="og:type" content="blog"><meta property="og:title" content="深度学习"><meta property="og:url" content="http://symbol23441.top/2023/11/02/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="神经网络各种参数的设置随机梯度下降SGD对一个batch或minibatch求出平均值后调整参数。"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/2023/11/02/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/image-20231102134657966.png"><meta property="og:image" content="http://symbol23441.top/2023/11/02/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/image-20231102134730742.png"><meta property="og:image" content="http://symbol23441.top/2023/11/02/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/image-20231102134757617.png"><meta property="og:image" content="http://symbol23441.top/2023/11/02/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/%E6%88%AA%E5%B1%8F2023-11-02%2014.13.14-8936105.png"><meta property="og:image" content="http://symbol23441.top/2023/11/02/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/%E6%88%AA%E5%B1%8F2023-11-02%2014.30.50.png"><meta property="article:published_time" content="2023-11-02T08:00:00.000Z"><meta property="article:modified_time" content="2023-11-02T08:00:00.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/2023/11/02/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/image-20231102134657966.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2023/11/02/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/"},"headline":"深度学习","image":["http://symbol23441.top/2023/11/02/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/image-20231102134657966.png","http://symbol23441.top/2023/11/02/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/image-20231102134730742.png","http://symbol23441.top/2023/11/02/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/image-20231102134757617.png","http://symbol23441.top/2023/11/02/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/%E6%88%AA%E5%B1%8F2023-11-02%2014.13.14-8936105.png","http://symbol23441.top/2023/11/02/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/%E6%88%AA%E5%B1%8F2023-11-02%2014.30.50.png"],"datePublished":"2023-11-02T08:00:00.000Z","dateModified":"2023-11-02T08:00:00.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"神经网络各种参数的设置随机梯度下降SGD对一个batch或minibatch求出平均值后调整参数。"}</script><link rel="canonical" href="http://symbol23441.top/2023/11/02/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-11-02T08:00:00.000Z" title="11/2/2023, 4:00:00 PM">2023-11-02</time>发表</span><span class="level-item"><time dateTime="2023-11-02T08:00:00.000Z" title="11/2/2023, 4:00:00 PM">2023-11-02</time>更新</span><span class="level-item">6 分钟读完 (大约950个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">深度学习</h1><div class="content"><h1 id="神经网络各种参数的设置"><a href="#神经网络各种参数的设置" class="headerlink" title="神经网络各种参数的设置"></a>神经网络各种参数的设置</h1><h2 id="随机梯度下降SGD"><a href="#随机梯度下降SGD" class="headerlink" title="随机梯度下降SGD"></a>随机梯度下降SGD</h2><p>对一个batch或minibatch求出平均值后调整参数。</p>
+<span id="more"></span>
+
+<h2 id="激活函数"><a href="#激活函数" class="headerlink" title="激活函数"></a>激活函数</h2><p>Sigmod，tanh，Relu，leakyRelu</p>
+<p>上述函数求导都简单，到数值与原函数数值上相关。</p>
+<h2 id="做均值和方差归一化"><a href="#做均值和方差归一化" class="headerlink" title="做均值和方差归一化"></a>做均值和方差归一化</h2><p>newx=（X - mean（X））/std(X)</p>
+<p>做均值和方差归一化的好处在于使得输出的值在每一个维度上对后面的贡献都相同</p>
+<h2 id="（W，b）的初始化"><a href="#（W，b）的初始化" class="headerlink" title="（W，b）的初始化"></a>（W，b）的初始化</h2><h2 id="batch-normalization"><a href="#batch-normalization" class="headerlink" title="batch normalization"></a>batch normalization</h2><p>为避免梯度消失现象，我们直接把每一层的值基于均值和方差做归一化</p>
+<p>每一层FC层接一个BN层</p>
+<p>注意：</p>
+<p>batch normalization是对一批样本的同一纬度特征做归一化。</p>
+<p>layer normalization是对单个样本的所有维度特征做归一化。</p>
+<h2 id="目标函数的选择"><a href="#目标函数的选择" class="headerlink" title="目标函数的选择"></a>目标函数的选择</h2><p>如果是分类问题可以采用softmax和交叉熵</p>
+<p>softmax</p>
+<p>softmax（qi）=exp(zi)/求和1到n exp(zj)</p>
+<p>$softmax(q_i)=\frac{exp(z_i)}{\sum_{j=1}^{n}exp(z_j)}$</p>
+<p>输出的求和一定等于1</p>
+<p>mean score error （MSE）：</p>
+<p>​    $E=\frac{1}{2}||q-p||^2$</p>
+<p>交叉熵:</p>
+<p>​    $E=-\sum_{i=1}^{N}p_ilog(q_i)$</p>
+<p>信息论中可证明如如果所得的p加起来为1，所有的q加起来为1，则E一定是一个大于0的值</p>
+<p>p和q如果越相近，则E会更大</p>
+<h2 id="参数更新的策略"><a href="#参数更新的策略" class="headerlink" title="参数更新的策略"></a>参数更新的策略</h2><p>SGD的问题：</p>
+<ol>
+<li>（w,b）的每一个分量获得的梯度绝对值有大小，会使得优化路径成为z字形</li>
+<li>SGD求梯度的策略过于随机由于上次和下一次使用完全不同的batch数据，将会出现优化的方向随机的情况</li>
+</ol>
+<p>解决的方法：</p>
+<p>AdaGrad</p>
+<p>RMSproop</p>
+<p>Momentum（角动量）：解决梯度随机性的问题</p>
+<p>Adam：综合了上述三个方法。</p>
+<h1 id="自动编码器"><a href="#自动编码器" class="headerlink" title="自动编码器"></a>自动编码器</h1><p>该算法被认为是开启深度学习的论文。</p>
+<p>基本思想如下：</p>
+<p>首先训练一层&lt;X,X&gt;的网络层，采用BP算法。而后，便固定住第一层的W对后面层进行训练旨在，使得第一层的W能够很好的获得原来X的信息，起到一个好的压缩效果。</p>
+<p>训练第二层。固定前面的层，&lt;X_layer2,X_layer2&gt;进行如下训练。一直到训练完所有的层。</p>
+<p>最后解冻所有层，对输入和目标之间进行BP微调。</p>
+<p><img src="/2023/11/02/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/image-20231102134657966.png" alt="image-20231102134657966"></p>
+<p><img src="/2023/11/02/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/image-20231102134730742.png" alt="image-20231102134730742"></p>
+<p><img src="/2023/11/02/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/image-20231102134757617.png" alt="image-20231102134757617"></p>
+<h1 id="卷积神经网络"><a href="#卷积神经网络" class="headerlink" title="卷积神经网络"></a>卷积神经网络</h1><p>卷积神经网络，一句话概括：</p>
+<p>由手工设计卷积核编程自动学习卷积核。</p>
+<p>手工变换，如：傅里叶变换，小波变换，离散余弦变换….</p>
+<p>Gabor Transform常见的卷积核，属于小波变换。</p>
+<p>神经网络卷积：</p>
+<p><img src="/2023/11/02/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/%E6%88%AA%E5%B1%8F2023-11-02%2014.13.14-8936105.png" alt="截屏2023-11-02 14.13.14"></p>
+<p>特征图多大？</p>
+<p>图像大小：(M,N)</p>
+<p>卷积核大小: (m,n）</p>
+<p>Stride : (u,v)</p>
+<p>特征图大小：(K,L)</p>
+<p>答：</p>
+<p>宽上：m+(K-1)u&lt;=M，所以K&lt;=(M-m)/u+1</p>
+<p>高上同理</p>
+<p>32*32图像用5*5卷积，stride=1 ，特征图为28</p>
+<p>补零Padding</p>
+<p>卷积神经网络共享权重的特点：</p>
+<p><img src="/2023/11/02/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/%E6%88%AA%E5%B1%8F2023-11-02%2014.30.50.png" alt="截屏2023-11-02 14.30.50"></p>
+<p>AlexNet的几个改进：</p>
+<ol>
+<li>ReLU激活函数</li>
+<li>max pooling（vs avg pooling）</li>
+<li>dropout（随机丢弃）</li>
+<li>增加训练样本，数据增强（水平翻转、随机截取部分、引入一定噪声）</li>
+<li>GPU加速训练过程</li>
+</ol>
+<p>Transfer Learning（迁移学习）</p>
+<p>把一个domain的经验迁移到另一个Domain中去</p>
+</div><div class="article-licensing box"><div class="licensing-title"><p>深度学习</p><p><a href="http://symbol23441.top/2023/11/02/深度学习/">http://symbol23441.top/2023/11/02/深度学习/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2023-11-02</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2023-11-02</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2023/11/03/face-recognition-opencv/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">face_recognition&amp;&amp;opencv</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2023/11/02/Typora%E6%B7%BB%E5%8A%A0%E6%95%B0%E5%AD%A6%E5%85%AC%E5%BC%8F/"><span class="level-item">Typora添加数学公式</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#神经网络各种参数的设置"><span class="level-left"><span class="level-item">神经网络各种参数的设置</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#随机梯度下降SGD"><span class="level-left"><span class="level-item">随机梯度下降SGD</span></span></a></li><li><a class="level is-mobile" href="#激活函数"><span class="level-left"><span class="level-item">激活函数</span></span></a></li><li><a class="level is-mobile" href="#做均值和方差归一化"><span class="level-left"><span class="level-item">做均值和方差归一化</span></span></a></li><li><a class="level is-mobile" href="#（W，b）的初始化"><span class="level-left"><span class="level-item">（W，b）的初始化</span></span></a></li><li><a class="level is-mobile" href="#batch-normalization"><span class="level-left"><span class="level-item">batch normalization</span></span></a></li><li><a class="level is-mobile" href="#目标函数的选择"><span class="level-left"><span class="level-item">目标函数的选择</span></span></a></li><li><a class="level is-mobile" href="#参数更新的策略"><span class="level-left"><span class="level-item">参数更新的策略</span></span></a></li></ul></li><li><a class="level is-mobile" href="#自动编码器"><span class="level-left"><span class="level-item">自动编码器</span></span></a></li><li><a class="level is-mobile" href="#卷积神经网络"><span class="level-left"><span class="level-item">卷积神经网络</span></span></a></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/js/lightgallery.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script><script type="text/javascript" src="/js/imaegoo/universe.js"></script></body></html>

@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>self- attention&amp;&amp;transformer - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="Self-attention：   Transformer："><meta property="og:type" content="blog"><meta property="og:title" content="self- attention&amp;&amp;transformer"><meta property="og:url" content="http://symbol23441.top/2023/11/16/self-attention-transformer/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="Self-attention：   Transformer："><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116155357428.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116222706531.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116153403273.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/%E6%88%AA%E5%B1%8F2023-11-16%2015.18.24.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116152537180.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116152717425.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116152814431.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116153633433.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116154304109.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116154757432.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116154852911.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116155119374.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116155218234.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116155357428.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116160535758.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116161027886.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116161125177.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116161300689.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116161830777.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116161851930.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116162314832.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116162515554.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116162610873.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116162855876.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116163157892.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116163225089.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116163442582.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116163514623.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116163856784.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116164848879.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116165132175.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116165401582.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116215802466.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116220736434.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116220637165.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116220810274.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116221519973.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116221608247.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116221744025.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116221820765.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116231356965.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116222931795.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116223820369.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116222706531.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116224942055.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116225712985.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116214747503.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116215337470.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116215403190.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116225438101.png"><meta property="og:image" content="http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116222453231.png"><meta property="article:published_time" content="2023-11-16T07:11:32.000Z"><meta property="article:modified_time" content="2023-11-16T07:11:32.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="article:tag" content="self-attention"><meta property="article:tag" content="cross-attention"><meta property="article:tag" content="transformer"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/2023/11/16/self-attention-transformer/image-20231116155357428.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2023/11/16/self-attention-transformer/"},"headline":"self- attention&&transformer","image":["http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116155357428.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116222706531.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116153403273.png","http://symbol23441.top/2023/11/16/self-attention-transformer/%E6%88%AA%E5%B1%8F2023-11-16%2015.18.24.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116152537180.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116152717425.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116152814431.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116153633433.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116154304109.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116154757432.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116154852911.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116155119374.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116155218234.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116155357428.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116160535758.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116161027886.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116161125177.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116161300689.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116161830777.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116161851930.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116162314832.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116162515554.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116162610873.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116162855876.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116163157892.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116163225089.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116163442582.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116163514623.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116163856784.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116164848879.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116165132175.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116165401582.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116215802466.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116220736434.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116220637165.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116220810274.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116221519973.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116221608247.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116221744025.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116221820765.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116231356965.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116222931795.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116223820369.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116222706531.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116224942055.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116225712985.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116214747503.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116215337470.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116215403190.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116225438101.png","http://symbol23441.top/2023/11/16/self-attention-transformer/image-20231116222453231.png"],"datePublished":"2023-11-16T07:11:32.000Z","dateModified":"2023-11-16T07:11:32.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"Self-attention：   Transformer："}</script><link rel="canonical" href="http://symbol23441.top/2023/11/16/self-attention-transformer/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-11-16T07:11:32.000Z" title="11/16/2023, 3:11:32 PM">2023-11-16</time>发表</span><span class="level-item"><time dateTime="2023-11-16T07:11:32.000Z" title="11/16/2023, 3:11:32 PM">2023-11-16</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/">深度学习</a></span><span class="level-item">11 分钟读完 (大约1576个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">self- attention&amp;&amp;transformer</h1><div class="content"><p>Self-attention：</p>
+<img src="/2023/11/16/self-attention-transformer/image-20231116155357428.png" alt="image-20231116155357428" style="zoom:50%;">
+
+<p>Transformer：</p>
+<p><img src="/2023/11/16/self-attention-transformer/image-20231116222706531.png" alt="image-20231116222706531"></p>
+<span id="more"></span>
+
+<h1 id="1、Seq2Seq介绍"><a href="#1、Seq2Seq介绍" class="headerlink" title="1、Seq2Seq介绍"></a>1、Seq2Seq介绍</h1><h2 id="1-1-输入：一堆向量"><a href="#1-1-输入：一堆向量" class="headerlink" title="1.1 输入：一堆向量"></a>1.1 输入：一堆向量</h2><p>文字输入表示有：One-hot-Encoding、Word Embedding</p>
+<img src="/2023/11/16/self-attention-transformer/image-20231116153403273.png" alt="image-20231116153403273" style="zoom:50%;">
+
+<p>语音输入：语音中提取出一堆向量</p>
+<img src="/2023/11/16/self-attention-transformer/%E6%88%AA%E5%B1%8F2023-11-16%2015.18.24.png" alt="截屏2023-11-16 15.18.24" style="zoom:50%;">
+
+
+
+<h2 id="1-2-输出：n2n、n21、n2m（sequence-to-sequence）"><a href="#1-2-输出：n2n、n21、n2m（sequence-to-sequence）" class="headerlink" title="1.2 输出：n2n、n21、n2m（sequence-to-sequence）"></a>1.2 输出：n2n、n21、n2m（sequence-to-sequence）</h2><p>有几个输入就有几个向量。</p>
+<img src="/2023/11/16/self-attention-transformer/image-20231116152537180.png" alt="image-20231116152537180" style="zoom:50%;">
+
+<p>多个输入一个输出标签：</p>
+<img src="/2023/11/16/self-attention-transformer/image-20231116152717425.png" alt="image-20231116152717425" style="zoom:50%;">
+
+<p>多个输入多个输出（不确定长度，sequence-to-sequence）：</p>
+<img src="/2023/11/16/self-attention-transformer/image-20231116152814431.png" alt="image-20231116152814431" style="zoom:50%;">
+
+
+
+
+
+
+
+<h1 id="2、self-attention"><a href="#2、self-attention" class="headerlink" title="2、self- attention"></a>2、self- attention</h1><h2 id="2-1-self-attention引入"><a href="#2-1-self-attention引入" class="headerlink" title="2.1 self- attention引入"></a>2.1 self- attention引入</h2><p>对于“I saw a saw”这句话，输出对应词的词性。</p>
+<p>然而第一个saw和saw的意思和词性都不一样，那么如何让机器分辨呢？需要上下文的相关内容来推理。如给一个合理的窗口，将前后部分内容也作为输入进行预测。</p>
+<img src="/2023/11/16/self-attention-transformer/image-20231116153633433.png" alt="image-20231116153633433" style="zoom:50%;">
+
+<p>那么如何确定一个window的大小呢？</p>
+<p>如果需要考虑整个input sequence 才能解决，那么我们将window调为整个数据中最大的长度，进行全覆盖输入吗？这会导致你的网络模型需要很大的参数。</p>
+<h2 id="2-2-self-attention"><a href="#2-2-self-attention" class="headerlink" title="2.2 self- attention"></a>2.2 self- attention</h2><p>self- attention给出了一种方法考虑了整个sequence的咨询再来推理。</p>
+<img src="/2023/11/16/self-attention-transformer/image-20231116154304109.png" alt="image-20231116154304109" style="zoom:50%;">
+
+<p>self- attention如何考虑真个sequence呢？</p>
+<img src="/2023/11/16/self-attention-transformer/image-20231116154757432.png" alt="image-20231116154757432" style="zoom:50%;">
+
+<p>我们如下定义Alpha相关性：</p>
+<img src="/2023/11/16/self-attention-transformer/image-20231116154852911.png" alt="image-20231116154852911" style="zoom:50%;">
+
+
+
+<img src="/2023/11/16/self-attention-transformer/image-20231116155119374.png" alt="image-20231116155119374" style="zoom:50%;">
+
+
+
+<img src="/2023/11/16/self-attention-transformer/image-20231116155218234.png" alt="image-20231116155218234" style="zoom:50%;">
+
+<p>这里用softmax暂时没有任何道理，你也可以用reLU，只是softmax更常见。</p>
+<img src="/2023/11/16/self-attention-transformer/image-20231116155357428.png" alt="image-20231116155357428" style="zoom:50%;">
+
+
+
+<p>以上讲述了self- attention 如何从一整个sequence得到b1</p>
+<h2 id="2-3-矩阵乘法的角度，再次表示self-attetion。"><a href="#2-3-矩阵乘法的角度，再次表示self-attetion。" class="headerlink" title="2.3 矩阵乘法的角度，再次表示self-attetion。"></a>2.3 矩阵乘法的角度，再次表示self-attetion。</h2><img src="/2023/11/16/self-attention-transformer/image-20231116160535758.png" alt="image-20231116160535758" style="zoom:50%;">
+
+<p>我们对后续计算在进行整合，整合成矩阵乘法。</p>
+<img src="/2023/11/16/self-attention-transformer/image-20231116161027886.png" alt="image-20231116161027886" style="zoom:50%;">
+
+<img src="/2023/11/16/self-attention-transformer/image-20231116161125177.png" alt="image-20231116161125177" style="zoom: 67%;">
+
+
+
+<p>大体上，总结如上：</p>
+<img src="/2023/11/16/self-attention-transformer/image-20231116161300689.png" alt="image-20231116161300689" style="zoom:50%;">
+
+
+
+
+
+<h2 id="2-4-多头自注意机制（multi-head-Self-attention）："><a href="#2-4-多头自注意机制（multi-head-Self-attention）：" class="headerlink" title="2.4 多头自注意机制（multi-head Self-attention）："></a>2.4 多头自注意机制（multi-head Self-attention）：</h2><img src="/2023/11/16/self-attention-transformer/image-20231116161830777.png" alt="image-20231116161830777" style="zoom:50%;">
+
+<img src="/2023/11/16/self-attention-transformer/image-20231116161851930.png" alt="image-20231116161851930" style="zoom:50%;">
+
+<h2 id="2-5-Postitional-Encoding"><a href="#2-5-Postitional-Encoding" class="headerlink" title="2.5 Postitional Encoding"></a>2.5 Postitional Encoding</h2><p>上述方法中，并没有位置的标注，就像最后一个单词和第一个单词，与其相邻的重要性比重相似。</p>
+<p>然而，位置的信息有可能也是重要的。为此，提出了一种Postitional Encoding。</p>
+<img src="/2023/11/16/self-attention-transformer/image-20231116162314832.png" alt="image-20231116162314832" style="zoom:50%;">
+
+<p>一些基于学习的位置编码方法：</p>
+<img src="/2023/11/16/self-attention-transformer/image-20231116162515554.png" alt="image-20231116162515554" style="zoom: 67%;">
+
+<p>一些应用：</p>
+<img src="/2023/11/16/self-attention-transformer/image-20231116162610873.png" alt="image-20231116162610873" style="zoom: 67%;">
+
+<p>在语音识别领域：向量长度可能会很大，这就会导致矩阵会非常大。所以一般语音识别中，只对一定范围内的向量进行自注意。这个范围是人设定的。</p>
+<img src="/2023/11/16/self-attention-transformer/image-20231116162855876.png" alt="image-20231116162855876" style="zoom:50%;">
+
+
+
+<p>在图像方面， 把图像三通道看做一个向量，那么也可以用self- attention进行处理。</p>
+<img src="/2023/11/16/self-attention-transformer/image-20231116163157892.png" alt="image-20231116163157892" style="zoom:50%;">
+
+<img src="/2023/11/16/self-attention-transformer/image-20231116163225089.png" alt="image-20231116163225089" style="zoom:50%;">
+
+
+
+<p>self-attentio  v.s. CNN</p>
+<p>简单来说，CNN是简化版的self-attention。self-attetion考虑的范围不再是人工划定，且比CNN考虑范围的更大。</p>
+<p>另一个方面，一个比较灵活flexible的model会更容易过拟合，因此也需要更大的数据来进行训练。</p>
+<img src="/2023/11/16/self-attention-transformer/image-20231116163442582.png" alt="image-20231116163442582" style="zoom:50%;">
+
+<img src="/2023/11/16/self-attention-transformer/image-20231116163514623.png" alt="image-20231116163514623" style="zoom:50%;">
+
+<img src="/2023/11/16/self-attention-transformer/image-20231116163856784.png" alt="image-20231116163856784" style="zoom:50%;">
+
+
+
+<p>self-attention v.s. RNN</p>
+<p>如今很多方面的问题，self- attention都可以代替RNN工作，且效果更好。</p>
+<p>主要有以下差异：</p>
+<ol>
+<li>RNN通常指考虑以前序列的影响，而不考虑后面序列。如果一定要考虑，也可以改造RNN使得其成为一个双向的。而self-attention可以轻易的考虑前后的关系。</li>
+<li>RNN若要考虑第一个的向量，那么必须用一个memory存下来直到当前步。而self-attetion则不必记录</li>
+<li>另一个最大不同，RNN只能串行计算，必须计算出前一个才能计算下一个。然而，self- attention可以直接并行计算一层的输出。</li>
+</ol>
+<img src="/2023/11/16/self-attention-transformer/image-20231116164848879.png" alt="image-20231116164848879" style="zoom:50%;">
+
+
+
+
+
+<p>self-attention 在图结构上的应用：</p>
+<p>graph需要考虑点和边。并且在注意力矩阵中，我们只需考虑有边相连的点。</p>
+<img src="/2023/11/16/self-attention-transformer/image-20231116165132175.png" alt="image-20231116165132175" style="zoom: 67%;">
+
+
+
+<p>self- attention有各种变形：</p>
+<p>由于self- attention有很大的计算量，为此有了许多变形，来优化速度。</p>
+<img src="/2023/11/16/self-attention-transformer/image-20231116165401582.png" alt="image-20231116165401582" style="zoom: 67%;">
+
+
+
+
+
+<h1 id="3、transform"><a href="#3、transform" class="headerlink" title="3、transform"></a>3、transform</h1><p>sequence-to-sequence，最后输出的长度由model决定。</p>
+<p> 一般的Seq2Seq组成：Encoder、Decoder。</p>
+<p><img src="/2023/11/16/self-attention-transformer/image-20231116215802466.png" alt="image-20231116215802466"></p>
+<h2 id="3-1-Encoder"><a href="#3-1-Encoder" class="headerlink" title="3.1 Encoder"></a>3.1 Encoder</h2><p>Encoder中注意三个重点：self-attention、Residual、Layer norm</p>
+<p><img src="/2023/11/16/self-attention-transformer/image-20231116220736434.png" alt="image-20231116220736434"></p>
+<p><img src="/2023/11/16/self-attention-transformer/image-20231116220637165.png" alt="image-20231116220637165"></p>
+<p>一些关于layer normlization的研究：</p>
+<p>transformer中的设计不一定更好，如更该Layer Norm的位置；为什么Layer Norm比batch norm更好。</p>
+<p><img src="/2023/11/16/self-attention-transformer/image-20231116220810274.png" alt="image-20231116220810274"></p>
+<h2 id="3-2-Decoder"><a href="#3-2-Decoder" class="headerlink" title="3.2 Decoder"></a>3.2 Decoder</h2><h3 id="3-2-1-Autoregressive"><a href="#3-2-1-Autoregressive" class="headerlink" title="3.2.1 Autoregressive"></a>3.2.1 Autoregressive</h3><p>前一个输出作为后一个的输入，进行串行推理。</p>
+<p><img src="/2023/11/16/self-attention-transformer/image-20231116221519973.png" alt="image-20231116221519973"></p>
+<p>如下是Encoder和Decoder一个比较，我们可以看出除去中间部分，剩余部分十分相似。</p>
+<p><img src="/2023/11/16/self-attention-transformer/image-20231116221608247.png" alt="image-20231116221608247"></p>
+<h3 id="3-2-2-Masked-self-attention"><a href="#3-2-2-Masked-self-attention" class="headerlink" title="3.2.2 Masked self-attention"></a>3.2.2 Masked self-attention</h3><p>Masked的原因：Decoder后面部分的输入是前一个的输出，因此在输出前几个的结果的时候，Decoder无法得知后面的输入。因此这里是一个Masked的self-attention</p>
+<img src="/2023/11/16/self-attention-transformer/image-20231116221744025.png" alt="image-20231116221744025" style="zoom: 67%;">
+
+<img src="/2023/11/16/self-attention-transformer/image-20231116221820765.png" alt="image-20231116221820765" style="zoom: 67%;">
+
+<img src="/2023/11/16/self-attention-transformer/image-20231116231356965.png" alt="image-20231116231356965" style="zoom:67%;">
+
+
+
+<h2 id="3-3-cross-attention连接Encoder和Decoder"><a href="#3-3-cross-attention连接Encoder和Decoder" class="headerlink" title="3.3 cross-attention连接Encoder和Decoder"></a>3.3 cross-attention连接Encoder和Decoder</h2><p><img src="/2023/11/16/self-attention-transformer/image-20231116222931795.png" alt="image-20231116222931795"></p>
+<p><img src="/2023/11/16/self-attention-transformer/image-20231116223820369.png" alt="image-20231116223820369"></p>
+<h2 id="3-4-Transformer总体框架："><a href="#3-4-Transformer总体框架：" class="headerlink" title="3.4 Transformer总体框架："></a>3.4 Transformer总体框架：</h2><p><img src="/2023/11/16/self-attention-transformer/image-20231116222706531.png" alt="image-20231116222706531"></p>
+<h1 id="4、一些补充："><a href="#4、一些补充：" class="headerlink" title="4、一些补充："></a>4、一些补充：</h1><h2 id="4-1-训练seq2seq的一些tips："><a href="#4-1-训练seq2seq的一些tips：" class="headerlink" title="4.1 训练seq2seq的一些tips："></a>4.1 训练seq2seq的一些tips：</h2><p> Copy Mechanism<br>在chat-bot的时候可以对听不懂的东西，或者某个名词进行复制。<br>在summary的时候可以进行抄写一些名词</p>
+<p>Guided Attention<br>例如在语音识别中，你希望有一定的注意力顺序，由左向右，而不是乱关注。</p>
+<p>Beam Search<br><img src="/2023/11/16/self-attention-transformer/image-20231116224942055.png" alt="image-20231116224942055" style="zoom:50%;"><br>事实上，bean search找出最优的路线，会使得model一直在重复一些话。然而，如果你需要model具有一些创造力，那么一些随机性对于model来说是更好的。</p>
+<h2 id="4-2-一个问题：训练Decoder，他永远看到正确的输入。"><a href="#4-2-一个问题：训练Decoder，他永远看到正确的输入。" class="headerlink" title="4.2 一个问题：训练Decoder，他永远看到正确的输入。"></a>4.2 一个问题：训练Decoder，他永远看到正确的输入。</h2><p>训练Decoder，他永远看到正确的输入。但是真实预测时候，会有输入的错误，导致一步错步步错。为此在训练时加入一些错误，效果会更好。</p>
+<img src="/2023/11/16/self-attention-transformer/image-20231116225712985.png" alt="image-20231116225712985" style="zoom:80%;">
+
+<h2 id="4-3-两种“硬train一发”"><a href="#4-3-两种“硬train一发”" class="headerlink" title="4.3 两种“硬train一发”"></a>4.3 两种“硬train一发”</h2><h3 id="4-3-1-Seq2Seq-硬train一发"><a href="#4-3-1-Seq2Seq-硬train一发" class="headerlink" title="4.3.1 Seq2Seq 硬train一发"></a>4.3.1 Seq2Seq 硬train一发</h3><p><strong>QA</strong>能用sequence-to-sequence解决。</p>
+<img src="/2023/11/16/self-attention-transformer/image-20231116214747503.png" alt="image-20231116214747503" style="zoom:67%;">
+
+<p><strong>多标签分类</strong>能用sequence-to-sequence解决。</p>
+<img src="/2023/11/16/self-attention-transformer/image-20231116215337470.png" alt="image-20231116215337470" style="zoom: 67%;">
+
+<p><strong>目标识别</strong>能用sequence-to-sequence解决。</p>
+<img src="/2023/11/16/self-attention-transformer/image-20231116215403190.png" alt="image-20231116215403190" style="zoom: 67%;">
+
+<h3 id="4-3-2-RL硬train一发"><a href="#4-3-2-RL硬train一发" class="headerlink" title="4.3.2 RL硬train一发"></a>4.3.2 RL硬train一发</h3><p>Optimizing Evaluation  Metrics</p>
+ <img src="/2023/11/16/self-attention-transformer/image-20231116225438101.png" alt="image-20231116225438101" style="zoom:67%;">
+
+<p>对于无法直接优化的Loss 如BLEU score ，可以试试RL（reinforcement Learning）硬train一发。</p>
+<h2 id="4-4-AT-和-NAT"><a href="#4-4-AT-和-NAT" class="headerlink" title="4.4 AT 和 NAT"></a>4.4 AT 和 NAT</h2><img src="/2023/11/16/self-attention-transformer/image-20231116222453231.png" alt="image-20231116222453231" style="zoom:67%;">
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div><div class="article-licensing box"><div class="licensing-title"><p>self- attention&amp;&amp;transformer</p><p><a href="http://symbol23441.top/2023/11/16/self-attention-transformer/">http://symbol23441.top/2023/11/16/self-attention-transformer/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2023-11-16</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2023-11-16</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/self-attention/">self-attention</a><a class="link-muted mr-2" rel="tag" href="/tags/cross-attention/">cross-attention</a><a class="link-muted mr-2" rel="tag" href="/tags/transformer/">transformer</a></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2023/11/17/%E5%9B%BE%E5%83%8F%E5%8D%B7%E7%A7%AF-%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">图像卷积&amp;&amp;卷积神经网络</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2023/11/16/%E7%94%9F%E6%88%90%E5%BC%8FAI/"><span class="level-item">生成式AI</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#1、Seq2Seq介绍"><span class="level-left"><span class="level-item">1、Seq2Seq介绍</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#1-1-输入：一堆向量"><span class="level-left"><span class="level-item">1.1 输入：一堆向量</span></span></a></li><li><a class="level is-mobile" href="#1-2-输出：n2n、n21、n2m（sequence-to-sequence）"><span class="level-left"><span class="level-item">1.2 输出：n2n、n21、n2m（sequence-to-sequence）</span></span></a></li></ul></li><li><a class="level is-mobile" href="#2、self-attention"><span class="level-left"><span class="level-item">2、self- attention</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#2-1-self-attention引入"><span class="level-left"><span class="level-item">2.1 self- attention引入</span></span></a></li><li><a class="level is-mobile" href="#2-2-self-attention"><span class="level-left"><span class="level-item">2.2 self- attention</span></span></a></li><li><a class="level is-mobile" href="#2-3-矩阵乘法的角度，再次表示self-attetion。"><span class="level-left"><span class="level-item">2.3 矩阵乘法的角度，再次表示self-attetion。</span></span></a></li><li><a class="level is-mobile" href="#2-4-多头自注意机制（multi-head-Self-attention）："><span class="level-left"><span class="level-item">2.4 多头自注意机制（multi-head Self-attention）：</span></span></a></li><li><a class="level is-mobile" href="#2-5-Postitional-Encoding"><span class="level-left"><span class="level-item">2.5 Postitional Encoding</span></span></a></li></ul></li><li><a class="level is-mobile" href="#3、transform"><span class="level-left"><span class="level-item">3、transform</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#3-1-Encoder"><span class="level-left"><span class="level-item">3.1 Encoder</span></span></a></li><li><a class="level is-mobile" href="#3-2-Decoder"><span class="level-left"><span class="level-item">3.2 Decoder</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#3-2-1-Autoregressive"><span class="level-left"><span class="level-item">3.2.1 Autoregressive</span></span></a></li><li><a class="level is-mobile" href="#3-2-2-Masked-self-attention"><span class="level-left"><span class="level-item">3.2.2 Masked self-attention</span></span></a></li></ul></li><li><a class="level is-mobile" href="#3-3-cross-attention连接Encoder和Decoder"><span class="level-left"><span class="level-item">3.3 cross-attention连接Encoder和Decoder</span></span></a></li><li><a class="level is-mobile" href="#3-4-Transformer总体框架："><span class="level-left"><span class="level-item">3.4 Transformer总体框架：</span></span></a></li></ul></li><li><a class="level is-mobile" href="#4、一些补充："><span class="level-left"><span class="level-item">4、一些补充：</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#4-1-训练seq2seq的一些tips："><span class="level-left"><span class="level-item">4.1 训练seq2seq的一些tips：</span></span></a></li><li><a class="level is-mobile" href="#4-2-一个问题：训练Decoder，他永远看到正确的输入。"><span class="level-left"><span class="level-item">4.2 一个问题：训练Decoder，他永远看到正确的输入。</span></span></a></li><li><a class="level is-mobile" href="#4-3-两种“硬train一发”"><span class="level-left"><span class="level-item">4.3 两种“硬train一发”</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#4-3-1-Seq2Seq-硬train一发"><span class="level-left"><span class="level-item">4.3.1 Seq2Seq 硬train一发</span></span></a></li><li><a class="level is-mobile" href="#4-3-2-RL硬train一发"><span class="level-left"><span class="level-item">4.3.2 RL硬train一发</span></span></a></li></ul></li><li><a class="level is-mobile" href="#4-4-AT-和-NAT"><span class="level-left"><span class="level-item">4.4 AT 和 NAT</span></span></a></li></ul></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/js/lightgallery.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script><script type="text/javascript" src="/js/imaegoo/universe.js"></script></body></html>

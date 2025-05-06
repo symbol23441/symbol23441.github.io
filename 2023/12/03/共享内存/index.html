@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>共享内存 - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="1、共享内存简介共享内存是最快的进程间通信方式，没有之一。 共享内存的原理是让不同的进程看到同一份内存区域。操作系统OS，申请一块物理内存空间，并将其映射在不同进程的进程空间（逻辑空间）中。"><meta property="og:type" content="blog"><meta property="og:title" content="共享内存"><meta property="og:url" content="http://symbol23441.top/2023/12/03/%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="1、共享内存简介共享内存是最快的进程间通信方式，没有之一。 共享内存的原理是让不同的进程看到同一份内存区域。操作系统OS，申请一块物理内存空间，并将其映射在不同进程的进程空间（逻辑空间）中。"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/2023/12/03/%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98/8eeef9d80df248aa8347f36b507251b3.png"><meta property="article:published_time" content="2023-12-02T16:55:59.000Z"><meta property="article:modified_time" content="2023-12-02T16:55:59.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="article:tag" content="共享内存"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/2023/12/03/%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98/8eeef9d80df248aa8347f36b507251b3.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2023/12/03/%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98/"},"headline":"共享内存","image":["http://symbol23441.top/2023/12/03/%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98/8eeef9d80df248aa8347f36b507251b3.png"],"datePublished":"2023-12-02T16:55:59.000Z","dateModified":"2023-12-02T16:55:59.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"1、共享内存简介共享内存是最快的进程间通信方式，没有之一。 共享内存的原理是让不同的进程看到同一份内存区域。操作系统OS，申请一块物理内存空间，并将其映射在不同进程的进程空间（逻辑空间）中。"}</script><link rel="canonical" href="http://symbol23441.top/2023/12/03/%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-12-02T16:55:59.000Z" title="12/3/2023, 12:55:59 AM">2023-12-03</time>发表</span><span class="level-item"><time dateTime="2023-12-02T16:55:59.000Z" title="12/3/2023, 12:55:59 AM">2023-12-03</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/Linux-C%E7%BC%96%E7%A8%8B/">Linux C编程</a></span><span class="level-item">11 分钟读完 (大约1643个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">共享内存</h1><div class="content"><h1 id="1、共享内存简介"><a href="#1、共享内存简介" class="headerlink" title="1、共享内存简介"></a>1、共享内存简介</h1><p>共享内存是最快的进程间通信方式，没有之一。</p>
+<p>共享内存的原理是<strong>让不同的进程看到同一份内存区域</strong>。操作系统OS，申请一块物理内存空间，并将其映射在不同进程的进程空间（逻辑空间）中。</p>
+<p><img src="/2023/12/03/%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98/8eeef9d80df248aa8347f36b507251b3.png" alt="img"></p>
+<span id="more"></span>
+
+<h1 id="2、优缺点"><a href="#2、优缺点" class="headerlink" title="2、优缺点"></a>2、优缺点</h1><p>​        优点：我们可以看到使用共享内存进行进程间的通信真的是非常方便，而且函数的接口也简单，数据的共享还使进程间的数据不用传送，而是直接访问内存，也加快了程序的效率。同时，它也不像匿名管道那样要求通信的进程有一定的父子关系。</p>
+<p>​        缺点：共享内存没有提供同步的机制，这使得我们在使用共享内存进行进程间通信时，往往要借助其他的手段来进行进程间的同步工作。</p>
+<h1 id="3、相关函数"><a href="#3、相关函数" class="headerlink" title="3、相关函数"></a>3、相关函数</h1><h2 id="1、ftok"><a href="#1、ftok" class="headerlink" title="1、ftok"></a>1、ftok</h2><p>传入shmget函数(shmget函数用于创建共享内存)的第一个参数key，需要我们使用ftok函数进行获取</p>
+<p><code>key_t ftok(const char *pathname, int proj_id);</code></p>
+<p>ftok函数的作用：通过数学运算将一个已存在的路径名pathname和一个整数标识符proj_id转换成一个key值，称为IPC键值，在使用shmget函数获取共享内存时，这个key值会被填充进维护共享内存的数据结构当中。需要注意的是，pathname所指定的文件必须存在且可存取。</p>
+<p>ftok运算出来的key值可能会产生冲突，不过概率很小。如果产生冲突，就对ftok的参数进行修改即可。</p>
+<h2 id="2、shmget"><a href="#2、shmget" class="headerlink" title="2、shmget"></a>2、shmget</h2><p>创建共享内存</p>
+<p><code>int shmget(key_t key, size_t size, int shmflg);</code></p>
+<p><strong>参数</strong>：</p>
+<ul>
+<li>key:共享内存段的名字（就是上面我们通过ftok函数获取的key值）</li>
+<li>size：共享内存的大小</li>
+<li>shmflg：创建共享内存的方式</li>
+</ul>
+<p><strong>返回值</strong>：成功返回一个非负整数。即该共享内存段的标识码；<br>失败返回-1。</p>
+<p><strong>第三个参数</strong>的组合方式：</p>
+<ul>
+<li><p>IPC_CREAT    </p>
+<p>如果内核中对应key值的共享内存不存在，则新建一个共享内存并返回该共享内存的句柄；如果已存在，则直接返回该共享内存的句柄</p>
+</li>
+<li><p>IPC_CREAT|IPC_EXCL    </p>
+<p>如果不存在对应key值的共享内存则新建一个共享内存并返回该共享内存的句柄；如果已存在，则出错返回</p>
+</li>
+</ul>
+<p>关于共享内存，一定是一个进程创建，另一个进程获取，并且最好是创建新的共享内存。共享内存的大小是以PAGE页（4kb）为单位的，用户需要多大，OS给予多大，不过如果超过特定的页，OS直接向上对齐到4kb的整数倍。</p>
+<h2 id="3、shmat"><a href="#3、shmat" class="headerlink" title="3、shmat"></a>3、shmat</h2><p>共享内存的关联（将该内存映射到进程虚拟空间）</p>
+<p><code>void *shmat(int shmid, const void *shmaddr, int shmflg);</code></p>
+<p><strong>参数</strong>：</p>
+<ul>
+<li><p>shmid：是由shmget（创建共享内存函数）返回的共享内存标识码-句柄。</p>
+</li>
+<li><p>shmaddr：按我们的指定将共享内存映射到进程地址空间的某一地址处，通常设置为NULL，让OS自助决定一个合理的位置。</p>
+</li>
+<li><p>shmflg：表示关联共享内存设置的属性。设置为0，默认具有读写权限；SHM_RDONLY表示只读操作</p>
+</li>
+</ul>
+<p><strong>返回值</strong>：</p>
+<ul>
+<li>调用成功，返回共享内存映射到虚拟地址进程空间的起始地址。</li>
+<li>调用失败，返回-1</li>
+</ul>
+<h2 id="4、shmdt"><a href="#4、shmdt" class="headerlink" title="4、shmdt"></a>4、shmdt</h2><p>取消共享内存与进程地址空间之间的关联我们需要用shmdt函数</p>
+<p><code>int shmdt(const void *shmaddr);</code></p>
+<p><strong>解读：</strong></p>
+<ul>
+<li>shmaddr：进程所关联的共享内存的起始地址，即调用shmat函数时得到的返回值</li>
+</ul>
+<p><strong>返回值：</strong></p>
+<ul>
+<li>shmdt调用成功，返回0。</li>
+<li>shmdt调用失败，返回-1。</li>
+</ul>
+<h2 id="5、shmctl"><a href="#5、shmctl" class="headerlink" title="5、shmctl"></a>5、shmctl</h2><p>控制共享内存。最需要的便是删除回收这块共享内存</p>
+<p><code>int shmctl(int shmid, int cmd, struct shmid_ds *buf);</code></p>
+<p><strong>函数参数</strong>：</p>
+<ul>
+<li>shmid:是由shmget（创建共享内存函数）返回的共享内存标识码-句柄</li>
+<li>cmd：表示控制动作</li>
+<li>buf：指向一个保存着（共享内存的模式状态和访问权限-即属性）的数据结构</li>
+</ul>
+<p><strong>返回值</strong>：成功返回0，失败返回-1</p>
+<p>第2个参数的有关选项如下：</p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>IPC_STAT</td>
+<td>把shmid_ds结构中的数据设置为共享内存的当前关联值</td>
+</tr>
+<tr>
+<td>IPC_SET</td>
+<td>在进程有足够权限的前提下，把共享内存的当前关联值设置为shmid_ds数据结构中给出的值</td>
+</tr>
+<tr>
+<td>IPC_RMID</td>
+<td><strong>删除共享内存段</strong></td>
+</tr>
+</tbody></table>
+<h1 id="4、示例"><a href="#4、示例" class="headerlink" title="4、示例"></a>4、示例</h1><p>这里我们直接指定了key值</p>
+<h2 id="1-Header-h"><a href="#1-Header-h" class="headerlink" title="1.Header.h"></a>1.Header.h</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;sys/ipc.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;sys/shm.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">data_t</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="keyword">int</span> writing;</span><br><span class="line">    <span class="keyword">int</span> len;</span><br><span class="line">    <span class="keyword">char</span> buff[<span class="number">1</span>&lt;&lt;<span class="number">10</span>];</span><br><span class="line">&#125;<span class="keyword">data_t</span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SHARED_MEM_ID 0x1122</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="2-write-process-c"><a href="#2-write-process-c" class="headerlink" title="2.write_process.c"></a>2.write_process.c</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;header.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> shmid;</span><br><span class="line">    <span class="keyword">void</span> *maddr;</span><br><span class="line">    <span class="keyword">char</span> buff[<span class="number">1</span>&lt;&lt;<span class="number">10</span>];</span><br><span class="line">    <span class="keyword">data_t</span> *data;</span><br><span class="line">    <span class="keyword">int</span> len;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    shmid = shmget(SHARED_MEM_ID, <span class="number">0</span>, <span class="number">0</span> );</span><br><span class="line">	<span class="keyword">if</span> ( shmid != <span class="number">-1</span> )</span><br><span class="line">    &#123;</span><br><span class="line">        shmctl( shmid, IPC_RMID, <span class="literal">NULL</span> );</span><br><span class="line">		shmid = <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//1、创建共享空间</span></span><br><span class="line">    shmid = shmget(SHARED_MEM_ID,<span class="keyword">sizeof</span>(<span class="keyword">data_t</span>),IPC_CREAT | IPC_EXCL | <span class="number">0644</span>);</span><br><span class="line">    <span class="keyword">if</span>(shmid == <span class="number">-1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;shared memory creating failed!&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;shmid = %d\n&quot;</span>,shmid);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//2、将共享内存与当前进程进行关联</span></span><br><span class="line">    maddr=shmat(shmid,<span class="literal">NULL</span>,<span class="number">0</span>);</span><br><span class="line">    data =(<span class="keyword">data_t</span> *)maddr;</span><br><span class="line">    <span class="built_in">memset</span>(maddr,<span class="number">0</span>,<span class="keyword">sizeof</span>(<span class="keyword">data_t</span>));</span><br><span class="line"></span><br><span class="line">    <span class="comment">//3、写入数据</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* 这是一个共享锁 ，当然他有一定缺陷，改进可用文件锁*/</span></span><br><span class="line">    <span class="keyword">while</span>(data-&gt;writing ==<span class="number">1</span> );</span><br><span class="line">    data-&gt;writing = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    len = <span class="built_in">snprintf</span>(data-&gt;buff,<span class="keyword">sizeof</span>(data-&gt;buff),<span class="string">&quot;Hello,world！&quot;</span>);</span><br><span class="line">    data-&gt;len = len;</span><br><span class="line"></span><br><span class="line">    data-&gt;writing=<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">//稍微暂停</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;按任意键结束：\n&quot;</span>);</span><br><span class="line">    getchar();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//4.解除关联</span></span><br><span class="line">    shmdt(maddr);</span><br><span class="line"> </span><br><span class="line">    <span class="comment">//5.删除共享内存</span></span><br><span class="line">     shmctl(shmid,IPC_RMID,<span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-read-process-c"><a href="#3-read-process-c" class="headerlink" title="3.read_process.c"></a>3.read_process.c</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;header.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> shmid;</span><br><span class="line">    <span class="keyword">void</span> *maddr;</span><br><span class="line">    <span class="keyword">char</span> buff[<span class="number">1</span>&lt;&lt;<span class="number">10</span>];</span><br><span class="line">    <span class="keyword">data_t</span> *data;</span><br><span class="line">    <span class="keyword">int</span> len;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">//1、查询获得已创建的共享空间</span></span><br><span class="line">    shmid = shmget(SHARED_MEM_ID,<span class="number">0</span>,<span class="number">0</span>);</span><br><span class="line">    <span class="keyword">if</span>(shmid == <span class="number">-1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;shared memory creating failed!&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;shmid = %d\n&quot;</span>,shmid);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//2、将共享内存与当前进程进行关联</span></span><br><span class="line">    maddr=shmat(shmid,<span class="literal">NULL</span>,<span class="number">0</span>);</span><br><span class="line">    data =(<span class="keyword">data_t</span> *)maddr;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">//读</span></span><br><span class="line">    <span class="comment">/* 这是一个共享锁 ，当然他有一定缺陷，改进可用文件锁*/</span></span><br><span class="line">    <span class="keyword">while</span>(data-&gt;writing ==<span class="number">1</span> );</span><br><span class="line">    data-&gt;writing = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;data:%s/n&quot;</span>,data-&gt;buff);</span><br><span class="line"></span><br><span class="line">    data-&gt;writing=<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    </span><br><span class="line">    <span class="comment">//4.解除关联</span></span><br><span class="line">    shmdt(maddr);</span><br><span class="line"> </span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<p>参考文献：</p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_63449996/article/details/131289593">https://blog.csdn.net/weixin_63449996/article/details/131289593</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_43213240/article/details/129976836">https://blog.csdn.net/qq_43213240/article/details/129976836</a></p>
+</div><div class="article-licensing box"><div class="licensing-title"><p>共享内存</p><p><a href="http://symbol23441.top/2023/12/03/共享内存/">http://symbol23441.top/2023/12/03/共享内存/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2023-12-03</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2023-12-03</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98/">共享内存</a></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2023/12/03/Linux%E6%96%87%E4%BB%B6%E9%94%81/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">Linux文件锁</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2023/12/02/linux-c%E7%BB%84%E6%92%AD/"><span class="level-item">linux c组播</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#1、共享内存简介"><span class="level-left"><span class="level-item">1、共享内存简介</span></span></a></li><li><a class="level is-mobile" href="#2、优缺点"><span class="level-left"><span class="level-item">2、优缺点</span></span></a></li><li><a class="level is-mobile" href="#3、相关函数"><span class="level-left"><span class="level-item">3、相关函数</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#1、ftok"><span class="level-left"><span class="level-item">1、ftok</span></span></a></li><li><a class="level is-mobile" href="#2、shmget"><span class="level-left"><span class="level-item">2、shmget</span></span></a></li><li><a class="level is-mobile" href="#3、shmat"><span class="level-left"><span class="level-item">3、shmat</span></span></a></li><li><a class="level is-mobile" href="#4、shmdt"><span class="level-left"><span class="level-item">4、shmdt</span></span></a></li><li><a class="level is-mobile" href="#5、shmctl"><span class="level-left"><span class="level-item">5、shmctl</span></span></a></li></ul></li><li><a class="level is-mobile" href="#4、示例"><span class="level-left"><span class="level-item">4、示例</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#1-Header-h"><span class="level-left"><span class="level-item">1.Header.h</span></span></a></li><li><a class="level is-mobile" href="#2-write-process-c"><span class="level-left"><span class="level-item">2.write_process.c</span></span></a></li><li><a class="level is-mobile" href="#3-read-process-c"><span class="level-left"><span class="level-item">3.read_process.c</span></span></a></li></ul></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/js/lightgallery.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script><script type="text/javascript" src="/js/imaegoo/universe.js"></script></body></html>

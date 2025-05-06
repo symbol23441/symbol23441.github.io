@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>Redis分布式锁 - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="一、分布式锁的背景需求在单机环境下，我们可以使用synchronized或ReentrantLock来解决多线程并发问题。以库存扣减为例： 123456&amp;#x2F;&amp;#x2F; 单机版库存扣减public synchronized void deductStock() &amp;amp;#123;    if (stock &amp;gt; 0) &amp;amp;#123;        stock--;    &amp;amp;#125;&amp;amp;#125;  但在微服务架构"><meta property="og:type" content="blog"><meta property="og:title" content="Redis分布式锁"><meta property="og:url" content="http://symbol23441.top/2025/05/06/Redis%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="一、分布式锁的背景需求在单机环境下，我们可以使用synchronized或ReentrantLock来解决多线程并发问题。以库存扣减为例： 123456&amp;#x2F;&amp;#x2F; 单机版库存扣减public synchronized void deductStock() &amp;amp;#123;    if (stock &amp;gt; 0) &amp;amp;#123;        stock--;    &amp;amp;#125;&amp;amp;#125;  但在微服务架构"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/2025/05/06/Redis%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/image-20250506211609628.png"><meta property="og:image" content="http://symbol23441.top/2025/05/06/Redis%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/image-20250506213545750.png"><meta property="og:image" content="http://symbol23441.top/2025/05/06/Redis%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/image-20250506213411325.png"><meta property="og:image" content="http://symbol23441.top/2025/05/06/Redis%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/image-20250506213217761.png"><meta property="article:published_time" content="2025-05-06T12:59:39.000Z"><meta property="article:modified_time" content="2025-05-06T12:59:39.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="article:tag" content="redis"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/2025/05/06/Redis%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/image-20250506211609628.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2025/05/06/Redis%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/"},"headline":"Redis分布式锁","image":["http://symbol23441.top/2025/05/06/Redis%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/image-20250506211609628.png","http://symbol23441.top/2025/05/06/Redis%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/image-20250506213545750.png","http://symbol23441.top/2025/05/06/Redis%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/image-20250506213411325.png","http://symbol23441.top/2025/05/06/Redis%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/image-20250506213217761.png"],"datePublished":"2025-05-06T12:59:39.000Z","dateModified":"2025-05-06T12:59:39.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"一、分布式锁的背景需求在单机环境下，我们可以使用synchronized或ReentrantLock来解决多线程并发问题。以库存扣减为例： 123456&#x2F;&#x2F; 单机版库存扣减public synchronized void deductStock() &amp;#123;    if (stock &gt; 0) &amp;#123;        stock--;    &amp;#125;&amp;#125;  但在微服务架构"}</script><link rel="canonical" href="http://symbol23441.top/2025/05/06/Redis%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2025-05-06T12:59:39.000Z" title="5/6/2025, 8:59:39 PM">2025-05-06</time>发表</span><span class="level-item"><time dateTime="2025-05-06T12:59:39.000Z" title="5/6/2025, 8:59:39 PM">2025-05-06</time>更新</span><span class="level-item">10 分钟读完 (大约1560个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">Redis分布式锁</h1><div class="content"><h2 id="一、分布式锁的背景需求"><a href="#一、分布式锁的背景需求" class="headerlink" title="一、分布式锁的背景需求"></a>一、分布式锁的背景需求</h2><p>在单机环境下，我们可以使用<code>synchronized</code>或<code>ReentrantLock</code>来解决多线程并发问题。以库存扣减为例：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 单机版库存扣减</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">deductStock</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (stock &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        stock--;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>但在微服务架构中，服务部署在多台机器上，JVM级别的锁无法跨进程工作，这时就需要<strong>分布式锁</strong>来保证集群环境下的互斥访问。</p>
+<h2 id="二、Redis分布式锁基础实现"><a href="#二、Redis分布式锁基础实现" class="headerlink" title="二、Redis分布式锁基础实现"></a>二、Redis分布式锁基础实现</h2><h3 id="1-最简实现：SETNX-DEL"><a href="#1-最简实现：SETNX-DEL" class="headerlink" title="1. 最简实现：SETNX + DEL"></a>1. 最简实现：SETNX + DEL</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># 获取锁（SET if Not eXists）</span><br><span class="line">SETNX lock:stock 1</span><br><span class="line"># 执行业务逻辑...</span><br><span class="line"># 释放锁</span><br><span class="line">DEL lock:stock</span><br></pre></td></tr></table></figure>
+
+<span id="more"></span>
+
+<h3 id="2-基础实现的问题"><a href="#2-基础实现的问题" class="headerlink" title="2. 基础实现的问题"></a>2. 基础实现的问题</h3><p><strong>问题1：死锁风险</strong><br>如果获取锁后客户端崩溃，锁永远不会释放，导致系统不可用。</p>
+<p><strong>解决方案</strong>：添加过期时间</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SETNX lock:stock 1</span><br><span class="line">EXPIRE lock:stock 10  # 10秒后自动过期</span><br></pre></td></tr></table></figure>
+
+<p><strong>问题2：非原子操作</strong><br>SETNX和EXPIRE是两个命令，中间可能崩溃。</p>
+<p><strong>解决方案</strong>：使用Redis 2.6.12+的扩展参数</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SET lock:stock 1 NX PX 10000  # 原子操作</span><br></pre></td></tr></table></figure>
+
+<h2 id="三-Redisson实现"><a href="#三-Redisson实现" class="headerlink" title="三. Redisson实现"></a>三. Redisson实现</h2><p>Redisson是 Redis 官方推荐的 Java 客户端，封装了高可用、可重入、自动续期等完整的分布式锁实现。</p>
+<h3 id="1-基本实现的一些问题"><a href="#1-基本实现的一些问题" class="headerlink" title="1. 基本实现的一些问题"></a>1. 基本实现的一些问题</h3><p><strong>问题 1：锁过期但业务仍未完成</strong></p>
+<p>如果业务处理耗时超过锁的过期时间，锁将被 Redis 自动释放。此时另一个线程可能获得锁并执行业务，而上一个线程的逻辑还未完成，从而<strong>导致业务重叠</strong></p>
+<p><strong>解决方案</strong>:Redisson的Watch dog（看门狗）<strong>自动续租</strong>。</p>
+<p>Redisson 默认给锁加一个 30 秒的 TTL，并启动一个后台“看门狗”线程，在业务未完成前会自动续租，避免锁过期被提前释放。</p>
+<ul>
+<li>默认续期间隔为 10 秒（1/3）；</li>
+<li>如果业务超时或宕机，锁也会最终自动释放，避免死锁。</li>
+</ul>
+<p><img src="/2025/05/06/Redis%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/image-20250506211609628.png" alt="Watch dog"></p>
+<p><strong>问题2</strong>：继3后的连锁反应，当前线程释放别的线程的锁。（上一个未完成却过期释放的线程释放锁，会导致下一个业务也提前释放锁，连锁反应，出现超卖。）</p>
+<p><strong>解决方案：唯一 ID 防止误删</strong>。Redisson 给每个锁设置一个<strong>UUID + 线程ID 的唯一标识</strong>，只有持有锁的线程才能解锁，防止误删他人锁。</p>
+<h3 id="2-Redisson-实现可重入"><a href="#2-Redisson-实现可重入" class="headerlink" title="2.Redisson 实现可重入"></a>2.Redisson 实现可重入</h3><p>在 Java 中，我们习惯使用可重入锁（如 <code>ReentrantLock</code>）。Redisson 同样提供了类似特性：</p>
+<p><strong>核心思路：</strong></p>
+<ul>
+<li>使用 Redis 的 <strong>Hash 数据结构</strong>，记录线程 ID 与重入次数；</li>
+<li>每次加锁时判断当前线程是否已持有锁，若是则递增计数；</li>
+<li>解锁时递减计数，只有计数为 0 时才真正删除锁。</li>
+</ul>
+<blockquote>
+<p>实际Hash结构如：<br> <code>lock_key</code> =&gt; <code>&#123;threadId1: count1, threadId2: count2&#125;</code></p>
+</blockquote>
+<p>lua脚本：</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 可重入分布式锁加锁逻辑</span></span><br><span class="line"><span class="comment">-- KEYS[1]：锁的 key，如 &quot;lock:order:123&quot;</span></span><br><span class="line"><span class="comment">-- ARGV[1]：锁的过期时间（单位：毫秒），如 30000</span></span><br><span class="line"><span class="comment">-- ARGV[2]：唯一标识（例如线程 UUID）</span></span><br><span class="line"></span><br><span class="line"><span class="comment">-- 第一种情况：锁不存在，说明当前无线程持有锁</span></span><br><span class="line"><span class="keyword">if</span> (redis.call(<span class="string">&#x27;exists&#x27;</span>, KEYS[<span class="number">1</span>]) == <span class="number">0</span>) <span class="keyword">then</span></span><br><span class="line">    <span class="comment">-- 创建一个哈希结构记录线程唯一标识及重入次数为 1</span></span><br><span class="line">    redis.call(<span class="string">&#x27;hset&#x27;</span>, KEYS[<span class="number">1</span>], ARGV[<span class="number">2</span>], <span class="number">1</span>);</span><br><span class="line">    <span class="comment">-- 设置锁的过期时间，避免死锁</span></span><br><span class="line">    redis.call(<span class="string">&#x27;pexpire&#x27;</span>, KEYS[<span class="number">1</span>], ARGV[<span class="number">1</span>]);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span>;  <span class="comment">-- 表示加锁成功</span></span><br><span class="line"><span class="keyword">end</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 第二种情况：锁存在，但是当前线程（重入）</span></span><br><span class="line"><span class="keyword">if</span> (redis.call(<span class="string">&#x27;hexists&#x27;</span>, KEYS[<span class="number">1</span>], ARGV[<span class="number">2</span>]) == <span class="number">1</span>) <span class="keyword">then</span></span><br><span class="line">    <span class="comment">-- 当前线程重入加锁，重入计数 +1</span></span><br><span class="line">    redis.call(<span class="string">&#x27;hincrby&#x27;</span>, KEYS[<span class="number">1</span>], ARGV[<span class="number">2</span>], <span class="number">1</span>);</span><br><span class="line">    <span class="comment">-- 每次重入都要重置过期时间</span></span><br><span class="line">    redis.call(<span class="string">&#x27;pexpire&#x27;</span>, KEYS[<span class="number">1</span>], ARGV[<span class="number">1</span>]);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span>;  <span class="comment">-- 表示加锁成功（重入）</span></span><br><span class="line"><span class="keyword">end</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 第三种情况：锁存在，且不是当前线程（被别人占用）</span></span><br><span class="line"><span class="comment">-- 返回剩余过期时间（毫秒），供调用方决定是否等待或失败返回</span></span><br><span class="line"><span class="keyword">return</span> redis.call(<span class="string">&#x27;pttl&#x27;</span>, KEYS[<span class="number">1</span>]);</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/05/06/Redis%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/image-20250506213545750.png" alt="Redlock"></p>
+<h3 id="3-Redisson-如何安全释放锁（Lua-脚本-发布订阅机制）"><a href="#3-Redisson-如何安全释放锁（Lua-脚本-发布订阅机制）" class="headerlink" title="3. Redisson 如何安全释放锁（Lua 脚本 + 发布订阅机制）"></a>3. Redisson 如何安全释放锁（Lua 脚本 + 发布订阅机制）</h3><h4 id="1-使用-Lua-脚本释放锁"><a href="#1-使用-Lua-脚本释放锁" class="headerlink" title="(1) 使用 Lua 脚本释放锁"></a>(1) <strong>使用 Lua 脚本释放锁</strong></h4><p>确保释放的是自己加的锁：</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> redis.call(<span class="string">&quot;hget&quot;</span>, KEYS[<span class="number">1</span>], ARGV[<span class="number">1</span>]) <span class="keyword">then</span></span><br><span class="line">    <span class="comment">-- 递减计数，如果为 0 则删除整个 key</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<p>这样可以保证<strong>原子性</strong>操作，防止并发误删。</p>
+<img src="/2025/05/06/Redis%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/image-20250506213411325.png" alt="Lua操作重入数量-1" style="zoom: 25%;">
+
+<h4 id="2-阻塞与唤醒机制：Redis-Pub-Sub"><a href="#2-阻塞与唤醒机制：Redis-Pub-Sub" class="headerlink" title="(2) 阻塞与唤醒机制：Redis Pub/Sub"></a>(2) <strong>阻塞与唤醒机制：Redis Pub/Sub</strong></h4><p>Redisson 锁还支持阻塞等待功能（类似 Java 的 <code>lock.lock()</code> 阻塞式获取锁）：</p>
+<ul>
+<li>如果获取锁失败，Redisson 会订阅一个 Redis Channel；</li>
+<li>一旦锁被释放，会发布解锁消息；</li>
+<li>阻塞线程收到消息后会被唤醒继续尝试获取锁。</li>
+</ul>
+<p>这种方式避免了“死循环轮询”，实现高效的锁等待。</p>
+<img src="/2025/05/06/Redis%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/image-20250506213217761.png" alt="阻塞唤醒" style="zoom:25%;">
+
+<h3 id="4-Redlock-分布式锁算法（多节点一致性"><a href="#4-Redlock-分布式锁算法（多节点一致性" class="headerlink" title="4.Redlock 分布式锁算法（多节点一致性)"></a>4.Redlock 分布式锁算法（多节点一致性)</h3><p>如果 Redis 是主从结构，在主节点写入成功但还没同步到从节点时主挂了，锁数据就可能丢失。</p>
+<p>为了解决 Redis 主从架构下的数据一致性问题，<strong>Redlock</strong> 应运而生。</p>
+<p><strong>Redlock 核心思路：</strong></p>
+<ul>
+<li>同时向 <strong>多个独立 Redis 实例</strong> 写入锁（推荐 5 个节点）；</li>
+<li><strong>超过半数节点成功</strong>则认为加锁成功；</li>
+<li>总耗时必须小于锁超时时间；</li>
+<li>失败时回滚已获得的锁。</li>
+</ul>
+<h2 id="四-基于Redis分布式锁总结"><a href="#四-基于Redis分布式锁总结" class="headerlink" title="四. 基于Redis分布式锁总结"></a>四. 基于Redis分布式锁总结</h2><table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>实现方式</th>
+<th>特性</th>
+<th>存在的问题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>简单版</td>
+<td>SETNX + EXPIRE + DEL</td>
+<td>实现基础互斥</td>
+<td>存在超时释放/误删风险</td>
+</tr>
+<tr>
+<td>优化版</td>
+<td>SET + NX + PX + 唯一ID + Lua</td>
+<td>保证原子释放</td>
+<td>无重入/续期机制</td>
+</tr>
+<tr>
+<td>Redisson</td>
+<td>Watchdog + 可重入 + 唤醒阻塞 + Lua</td>
+<td>企业级封装，支持高并发</td>
+<td>引入第三方依赖</td>
+</tr>
+<tr>
+<td>Redlock</td>
+<td>多 Redis 节点写入 + 半数成功</td>
+<td>高可用高一致性</td>
+<td>实现复杂，易争议</td>
+</tr>
+</tbody></table>
+<p>参考资料：<br><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1nk4y1u781/?spm_id_from=333.1387.favlist.content.click&amp;vd_source=0ff05116367aae8f8480fddf5a565ea6">https://www.bilibili.com/video/BV1nk4y1u781/?spm_id_from=333.1387.favlist.content.click&amp;vd_source=0ff05116367aae8f8480fddf5a565ea6</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1Yz421r74Z/?spm_id_from=333.337.search-card.all.click&amp;vd_source=0ff05116367aae8f8480fddf5a565ea6">https://www.bilibili.com/video/BV1Yz421r74Z/?spm_id_from=333.337.search-card.all.click&amp;vd_source=0ff05116367aae8f8480fddf5a565ea6</a></p>
+</div><div class="article-licensing box"><div class="licensing-title"><p>Redis分布式锁</p><p><a href="http://symbol23441.top/2025/05/06/Redis分布式锁/">http://symbol23441.top/2025/05/06/Redis分布式锁/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2025-05-06</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2025-05-06</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/redis/">redis</a></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2025/05/06/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1-%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97-rabbitmq-rocketmq/"><span class="level-item">分布式事务--消息队列(rabbitmq\rocketmq)</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#一、分布式锁的背景需求"><span class="level-left"><span class="level-item">一、分布式锁的背景需求</span></span></a></li><li><a class="level is-mobile" href="#二、Redis分布式锁基础实现"><span class="level-left"><span class="level-item">二、Redis分布式锁基础实现</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#1-最简实现：SETNX-DEL"><span class="level-left"><span class="level-item">1. 最简实现：SETNX + DEL</span></span></a></li><li><a class="level is-mobile" href="#2-基础实现的问题"><span class="level-left"><span class="level-item">2. 基础实现的问题</span></span></a></li></ul></li><li><a class="level is-mobile" href="#三-Redisson实现"><span class="level-left"><span class="level-item">三. Redisson实现</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#1-基本实现的一些问题"><span class="level-left"><span class="level-item">1. 基本实现的一些问题</span></span></a></li><li><a class="level is-mobile" href="#2-Redisson-实现可重入"><span class="level-left"><span class="level-item">2.Redisson 实现可重入</span></span></a></li><li><a class="level is-mobile" href="#3-Redisson-如何安全释放锁（Lua-脚本-发布订阅机制）"><span class="level-left"><span class="level-item">3. Redisson 如何安全释放锁（Lua 脚本 + 发布订阅机制）</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#1-使用-Lua-脚本释放锁"><span class="level-left"><span class="level-item">(1) 使用 Lua 脚本释放锁</span></span></a></li><li><a class="level is-mobile" href="#2-阻塞与唤醒机制：Redis-Pub-Sub"><span class="level-left"><span class="level-item">(2) 阻塞与唤醒机制：Redis Pub/Sub</span></span></a></li></ul></li><li><a class="level is-mobile" href="#4-Redlock-分布式锁算法（多节点一致性"><span class="level-left"><span class="level-item">4.Redlock 分布式锁算法（多节点一致性)</span></span></a></li></ul></li><li><a class="level is-mobile" href="#四-基于Redis分布式锁总结"><span class="level-left"><span class="level-item">四. 基于Redis分布式锁总结</span></span></a></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/js/lightgallery.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script><script type="text/javascript" src="/js/imaegoo/universe.js"></script></body></html>

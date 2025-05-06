@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>sprintf&amp;snprintf&amp;memcpy&amp;fprintf - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="1、sprintfint sprintf(char *str, const char *format, ...); 其中，str参数是指向存储输出结果的缓存区的指针，必须具有足够的容量来存储输出结果；format参数是格式控制字符串，定义了输出的格式等；其余的…参数是输出结果 sprintf函数的返回值为输出到缓存区中的字符数量，这个值不包括字符串结尾的’\0’。 12345char str[10"><meta property="og:type" content="blog"><meta property="og:title" content="sprintf&amp;snprintf&amp;memcpy&amp;fprintf"><meta property="og:url" content="http://symbol23441.top/2023/11/24/sprintf-snprintf-memcpy-fprintf/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="1、sprintfint sprintf(char *str, const char *format, ...); 其中，str参数是指向存储输出结果的缓存区的指针，必须具有足够的容量来存储输出结果；format参数是格式控制字符串，定义了输出的格式等；其余的…参数是输出结果 sprintf函数的返回值为输出到缓存区中的字符数量，这个值不包括字符串结尾的’\0’。 12345char str[10"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/img/og_image.png"><meta property="article:published_time" content="2023-11-24T13:36:11.000Z"><meta property="article:modified_time" content="2023-11-24T13:36:11.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/img/og_image.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2023/11/24/sprintf-snprintf-memcpy-fprintf/"},"headline":"sprintf&snprintf&memcpy&fprintf","image":["http://symbol23441.top/img/og_image.png"],"datePublished":"2023-11-24T13:36:11.000Z","dateModified":"2023-11-24T13:36:11.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"1、sprintfint sprintf(char *str, const char *format, ...); 其中，str参数是指向存储输出结果的缓存区的指针，必须具有足够的容量来存储输出结果；format参数是格式控制字符串，定义了输出的格式等；其余的…参数是输出结果 sprintf函数的返回值为输出到缓存区中的字符数量，这个值不包括字符串结尾的’\\0’。 12345char str[10"}</script><link rel="canonical" href="http://symbol23441.top/2023/11/24/sprintf-snprintf-memcpy-fprintf/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-11-24T13:36:11.000Z" title="11/24/2023, 9:36:11 PM">2023-11-24</time>发表</span><span class="level-item"><time dateTime="2023-11-24T13:36:11.000Z" title="11/24/2023, 9:36:11 PM">2023-11-24</time>更新</span><span class="level-item">4 分钟读完 (大约534个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">sprintf&amp;snprintf&amp;memcpy&amp;fprintf</h1><div class="content"><h1 id="1、sprintf"><a href="#1、sprintf" class="headerlink" title="1、sprintf"></a>1、sprintf</h1><p><code>int sprintf(char *str, const char *format, ...);</code></p>
+<p>其中，str参数是指向存储输出结果的缓存区的指针，必须具有足够的容量来存储输出结果；format参数是格式控制字符串，定义了输出的格式等；其余的…参数是输出结果</p>
+<p>sprintf函数的返回值为输出到缓存区中的字符数量，这个值不包括字符串结尾的’\0’。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">char</span> str[<span class="number">100</span>];</span><br><span class="line"><span class="keyword">char</span> *str1 = <span class="string">&quot;Hello&quot;</span>;</span><br><span class="line"><span class="keyword">char</span> *str2 = <span class="string">&quot;World&quot;</span>;</span><br><span class="line"><span class="built_in">sprintf</span>(str, <span class="string">&quot;%s %s!&quot;</span>, str1, str2);</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;%s\n&quot;</span>, str); <span class="comment">// 输出：Hello World!</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="2、snprintf"><a href="#2、snprintf" class="headerlink" title="2、snprintf"></a>2、snprintf</h1><p>在 C 语言中，<code>snprintf</code> 是一个用于格式化字符串并将其写入字符数组的函数。它与 <code>sprintf</code> 函数类似，但 <code>snprintf</code> 允许你指定要写入的最大字符数，避免了缓冲区溢出的风险。</p>
+<p><code>int snprintf(char *str, size_t size, const char *format, ...);</code></p>
+<ul>
+<li><code>str</code>：要写入的目标字符数组的指针。</li>
+<li><code>size</code>：目标字符数组的最大容量。</li>
+<li><code>format</code>：格式化字符串，包含了要写入到字符数组的文本内容，可以包含格式说明符。</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">char</span> buffer[<span class="number">50</span>];</span><br><span class="line"><span class="keyword">int</span> length = <span class="built_in">snprintf</span>(buffer, <span class="keyword">sizeof</span>(buffer), <span class="string">&quot;The value of x is: %d&quot;</span>, x);</span><br></pre></td></tr></table></figure>
+
+<h1 id="3、fprintf"><a href="#3、fprintf" class="headerlink" title="3、fprintf"></a>3、fprintf</h1><p><code>int fprintf(FILE *stream, const char *format, ...);</code></p>
+<ul>
+<li><code>stream</code> 是文件指针，指向要写入的文件。</li>
+<li><code>format</code> 是一个格式字符串，指定了输出的格式，类似于 <code>printf</code> 中使用的格式。</li>
+<li><code>...</code> 是要输出的变量列表，根据 <code>format</code> 字符串中的格式控制符指定输出的变量。</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    FILE *fp;</span><br><span class="line">    <span class="keyword">int</span> num = <span class="number">10</span>;</span><br><span class="line">    fp = fopen(<span class="string">&quot;output.txt&quot;</span>, <span class="string">&quot;w&quot;</span>); <span class="comment">// 打开文件用于写入</span></span><br><span class="line">    <span class="keyword">if</span> (fp != <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(fp, <span class="string">&quot;The number is: %d\n&quot;</span>, num); <span class="comment">// 将数据写入文件</span></span><br><span class="line">        fclose(fp); <span class="comment">// 关闭文件</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>也有操作：</p>
+<p><code>fprintf( stdout, &quot;The number is: %d\n&quot;, num);</code></p>
+<p>标准输出</p>
+<h1 id="4、memcpy"><a href="#4、memcpy" class="headerlink" title="4、memcpy"></a>4、memcpy</h1><p><code>memcpy</code> 是 C 标准库中的一个函数，用于在内存块之间复制数据</p>
+<p><code>void *memcpy(void *destination, const void *source, size_t num);</code></p>
+<ul>
+<li><code>destination</code>：目标内存块的起始地址。</li>
+<li><code>source</code>：源内存块的起始地址。</li>
+<li><code>num</code>：要复制的字节数。</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">char</span> src[] = <span class="string">&quot;Hello, World!&quot;</span>;</span><br><span class="line"><span class="keyword">char</span> dest[<span class="number">20</span>];</span><br><span class="line"></span><br><span class="line"><span class="built_in">memcpy</span>(dest, src, <span class="keyword">sizeof</span>(src));</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+
+
+</div><div class="article-licensing box"><div class="licensing-title"><p>sprintf&amp;snprintf&amp;memcpy&amp;fprintf</p><p><a href="http://symbol23441.top/2023/11/24/sprintf-snprintf-memcpy-fprintf/">http://symbol23441.top/2023/11/24/sprintf-snprintf-memcpy-fprintf/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2023-11-24</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2023-11-24</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2023/11/24/Linux-socket/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">Linux socket</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2023/11/24/DHCP%E5%A4%B4%E6%A0%BC%E5%BC%8F/"><span class="level-item">DHCP头格式</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#1、sprintf"><span class="level-left"><span class="level-item">1、sprintf</span></span></a></li><li><a class="level is-mobile" href="#2、snprintf"><span class="level-left"><span class="level-item">2、snprintf</span></span></a></li><li><a class="level is-mobile" href="#3、fprintf"><span class="level-left"><span class="level-item">3、fprintf</span></span></a></li><li><a class="level is-mobile" href="#4、memcpy"><span class="level-left"><span class="level-item">4、memcpy</span></span></a></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/js/lightgallery.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script><script type="text/javascript" src="/js/imaegoo/universe.js"></script></body></html>

@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>Spring IOC(控制反转) 与 DI(依赖注入) - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="本文总结了Spring中的IoC（控制反转）与DI（依赖注入）机制， 介绍了IoC和DI的基本概念、三种常见的依赖注入方式及其优缺点 源码解析了Spring IoC容器的整体流程，包括配置解析、Bean注册、实例化、依赖注入与初始化的核心步骤。"><meta property="og:type" content="blog"><meta property="og:title" content="Spring IOC(控制反转) 与 DI(依赖注入)"><meta property="og:url" content="http://symbol23441.top/2025/04/22/Spring%20IOC(%E6%8E%A7%E5%88%B6%E5%8F%8D%E8%BD%AC)%E4%B8%8EDI(%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5)/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="本文总结了Spring中的IoC（控制反转）与DI（依赖注入）机制， 介绍了IoC和DI的基本概念、三种常见的依赖注入方式及其优缺点 源码解析了Spring IoC容器的整体流程，包括配置解析、Bean注册、实例化、依赖注入与初始化的核心步骤。"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/img/og_image.png"><meta property="article:published_time" content="2025-04-22T13:03:23.000Z"><meta property="article:modified_time" content="2025-04-22T13:03:23.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="article:tag" content="Spring"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/img/og_image.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2025/04/22/Spring%20IOC(%E6%8E%A7%E5%88%B6%E5%8F%8D%E8%BD%AC)%E4%B8%8EDI(%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5)/"},"headline":"Spring IOC(控制反转) 与 DI(依赖注入)","image":["http://symbol23441.top/img/og_image.png"],"datePublished":"2025-04-22T13:03:23.000Z","dateModified":"2025-04-22T13:03:23.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"本文总结了Spring中的IoC（控制反转）与DI（依赖注入）机制， 介绍了IoC和DI的基本概念、三种常见的依赖注入方式及其优缺点 源码解析了Spring IoC容器的整体流程，包括配置解析、Bean注册、实例化、依赖注入与初始化的核心步骤。"}</script><link rel="canonical" href="http://symbol23441.top/2025/04/22/Spring%20IOC(%E6%8E%A7%E5%88%B6%E5%8F%8D%E8%BD%AC)%E4%B8%8EDI(%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5)/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2025-04-22T13:03:23.000Z" title="4/22/2025, 9:03:23 PM">2025-04-22</time>发表</span><span class="level-item"><time dateTime="2025-04-22T13:03:23.000Z" title="4/22/2025, 9:03:23 PM">2025-04-22</time>更新</span><span class="level-item">10 分钟读完 (大约1546个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">Spring IOC(控制反转) 与 DI(依赖注入)</h1><div class="content"><ul>
+<li>本文总结了Spring中的IoC（控制反转）与DI（依赖注入）机制，</li>
+<li>介绍了IoC和DI的基本概念、三种常见的依赖注入方式及其优缺点</li>
+<li>源码解析了Spring IoC容器的整体流程，包括配置解析、Bean注册、实例化、依赖注入与初始化的核心步骤。</li>
+</ul>
+<span id="more"></span>
+
+<h1 id="一、IOC、DI-是什么"><a href="#一、IOC、DI-是什么" class="headerlink" title="一、IOC、DI 是什么"></a>一、IOC、DI 是什么</h1><h2 id="IOC"><a href="#IOC" class="headerlink" title="IOC"></a>IOC</h2><p>IOC（Inversion of Control，控制反转）思想，<strong>把对象控制权从自己手里反转交给容器</strong>。</p>
+<p><strong>一句话解释：</strong></p>
+<blockquote>
+<p> <strong>IOC</strong> 是把对象的创建、管理交给 <strong>Spring</strong> 容器来负责，而不是自己在代码里 <code>new</code> 出来。</p>
+</blockquote>
+<p><strong>更细一点：</strong></p>
+<ul>
+<li>在传统开发中，我们需要自己控制对象的创建和依赖，比如 <code>new</code> 一个服务对象。而自己new服务对象、传入依赖对象、管理生存周期是一件复杂繁琐的事情。</li>
+<li>在有了 <strong>IOC</strong> 之后，<strong>Spring</strong> 容器负责：<ul>
+<li>帮你创建对象（比如 Service、Repository 等）</li>
+<li>维护对象之间的依赖关系</li>
+<li>管理对象的生命周期（创建、销毁等）</li>
+</ul>
+</li>
+<li>这样，<strong>开发者只关心怎么用对象，不关心怎么创建对象</strong>。</li>
+</ul>
+<h2 id="DI"><a href="#DI" class="headerlink" title="DI"></a>DI</h2><p><strong>DI（Dependency Injection，依赖注入）</strong> 是实现IOC的手段，容器主动把依赖对象注入进来。</p>
+<p>在Spring中，常用的<strong>三种注入方式</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>注入方式</th>
+<th>说明</th>
+<th>优缺点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>构造器注入</td>
+<td>通过构造函数注入</td>
+<td>推荐 ✅，依赖不可变，适合强制依赖</td>
+</tr>
+<tr>
+<td>Setter注入</td>
+<td>通过setter方法注入</td>
+<td>可选依赖时使用，灵活但可能出现半初始化</td>
+</tr>
+<tr>
+<td>字段注入</td>
+<td>直接在属性上用 <code>@Autowired</code></td>
+<td>简洁但不利于测试（一般开发中最常用）</td>
+</tr>
+</tbody></table>
+<p><strong>示例：</strong></p>
+<p>✅ <strong>构造器注入（推荐写法，尤其在现代Spring Boot里）</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserService</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> UserRepository userRepository;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">UserService</span><span class="params">(UserRepository userRepository)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.userRepository = userRepository;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>✅ <strong>Setter注入</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserService</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> UserRepository userRepository;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setUserRepository</span><span class="params">(UserRepository userRepository)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.userRepository = userRepository;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>✅ <strong>字段注入（最常见）</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserService</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> UserRepository userRepository;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>缺点在于不适合测试，含不可预见因素。原因在于基于反射，暴力赋值。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 伪代码解释Spring干了什么</span></span><br><span class="line">UserService userService = <span class="keyword">new</span> UserService(); <span class="comment">// 直接new，没有注入</span></span><br><span class="line">Field field = UserService.class.getDeclaredField(<span class="string">&quot;userRepository&quot;</span>);</span><br><span class="line">field.setAccessible(<span class="keyword">true</span>); <span class="comment">// 暴力破解private</span></span><br><span class="line">field.set(userService, userRepositoryBean); <span class="comment">// 把依赖塞进去</span></span><br></pre></td></tr></table></figure>
+
+
+
+<hr>
+<h1 id="二、Spring-IoC-原理与核心源码解析"><a href="#二、Spring-IoC-原理与核心源码解析" class="headerlink" title="二、Spring IoC 原理与核心源码解析"></a>二、Spring IoC 原理与核心源码解析</h1><h2 id="2-1-IOC原理"><a href="#2-1-IOC原理" class="headerlink" title="2.1 IOC原理"></a>2.1 IOC原理</h2><p>整体流程，主要分成4步：</p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>做什么事情</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1. 读取配置</td>
+<td>读取 XML/注解/JavaConfig，解析 Bean 元数据</td>
+</tr>
+<tr>
+<td>2. 注册Bean定义</td>
+<td>扫描出相关bean描述，并把Bean定义（<code>BeanDefinition</code>）注册到容器内部（Map里）</td>
+</tr>
+<tr>
+<td>3. 实例化对象</td>
+<td>按需实例化Bean（调用构造器/工厂方法）</td>
+</tr>
+<tr>
+<td>4. 注入依赖 &amp; 初始化</td>
+<td>依赖注入 + 调用初始化方法等，最终Bean可用</td>
+</tr>
+</tbody></table>
+<p><strong>简易流程图：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">配置 --&gt; 扫描BeanDefinition --&gt; 注册到容器 --&gt; bean实例化--&gt;依赖注入 --&gt; 初始化 --&gt; Bean使用 --&gt; Bean销毁</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-2-IOC核心源码解析"><a href="#2-2-IOC核心源码解析" class="headerlink" title="2.2 IOC核心源码解析"></a>2.2 IOC核心源码解析</h2><p>这部分是最硬核的，我带你看一遍真正Spring（比如5.x）的源码思路。</p>
+<hr>
+<h3 id="1-容器启动入口：refresh"><a href="#1-容器启动入口：refresh" class="headerlink" title="1. 容器启动入口：refresh()"></a>1. 容器启动入口：<code>refresh()</code></h3><p>一般我们启动容器是这样：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">AnnotationConfigApplicationContext context = <span class="keyword">new</span> AnnotationConfigApplicationContext(AppConfig.class);</span><br><span class="line">context.refresh();</span><br></pre></td></tr></table></figure>
+
+<p>实际上<strong>容器启动的核心逻辑</strong>都在<code>refresh()</code>方法里。</p>
+<p><strong>refresh()做了哪些事情？</strong></p>
+<p>（略简化版）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">refresh</span><span class="params">()</span> <span class="keyword">throws</span> BeansException, IllegalStateException </span>&#123;</span><br><span class="line">    prepareRefresh(); <span class="comment">// 1.准备工作（环境、监听器、验证配置）</span></span><br><span class="line">    ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory(); <span class="comment">// 2.创建BeanFactory，并加载BeanDefinition定义 **</span></span><br><span class="line">    prepareBeanFactory(beanFactory); <span class="comment">// 3.设置一些常用类到容器，比如ApplicationContext本身</span></span><br><span class="line">    postProcessBeanFactory(beanFactory); <span class="comment">// 4.BeanFactory后置处理器（留给子类扩展）</span></span><br><span class="line">    invokeBeanFactoryPostProcessors(beanFactory); <span class="comment">// 5.执行所有BeanFactoryPostProcessor</span></span><br><span class="line">    registerBeanPostProcessors(beanFactory); <span class="comment">// 6.注册所有BeanPostProcessor</span></span><br><span class="line">    initMessageSource(); <span class="comment">// 7.国际化相关</span></span><br><span class="line">    initApplicationEventMulticaster(); <span class="comment">// 8.事件广播器初始化</span></span><br><span class="line">    onRefresh(); <span class="comment">// 9.留给子类扩展</span></span><br><span class="line">    registerListeners(); <span class="comment">// 10.注册应用监听器</span></span><br><span class="line">    finishBeanFactoryInitialization(beanFactory); <span class="comment">// 11.初始化剩余的单例Bean **</span></span><br><span class="line">    finishRefresh(); <span class="comment">// 12.容器刷新完成事件</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>➡️ <strong>重点是</strong> <code>obtainFreshBeanFactory()</code> 和 <code>finishBeanFactoryInitialization(beanFactory)</code> 这两步。</p>
+<hr>
+<h3 id="2-BeanDefinition加载：obtainFreshBeanFactory"><a href="#2-BeanDefinition加载：obtainFreshBeanFactory" class="headerlink" title="2. BeanDefinition加载：obtainFreshBeanFactory()"></a>2. BeanDefinition加载：<code>obtainFreshBeanFactory()</code></h3><p>这一步干的事：</p>
+<ul>
+<li>创建一个新的<code>DefaultListableBeanFactory</code></li>
+<li>解析配置（XML、注解、JavaConfig）</li>
+<li>把每个Bean的信息封装成<code>BeanDefinition</code></li>
+<li>注册到容器里的Map里（<strong>beanDefinitionMap</strong>）</li>
+</ul>
+<p><strong>重要类：</strong></p>
+<ul>
+<li><code>BeanDefinitionReader</code></li>
+<li><code>AnnotatedBeanDefinitionReader</code></li>
+<li><code>XmlBeanDefinitionReader</code></li>
+</ul>
+<p><strong>核心数据结构：</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Map&lt;String, BeanDefinition&gt; beanDefinitionMap; <span class="comment">// BeanName,BeanDefinition</span></span><br></pre></td></tr></table></figure>
+
+<p>相当于提前把【蓝图】画好了，随时可以造。</p>
+<hr>
+<h3 id="3-实例化Bean：finishBeanFactoryInitialization-beanFactory"><a href="#3-实例化Bean：finishBeanFactoryInitialization-beanFactory" class="headerlink" title="3. 实例化Bean：finishBeanFactoryInitialization(beanFactory)"></a>3. 实例化Bean：<code>finishBeanFactoryInitialization(beanFactory)</code></h3><p>这一步最重要！</p>
+<blockquote>
+<p><strong>创建真正的Bean实例，并做依赖注入、初始化。</strong></p>
+</blockquote>
+<p>核心方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">beanFactory.preInstantiateSingletons();</span><br></pre></td></tr></table></figure>
+
+<p>它会遍历所有的BeanDefinition，把单例的Bean提前实例化好。</p>
+<p><strong>具体怎么实例化的？</strong></p>
+<p>调用了：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">createBean(beanName, mbd, args);</span><br></pre></td></tr></table></figure>
+
+<p>➡️ 进入了<code>AbstractAutowireCapableBeanFactory</code>里的超重要方法！</p>
+<hr>
+<h3 id="4-createBean-核心流程"><a href="#4-createBean-核心流程" class="headerlink" title="4. createBean()核心流程"></a>4. createBean()核心流程</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> Object <span class="title">createBean</span><span class="params">(String beanName, RootBeanDefinition mbd, <span class="meta">@Nullable</span> Object[] args)</span> </span>&#123;</span><br><span class="line">    Object bean;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// 1.实例化Bean（构造器 or 工厂方法）</span></span><br><span class="line">        bean = resolveBeforeInstantiation(beanName, mbd);<span class="comment">//前置代理创建，如AOP</span></span><br><span class="line">        <span class="keyword">if</span> (bean == <span class="keyword">null</span>) &#123;</span><br><span class="line">            bean = doCreateBean(beanName, mbd, args);<span class="comment">//实例化Bean</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">catch</span> (Exception ex) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> BeanCreationException(...);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> bean;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>继续追进<code>doCreateBean</code>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> Object <span class="title">doCreateBean</span><span class="params">(String beanName, RootBeanDefinition mbd, <span class="meta">@Nullable</span> Object[] args)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 1.创建实例</span></span><br><span class="line">    Object beanInstance = createBeanInstance(beanName, mbd, args);</span><br><span class="line">    <span class="comment">// 2.依赖注入（填充属性）</span></span><br><span class="line">    populateBean(beanName, mbd, instanceWrapper);</span><br><span class="line">    <span class="comment">// 3.初始化（调用@PostConstruct、InitializingBean等）</span></span><br><span class="line">    initializeBean(beanName, exposedObject, mbd);</span><br><span class="line">    <span class="keyword">return</span> exposedObject;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="也就是说："><a href="#也就是说：" class="headerlink" title="也就是说："></a>也就是说：</h3><ul>
+<li><code>createBeanInstance()</code> —— <strong>实例化对象</strong></li>
+<li><code>populateBean()</code> —— <strong>注入依赖</strong></li>
+<li><code>initializeBean()</code> —— <strong>初始化方法</strong></li>
+</ul>
+<hr>
+<h3 id="5-核心源码总结流程"><a href="#5-核心源码总结流程" class="headerlink" title="5. 核心源码总结流程"></a>5. 核心源码总结流程</h3><p>整体大概是这样：</p>
+<figure class="highlight scss"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">refresh()</span><br><span class="line">  --&gt; obtainFreshBeanFactory()</span><br><span class="line">      --&gt; 加载BeanDefinition</span><br><span class="line">      --&gt; 注册到beanDefinitionMap</span><br><span class="line">  --&gt; finishBeanFactoryInitialization()</span><br><span class="line">      --&gt; preInstantiateSingletons()</span><br><span class="line">          --&gt; getBean(beanName)</span><br><span class="line">						--&gt; doGetBean()</span><br><span class="line">              --&gt; createBean()</span><br><span class="line">                  --&gt; doCreateBean()</span><br><span class="line">                      --&gt; createBeanInstance() <span class="comment">//实例化 【构造器注入】</span></span><br><span class="line">                      --&gt; populateBean()       <span class="comment">//填充属性【setter注入、字段注入】</span></span><br><span class="line">                      --&gt; initializeBean()		<span class="comment">//初始化方法</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h1><p>🔵 <strong>目的：</strong></p>
+<ul>
+<li>自动管理对象创建和依赖关系，提高解耦，灵活扩展。</li>
+</ul>
+<p>🟢 <strong>原理：</strong></p>
+<ul>
+<li>先读取配置，解析成BeanDefinition注册，延迟到用时实例化，自动依赖注入，自动初始化。</li>
+</ul>
+<p>🟣 <strong>核心源码：</strong></p>
+<ul>
+<li><code>refresh()</code>是大总管，<code>createBean()</code>是造对象的大核心。</li>
+</ul>
+</div><div class="article-licensing box"><div class="licensing-title"><p>Spring IOC(控制反转) 与 DI(依赖注入)</p><p><a href="http://symbol23441.top/2025/04/22/Spring IOC(控制反转)与DI(依赖注入)/">http://symbol23441.top/2025/04/22/Spring IOC(控制反转)与DI(依赖注入)/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2025-04-22</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2025-04-22</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/Spring/">Spring</a></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2025/04/23/Spring-Boot%E5%90%AF%E5%8A%A8%E5%86%85%E5%B5%8CTomcat-%E7%9A%84%E5%85%A8%E8%BF%87%E7%A8%8B/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">Spring Boot启动内嵌Tomcat 的全过程</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2025/04/22/%E9%9D%99%E6%80%81%E4%BB%A3%E7%90%86%E3%80%81%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86%E4%B8%8ESpring%20AOP/"><span class="level-item">静态代理、动态代理与Spring AOP</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#一、IOC、DI-是什么"><span class="level-left"><span class="level-item">一、IOC、DI 是什么</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#IOC"><span class="level-left"><span class="level-item">IOC</span></span></a></li><li><a class="level is-mobile" href="#DI"><span class="level-left"><span class="level-item">DI</span></span></a></li></ul></li><li><a class="level is-mobile" href="#二、Spring-IoC-原理与核心源码解析"><span class="level-left"><span class="level-item">二、Spring IoC 原理与核心源码解析</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#2-1-IOC原理"><span class="level-left"><span class="level-item">2.1 IOC原理</span></span></a></li><li><a class="level is-mobile" href="#2-2-IOC核心源码解析"><span class="level-left"><span class="level-item">2.2 IOC核心源码解析</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#1-容器启动入口：refresh"><span class="level-left"><span class="level-item">1. 容器启动入口：refresh()</span></span></a></li><li><a class="level is-mobile" href="#2-BeanDefinition加载：obtainFreshBeanFactory"><span class="level-left"><span class="level-item">2. BeanDefinition加载：obtainFreshBeanFactory()</span></span></a></li><li><a class="level is-mobile" href="#3-实例化Bean：finishBeanFactoryInitialization-beanFactory"><span class="level-left"><span class="level-item">3. 实例化Bean：finishBeanFactoryInitialization(beanFactory)</span></span></a></li><li><a class="level is-mobile" href="#4-createBean-核心流程"><span class="level-left"><span class="level-item">4. createBean()核心流程</span></span></a></li><li><a class="level is-mobile" href="#也就是说："><span class="level-left"><span class="level-item">也就是说：</span></span></a></li><li><a class="level is-mobile" href="#5-核心源码总结流程"><span class="level-left"><span class="level-item">5. 核心源码总结流程</span></span></a></li></ul></li></ul></li><li><a class="level is-mobile" href="#总结："><span class="level-left"><span class="level-item">总结：</span></span></a></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/js/lightgallery.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script><script type="text/javascript" src="/js/imaegoo/universe.js"></script></body></html>

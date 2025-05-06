@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>DHCP头格式 - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="整体包：   链路层头 IP头  20bytes UDP头 DHCP报文    DHCP报文头格式：   8 bits 16 bits 24 bits 32 bits    Op Htype Hlen Hops   Xid(4 bytes)      Secs(2 bytes)  Flags(2 bytes)    Ciaddr(4 bytes)      Yiaddr(4 bytes)"><meta property="og:type" content="blog"><meta property="og:title" content="DHCP头格式"><meta property="og:url" content="http://symbol23441.top/2023/11/24/DHCP%E5%A4%B4%E6%A0%BC%E5%BC%8F/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="整体包：   链路层头 IP头  20bytes UDP头 DHCP报文    DHCP报文头格式：   8 bits 16 bits 24 bits 32 bits    Op Htype Hlen Hops   Xid(4 bytes)      Secs(2 bytes)  Flags(2 bytes)    Ciaddr(4 bytes)      Yiaddr(4 bytes)"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/2023/11/24/DHCP%E5%A4%B4%E6%A0%BC%E5%BC%8F/4ee3a8bcc5779ee9289061675df8f6db.png"><meta property="article:published_time" content="2023-11-24T13:32:01.000Z"><meta property="article:modified_time" content="2023-11-24T13:32:01.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="article:tag" content="DHCP"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/2023/11/24/DHCP%E5%A4%B4%E6%A0%BC%E5%BC%8F/4ee3a8bcc5779ee9289061675df8f6db.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2023/11/24/DHCP%E5%A4%B4%E6%A0%BC%E5%BC%8F/"},"headline":"DHCP头格式","image":["http://symbol23441.top/2023/11/24/DHCP%E5%A4%B4%E6%A0%BC%E5%BC%8F/4ee3a8bcc5779ee9289061675df8f6db.png"],"datePublished":"2023-11-24T13:32:01.000Z","dateModified":"2023-11-24T13:32:01.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"整体包：   链路层头 IP头  20bytes UDP头 DHCP报文    DHCP报文头格式：   8 bits 16 bits 24 bits 32 bits    Op Htype Hlen Hops   Xid(4 bytes)      Secs(2 bytes)  Flags(2 bytes)    Ciaddr(4 bytes)      Yiaddr(4 bytes)"}</script><link rel="canonical" href="http://symbol23441.top/2023/11/24/DHCP%E5%A4%B4%E6%A0%BC%E5%BC%8F/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-11-24T13:32:01.000Z" title="11/24/2023, 9:32:01 PM">2023-11-24</time>发表</span><span class="level-item"><time dateTime="2023-11-24T13:32:01.000Z" title="11/24/2023, 9:32:01 PM">2023-11-24</time>更新</span><span class="level-item">8 分钟读完 (大约1266个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">DHCP头格式</h1><div class="content"><h1 id="整体包："><a href="#整体包：" class="headerlink" title="整体包："></a>整体包：</h1><table>
+<thead>
+<tr>
+<th align="left">链路层头</th>
+<th align="left">IP头  20bytes</th>
+<th align="left">UDP头</th>
+<th align="left">DHCP报文</th>
+</tr>
+</thead>
+</table>
+<h1 id="DHCP报文头格式："><a href="#DHCP报文头格式：" class="headerlink" title="DHCP报文头格式："></a>DHCP报文头格式：</h1><table>
+<thead>
+<tr>
+<th align="left">8 bits</th>
+<th align="left">16 bits</th>
+<th align="left">24 bits</th>
+<th align="left">32 bits</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">Op</td>
+<td align="left">Htype</td>
+<td align="left">Hlen</td>
+<td align="left">Hops</td>
+</tr>
+<tr>
+<td align="left">Xid(4 bytes)</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">Secs(2 bytes)</td>
+<td align="left"></td>
+<td align="left">Flags(2 bytes)</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">Ciaddr(4 bytes)</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">Yiaddr(4 bytes)</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">Siaddr(4 bytes)</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">Giaddr(4 bytes)</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">Chaddr (16 bytes)</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">Sname (64 bytes)</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">File (128 bytes)</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">magic（4bytes）</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">Option (variable)</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+</tbody></table>
+<ul>
+<li><strong>Op：消息操作代码</strong>，1byte，既可以是引导请求（BOOTREQUEST）也可以是引导答复（BOOTREPLY），1为请求报文；2为响应报文。具体的报文类型在option字段中标识。</li>
+<li><strong>Htype：硬件地址类型</strong>，1byte，表示client硬件地址的类型，1表示以太网类型。</li>
+<li><strong>Hlen：硬件地址长度</strong>，1byte，以太网的硬件地址长度为6bytes。</li>
+<li><strong>Xid：处理ID</strong>，1byte，由client端产生的随机数，用于匹配请求和应答报文，就是匹配应答报文是对哪个请求报文做出应答。</li>
+<li><strong>Secs：从获取到IP地址或者续约过程开始到现在所消耗的时间</strong>，2bytes，客户端进入IP地址申请进程的时间或者更新IP地址进程的时间；由客户端软件根据情况设定。目前没有使用，固定为0。</li>
+<li><strong>Flags：标记</strong>，2bytes，16bit中只使用了最高位比特（即最左边的比特），这个个比特是广播响应标识位，用来标识DHCP服务器发出的响应报文是广播还是单播，0是单播，1是广播。其余的比特位保留不用，都为0.</li>
+<li><strong>Ciaddr：客户机IP地址</strong>，4bytes，可以是client自己的IP地址，也可以是server分配给client的IP地址。</li>
+<li><strong>Yiaddr：“你的”（客户机）IP地址</strong>，4bytes，是server分配给client的IP地址。</li>
+<li><strong>Siaddr：在bootstrap中使用的下一台服务器的IP地址</strong>，4bytes，是client端获取IP地址等信息的server端的地址。</li>
+<li><strong>Giaddr：用于导入的接替代理IP地址</strong>，4bytes，是client发出请求报文后经过的第一个中继的IP地址。</li>
+<li><strong>Chaddr：客户机硬件</strong>，16bytes，是client端的硬件地址，在client发出报文时会把自己网卡的硬件地址写进这个字段。</li>
+<li><strong>Sname：任意服务器主机名称</strong>，空终止符，64bytes，是client端获取IP地址等信息的服务器名称。</li>
+<li><strong>File：DHCP发现协议中的引导文件名、空终止符、属名或者空，DHCP供应协议中的受限目录路径名</strong>，</li>
+<li><strong>Magic Cookie</strong>：一个固定的值，用于指示 DHCP 选项的开始。</li>
+<li><strong>options</strong>：可选参数字段**。用于包含其他重要的信息，如 Lease 时间、DNS 服务器、NTP 服务器等。选项长度可变。</li>
+</ul>
+<p><img src="/2023/11/24/DHCP%E5%A4%B4%E6%A0%BC%E5%BC%8F/4ee3a8bcc5779ee9289061675df8f6db.png" alt="DHCP 协议详解"></p>
+<h1 id="c结构体表示："><a href="#c结构体表示：" class="headerlink" title="c结构体表示："></a>c结构体表示：</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">tag_dhcp</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span>  op;				<span class="comment">//报文的操作类型1：请求报文，2：应答报文</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span>  ht;				<span class="comment">//硬件地址类型，表示硬件地址的类型，如以太网。</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span>  hl;				<span class="comment">//硬件地址长度，表示硬件地址的长度。</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span>  ho;				<span class="comment">//跳数，通常为 0，用于在消息转发时计数。</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span>   xid;				<span class="comment">//事务 ID，用于唯一标识一个 DHCP 事务。</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">short</span> secs;			<span class="comment">//DHCP客户端从获取到IP地址或者续约过程开始到现在所消耗的时间，以秒为单位。在没有获得IP地址前该字段始终为0.(DHCP客户端开始DHCP请求后所经过的时间。目前尚未使用，固定为0。)</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">short</span> flag;			<span class="comment">//标志位:0表示采用单播发送方式，1表示采用广播发送方式。其余位尚未使用。</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span>   ciaddr;			<span class="comment">//DHCP客户端的IP地址（未分配通常为 0.0.0.0）</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span>   yiaddr;			<span class="comment">//DHCP服务器分配给客户端的IP地址</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span>   siaddr;			<span class="comment">//服务器 IP 地址。</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span>   giaddr;			<span class="comment">//网关 IP 地址。DHCP客户端发出请求报文后经过的第一个DHCP中继的IP地址。如果没有经过DHCP中继，则显示为0。(转发代理（网关）IP地址)</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span>  chaddr[<span class="number">6</span>];		<span class="comment">//DHCP客户端的MAC地址。在每个报文中都会显示对应DHCP客户端的MAC地址。</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span>  dummy[<span class="number">10</span>];		<span class="comment">//</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span>  sname[<span class="number">64</span>];		<span class="comment">//为DHCP客户端分配IP地址的DHCP服务器名称（DNS域名格式）。在Offer和ACK报文中显示发送报文的DHCP服务器名称，其他报文显示为0。</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span>  file[<span class="number">128</span>];		<span class="comment">//DHCP服务器为DHCP客户端指定的启动配置文件名称及路径信息。仅在DHCP Offer报文中显示，其他报文中显示为空。</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span>  magic[<span class="number">4</span>];</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span>  data[<span class="number">0</span>];			<span class="comment">//options:可选项字段，长度可变，格式为&quot;代码+长度+数据&quot;。</span></span><br><span class="line">&#125; <span class="keyword">dhcp_t</span>;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>参考博客：</p>
+<p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/2089724">https://cloud.tencent.com/developer/article/2089724</a></p>
+</div><div class="article-licensing box"><div class="licensing-title"><p>DHCP头格式</p><p><a href="http://symbol23441.top/2023/11/24/DHCP头格式/">http://symbol23441.top/2023/11/24/DHCP头格式/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2023-11-24</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2023-11-24</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/DHCP/">DHCP</a></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2023/11/24/sprintf-snprintf-memcpy-fprintf/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">sprintf&amp;snprintf&amp;memcpy&amp;fprintf</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2023/11/17/%E9%AB%98%E6%96%AF%E6%A6%82%E7%8E%87%E5%88%86%E7%B1%BB%E6%A8%A1%E5%9E%8B%E4%B8%8B%E7%9A%84%E6%9C%89%E8%B6%A3%E7%BB%93%E8%AE%BA/"><span class="level-item">高斯概率分类模型下的有趣现象</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#整体包："><span class="level-left"><span class="level-item">整体包：</span></span></a></li><li><a class="level is-mobile" href="#DHCP报文头格式："><span class="level-left"><span class="level-item">DHCP报文头格式：</span></span></a></li><li><a class="level is-mobile" href="#c结构体表示："><span class="level-left"><span class="level-item">c结构体表示：</span></span></a></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/js/lightgallery.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script><script type="text/javascript" src="/js/imaegoo/universe.js"></script></body></html>

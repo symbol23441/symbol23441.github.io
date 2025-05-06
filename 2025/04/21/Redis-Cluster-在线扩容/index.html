@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>Redis Cluster 在线扩容 - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="redis采用主从复制+哨兵模式实现高可用，但是主从复制各个节点内数据是一致的。因此，如果需要实现在线扩容就要采用Redis Cluster进行切片集群。"><meta property="og:type" content="blog"><meta property="og:title" content="Redis Cluster 在线扩容"><meta property="og:url" content="http://symbol23441.top/2025/04/21/Redis-Cluster-%E5%9C%A8%E7%BA%BF%E6%89%A9%E5%AE%B9/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="redis采用主从复制+哨兵模式实现高可用，但是主从复制各个节点内数据是一致的。因此，如果需要实现在线扩容就要采用Redis Cluster进行切片集群。"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/img/og_image.png"><meta property="article:published_time" content="2025-04-21T07:27:59.000Z"><meta property="article:modified_time" content="2025-04-21T07:27:59.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="article:tag" content="redis"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/img/og_image.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2025/04/21/Redis-Cluster-%E5%9C%A8%E7%BA%BF%E6%89%A9%E5%AE%B9/"},"headline":"Redis Cluster 在线扩容","image":["http://symbol23441.top/img/og_image.png"],"datePublished":"2025-04-21T07:27:59.000Z","dateModified":"2025-04-21T07:27:59.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"redis采用主从复制+哨兵模式实现高可用，但是主从复制各个节点内数据是一致的。因此，如果需要实现在线扩容就要采用Redis Cluster进行切片集群。"}</script><link rel="canonical" href="http://symbol23441.top/2025/04/21/Redis-Cluster-%E5%9C%A8%E7%BA%BF%E6%89%A9%E5%AE%B9/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2025-04-21T07:27:59.000Z" title="4/21/2025, 3:27:59 PM">2025-04-21</time>发表</span><span class="level-item"><time dateTime="2025-04-21T07:27:59.000Z" title="4/21/2025, 3:27:59 PM">2025-04-21</time>更新</span><span class="level-item">5 分钟读完 (大约764个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">Redis Cluster 在线扩容</h1><div class="content"><p>redis采用<strong>主从复制</strong>+<strong>哨兵模式</strong>实现高可用，但是主从复制各个节点内数据是一致的。因此，如果需要实现在线扩容就要采用Redis Cluster进行<strong>切片集群</strong>。</p>
+<span id="more"></span>
+
+<h2 id="1-分片机制、哈希槽"><a href="#1-分片机制、哈希槽" class="headerlink" title="1. 分片机制、哈希槽"></a>1. 分片机制、哈希槽</h2><p>Redis Cluster方案采用哈希槽（Hash Slot），来处理数据和实例之间的映射关系。</p>
+<blockquote>
+<p>一个分片集群被分为16384个slot（槽），每个进入Redis的键值对，根据key进行散列，分配到这16384插槽中的一个。</p>
+</blockquote>
+<p>然后将各个区间槽分配给不同的节点。</p>
+<h2 id="2-MOVED重定向和ASK重定向"><a href="#2-MOVED重定向和ASK重定向" class="headerlink" title="2. MOVED重定向和ASK重定向"></a>2. MOVED重定向和ASK重定向</h2><p>客户端给一个Redis实例发送数据读写操作时，如果这个实例上并没有相应的数据，示例回复<strong>MOVED重定向和ASK重定向</strong>。</p>
+<h3 id="2-1-Moved-重定向"><a href="#2-1-Moved-重定向" class="headerlink" title="2.1 Moved 重定向"></a>2.1 Moved 重定向</h3><p>客户端给一个Redis实例发送数据读写操作时，如果计算出来的槽不是在该节点上**(客户端分片访问错误)**，这时候它会返回MOVED重定向错误，MOVED重定向错误中，会将哈希槽所在的新实例的IP和port端口带回去。这就是Redis Cluster的MOVED重定向机制。</p>
+<h3 id="2-2-ASK-重定向"><a href="#2-2-ASK-重定向" class="headerlink" title="2.2 ASK 重定向"></a>2.2 ASK 重定向</h3><p>Ask重定向一般发生于集群伸缩的时候。集群伸缩会导致<strong>槽迁移</strong>，当我们去源节点访问时，此时数据已经可能已经迁移到了目标节点，使用Ask重定向可以解决此种情况。</p>
+<h2 id="2-3-处理流程"><a href="#2-3-处理流程" class="headerlink" title="2.3 处理流程"></a>2.3 处理流程</h2><p>当客户端向 Redis Cluster 发送请求时，节点按照以下步骤处理请求：</p>
+<ol>
+<li><strong>通过哈希槽映射定位</strong><ul>
+<li>根据 Redis key 计算哈希槽（slot），检查该 slot 是否由当前节点负责。</li>
+</ul>
+</li>
+<li><strong>判断节点是否负责此哈希槽</strong><ul>
+<li>如果哈希槽不是当前节点负责，直接返回 <code>MOVED</code> 重定向，告诉客户端正确的节点地址。</li>
+<li>如果哈希槽是当前节点负责，进入下一步。</li>
+</ul>
+</li>
+<li><strong>检查 key 是否存在于哈希槽中</strong><ul>
+<li>如果 key 存在，直接返回 key 对应的数据结果。</li>
+<li>如果 key 不存在，继续判断。</li>
+</ul>
+</li>
+<li><strong>检查哈希槽是否正在迁出（MIGRATING）</strong><ul>
+<li>如果该哈希槽正在迁出，说明数据正在从本节点迁移到其他节点。</li>
+<li>判断 key 是否正在迁移：<ul>
+<li>如果 key 正在迁移，返回 <code>ASK</code> 错误，引导客户端临时访问迁移目标节点。</li>
+<li>如果 key 没有迁移，继续下一步。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>检查哈希槽是否正在导入（IMPORTING）</strong><ul>
+<li>如果哈希槽正在导入，需要确认客户端是否发送了 <code>ASKING</code> 命令：<ul>
+<li>如果客户端已经发送了 <code>ASKING</code> 标记，允许直接访问数据。</li>
+<li>如果没有 <code>ASKING</code> 标记，返回 <code>MOVED</code> 错误，引导客户端重新访问正确节点。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+</div><div class="article-licensing box"><div class="licensing-title"><p>Redis Cluster 在线扩容</p><p><a href="http://symbol23441.top/2025/04/21/Redis-Cluster-在线扩容/">http://symbol23441.top/2025/04/21/Redis-Cluster-在线扩容/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2025-04-21</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2025-04-21</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/redis/">redis</a></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2025/04/22/%E9%9D%99%E6%80%81%E4%BB%A3%E7%90%86%E3%80%81%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86%E4%B8%8ESpring%20AOP/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">静态代理、动态代理与Spring AOP</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2025/04/21/Redis%E5%93%A8%E5%85%B5%E6%9C%BA%E5%88%B6-%E9%AB%98%E5%8F%AF%E7%94%A8/"><span class="level-item">Redis哨兵机制(高可用)</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#1-分片机制、哈希槽"><span class="level-left"><span class="level-item">1. 分片机制、哈希槽</span></span></a></li><li><a class="level is-mobile" href="#2-MOVED重定向和ASK重定向"><span class="level-left"><span class="level-item">2. MOVED重定向和ASK重定向</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#2-1-Moved-重定向"><span class="level-left"><span class="level-item">2.1 Moved 重定向</span></span></a></li><li><a class="level is-mobile" href="#2-2-ASK-重定向"><span class="level-left"><span class="level-item">2.2 ASK 重定向</span></span></a></li></ul></li><li><a class="level is-mobile" href="#2-3-处理流程"><span class="level-left"><span class="level-item">2.3 处理流程</span></span></a></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/js/lightgallery.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script><script type="text/javascript" src="/js/imaegoo/universe.js"></script></body></html>

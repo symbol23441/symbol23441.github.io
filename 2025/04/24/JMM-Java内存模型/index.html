@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>JMM(Java内存模型) - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="什么是 JMM（Java Memory Model）？ JMM 的核心问题 JMM 的内存模型结构 JMM 定义的 8 种内存交互操作 解决 JMM的关键字 JMM 的 happens-before 规则（重要） JMM 解决的问题场景（举例）"><meta property="og:type" content="blog"><meta property="og:title" content="JMM(Java内存模型)"><meta property="og:url" content="http://symbol23441.top/2025/04/24/JMM-Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="什么是 JMM（Java Memory Model）？ JMM 的核心问题 JMM 的内存模型结构 JMM 定义的 8 种内存交互操作 解决 JMM的关键字 JMM 的 happens-before 规则（重要） JMM 解决的问题场景（举例）"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/img/og_image.png"><meta property="article:published_time" content="2025-04-24T05:38:35.000Z"><meta property="article:modified_time" content="2025-04-24T05:38:35.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="article:tag" content="JVM"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/img/og_image.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2025/04/24/JMM-Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/"},"headline":"JMM(Java内存模型)","image":["http://symbol23441.top/img/og_image.png"],"datePublished":"2025-04-24T05:38:35.000Z","dateModified":"2025-04-24T05:38:35.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"什么是 JMM（Java Memory Model）？ JMM 的核心问题 JMM 的内存模型结构 JMM 定义的 8 种内存交互操作 解决 JMM的关键字 JMM 的 happens-before 规则（重要） JMM 解决的问题场景（举例）"}</script><link rel="canonical" href="http://symbol23441.top/2025/04/24/JMM-Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2025-04-24T05:38:35.000Z" title="4/24/2025, 1:38:35 PM">2025-04-24</time>发表</span><span class="level-item"><time dateTime="2025-04-24T05:38:35.000Z" title="4/24/2025, 1:38:35 PM">2025-04-24</time>更新</span><span class="level-item">10 分钟读完 (大约1484个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">JMM(Java内存模型)</h1><div class="content"><ul>
+<li>什么是 JMM（Java Memory Model）？</li>
+<li>JMM 的核心问题</li>
+<li>JMM 的内存模型结构</li>
+<li>JMM 定义的 8 种内存交互操作</li>
+<li>解决 JMM的关键字</li>
+<li>JMM 的 happens-before 规则（重要）</li>
+<li>JMM 解决的问题场景（举例）</li>
+</ul>
+<span id="more"></span>
+
+<h2 id="一、什么是-JMM（Java-Memory-Model）？"><a href="#一、什么是-JMM（Java-Memory-Model）？" class="headerlink" title="一、什么是 JMM（Java Memory Model）？"></a>一、什么是 JMM（Java Memory Model）？</h2><p><strong>JMM，全称 Java Memory Model（Java 内存模型）</strong>，是 Java 语言对多线程环境中 <strong>共享变量的读写操作的行为规范</strong>。</p>
+<p>它定义了：</p>
+<ul>
+<li>多线程之间 <strong>共享变量</strong> 如何被读/写。</li>
+<li>编译器、JVM、硬件如何协同保证 Java 程序的并发安全。</li>
+</ul>
+<p>JMM <strong>不是一块物理内存</strong>，而是一个 <strong>抽象的规范</strong>，解决的是“多线程之间<strong>可见性</strong>、<strong>有序性</strong>、<strong>原子性</strong>”的问题。</p>
+<blockquote>
+<p>JMM 是 Java 规定线程读写共享变量的规则，定义了内存可见性、原子性、有序性，保证多线程程序能安全、稳定运行。</p>
+</blockquote>
+<h2 id="二、JMM-的核心问题"><a href="#二、JMM-的核心问题" class="headerlink" title="二、JMM 的核心问题"></a>二、JMM 的核心问题</h2><h3 id="1-可见性"><a href="#1-可见性" class="headerlink" title="1. 可见性"></a>1. 可见性</h3><ul>
+<li>一个线程对变量的修改，<strong>另一个线程是否能立即看到？</strong></li>
+<li>比如一个线程修改了共享变量 <code>flag = true</code>，另一个线程什么时候能看到？</li>
+</ul>
+<h3 id="2-原子性"><a href="#2-原子性" class="headerlink" title="2. 原子性"></a>2. 原子性</h3><ul>
+<li><p>一个操作是<strong>不可分割</strong>的，比如 <code>i++</code> 并不是原子的，它其实包含：</p>
+<ul>
+<li>读变量</li>
+<li>自增</li>
+<li>写变量</li>
+</ul>
+<p>可用synchronized来保证方法代码段的原子性</p>
+</li>
+</ul>
+<h3 id="3-有序性"><a href="#3-有序性" class="headerlink" title="3. 有序性"></a>3. 有序性</h3><ul>
+<li>指令是否按照代码的顺序执行？</li>
+<li>JMM 允许编译器和 CPU <strong>进行指令重排序优化</strong>，只要最终结果与单线程一致即可（<strong>as-if-serial</strong>）。</li>
+</ul>
+<h2 id="三、JMM-的内存模型结构"><a href="#三、JMM-的内存模型结构" class="headerlink" title="三、JMM 的内存模型结构"></a>三、JMM 的内存模型结构</h2><p>JMM 抽象出两部分内存：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">     [主内存（Main Memory）]</span><br><span class="line">          ↑       ↑</span><br><span class="line">       ↓           ↓</span><br><span class="line">[线程<span class="number">1</span>工作内存]  [线程<span class="number">2</span>工作内存]</span><br></pre></td></tr></table></figure>
+
+<p><strong>含义：</strong></p>
+<ul>
+<li><strong>主内存</strong>（Main Memory）：存放所有共享变量</li>
+<li><strong>工作内存</strong>（每个线程独有）：存储主内存中共享变量的副本</li>
+<li>线程对变量的操作，<strong>必须在自己的工作内存中进行</strong></li>
+<li>不允许一个线程直接访问另一个线程的工作内存</li>
+</ul>
+<h2 id="四、JMM-定义的-8-种内存交互操作"><a href="#四、JMM-定义的-8-种内存交互操作" class="headerlink" title="四、JMM 定义的 8 种内存交互操作"></a>四、JMM 定义的 8 种内存交互操作</h2><p>为了让线程之间正确读写变量，JMM 定义了 8 个原子性指令：</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>lock</code></td>
+<td>给变量加锁，独占</td>
+</tr>
+<tr>
+<td><code>unlock</code></td>
+<td>解锁，释放控制权</td>
+</tr>
+<tr>
+<td><code>read</code></td>
+<td>从主内存读取变量值</td>
+</tr>
+<tr>
+<td><code>load</code></td>
+<td>把 read 得到的值放入工作内存副本</td>
+</tr>
+<tr>
+<td><code>use</code></td>
+<td>把工作内存变量用于计算</td>
+</tr>
+<tr>
+<td><code>assign</code></td>
+<td>给工作内存变量赋值</td>
+</tr>
+<tr>
+<td><code>store</code></td>
+<td>把工作内存变量写回主内存</td>
+</tr>
+<tr>
+<td><code>write</code></td>
+<td>将 store 的值写入主内存变量</td>
+</tr>
+</tbody></table>
+<p>📌 读操作 = <code>read + load</code>，写操作 = <code>assign + store + write</code></p>
+<h2 id="五、JMM-与关键字的关系"><a href="#五、JMM-与关键字的关系" class="headerlink" title="五、JMM 与关键字的关系"></a>五、JMM 与关键字的关系</h2><table>
+<thead>
+<tr>
+<th>关键字</th>
+<th>与 JMM 的关系</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>volatile</code></td>
+<td>保证 <strong>可见性</strong>、禁止重排序</td>
+</tr>
+<tr>
+<td><code>synchronized</code></td>
+<td>保证 <strong>可见性 + 原子性 + 有序性</strong>（通过 lock/unlock）</td>
+</tr>
+<tr>
+<td><code>final</code></td>
+<td>保证 <strong>构造过程中的可见性</strong>（不可变对象）</td>
+</tr>
+</tbody></table>
+<h3 id="对-volatile-变量："><a href="#对-volatile-变量：" class="headerlink" title="对 volatile 变量："></a>对 <code>volatile</code> 变量：</h3><table>
+<thead>
+<tr>
+<th>操作</th>
+<th>行为</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>写（赋值）</strong></td>
+<td>线程 <strong>直接将值写入主内存（store + write）</strong>，并 <strong>刷新工作内存中的副本</strong></td>
+</tr>
+<tr>
+<td><strong>读（取值）</strong></td>
+<td>线程 <strong>从主内存中强制读取最新值（read + load）</strong>，<strong>不使用工作内存中的旧副本</strong></td>
+</tr>
+</tbody></table>
+<p>所以，<code>volatile</code> <strong>保证了可见性</strong>，但 <strong>不保证原子性</strong>！</p>
+<h4 id="volatile-写操作的完整交互流程"><a href="#volatile-写操作的完整交互流程" class="headerlink" title="volatile 写操作的完整交互流程"></a>volatile 写操作的完整交互流程</h4><p>假设线程 A 执行：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">volatile</span> <span class="keyword">boolean</span> flag = <span class="keyword">true</span>;</span><br></pre></td></tr></table></figure>
+
+<p><strong>🌊 内存交互流程如下（线程 A）：</strong></p>
+<ol>
+<li><strong>assign</strong>：线程 A 在工作内存中把 <code>flag = true</code></li>
+<li><strong>store</strong>：把这个值准备写回主内存（进入写缓冲区或写通道）</li>
+<li><strong>write</strong>：将值真正写入主内存中 <code>flag</code> 的位置</li>
+<li>🚫 清除其他线程工作内存中对 <code>flag</code> 的缓存副本（实现强制刷新）</li>
+</ol>
+<blockquote>
+<p>✅ 重点：volatile 写操作 <strong>直接写主内存，并强制使其他线程对该变量的工作内存副本失效</strong></p>
+</blockquote>
+<p><strong>volatile 读操作的完整交互流程</strong></p>
+<p>设线程 B 执行：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (flag) &#123;</span><br><span class="line">    <span class="comment">// do something</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>🌊 内存交互流程如下（线程 B）：</strong></p>
+<ol>
+<li><strong>read</strong>：线程 B 从主内存中读取 <code>flag</code> 的最新值</li>
+<li><strong>load</strong>：将读取的值加载到自己工作内存中的 <code>flag</code> 副本</li>
+<li><strong>use</strong>：使用这个值进行判断（if 语句）</li>
+</ol>
+<blockquote>
+<p>✅ 重点：volatile 读操作 <strong>不使用工作内存的副本，一定从主内存中重新读取最新值</strong></p>
+</blockquote>
+<h2 id="六、JMM-的-happens-before-规则（重要）"><a href="#六、JMM-的-happens-before-规则（重要）" class="headerlink" title="六、JMM 的 happens-before 规则（重要）"></a>六、JMM 的 happens-before 规则（重要）</h2><p>JMM 使用 <strong>happens-before</strong> 关系定义哪些操作必须对另一个线程“可见”：</p>
+<h3 id="happens-before-规则："><a href="#happens-before-规则：" class="headerlink" title="happens-before 规则："></a>happens-before 规则：</h3><table>
+<thead>
+<tr>
+<th>规则</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>程序顺序规则</strong></td>
+<td>单线程内，代码按顺序执行</td>
+</tr>
+<tr>
+<td><strong>锁规则</strong></td>
+<td>解锁先于加锁（释放锁前的修改，对后面拿锁可见）</td>
+</tr>
+<tr>
+<td><strong>volatile 规则</strong></td>
+<td>写 <code>volatile</code> 先于读</td>
+</tr>
+<tr>
+<td><strong>线程启动规则</strong></td>
+<td><code>start()</code> 先于子线程动作</td>
+</tr>
+<tr>
+<td><strong>线程终止规则</strong></td>
+<td><code>join()</code> 先于线程结果可见</td>
+</tr>
+<tr>
+<td><strong>传递性规则</strong></td>
+<td>A → B，B → C，则 A → C</td>
+</tr>
+</tbody></table>
+<p>📌 只要两个操作之间存在 happens-before，就保证：</p>
+<ul>
+<li><strong>前者的修改对后者是可见的</strong></li>
+<li><strong>前者的执行顺序在后者之前</strong></li>
+</ul>
+<h2 id="七、JMM-解决的问题场景（举例）"><a href="#七、JMM-解决的问题场景（举例）" class="headerlink" title="七、JMM 解决的问题场景（举例）"></a>七、JMM 解决的问题场景（举例）</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">volatile</span> <span class="keyword">boolean</span> running = <span class="keyword">true</span>;</span><br><span class="line"></span><br><span class="line">Thread A:  <span class="comment">// 修改线程</span></span><br><span class="line">  running = <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">Thread B:  <span class="comment">// 读取线程</span></span><br><span class="line">  <span class="keyword">while</span> (running) &#123;</span><br><span class="line">    <span class="comment">// do work</span></span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>如果 <code>running</code> 没加 <code>volatile</code>，线程 B 可能永远看不到线程 A 改的 <code>false</code>（<strong>可见性问题</strong>）</li>
+<li>加了 <code>volatile</code>，JMM 保证线程 A 的写入操作 <strong>write</strong> 后会对 B 的 <strong>read</strong> 可见。</li>
+</ul>
+<blockquote>
+<p><strong>JMM 是 Java 规定线程读写共享变量的规则，定义了内存可见性、原子性、有序性，保证多程程序能安全、稳定运行。</strong></p>
+</blockquote>
+</div><div class="article-licensing box"><div class="licensing-title"><p>JMM(Java内存模型)</p><p><a href="http://symbol23441.top/2025/04/24/JMM-Java内存模型/">http://symbol23441.top/2025/04/24/JMM-Java内存模型/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2025-04-24</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2025-04-24</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/JVM/">JVM</a></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2025/04/24/synchronized-%E5%BA%95%E5%B1%82%E5%AE%9E%E7%8E%B0%E6%96%B9%E5%BC%8F/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">synchronized 底层实现方式</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2025/04/24/JVM%E6%B2%99%E7%AE%B1%E6%9C%BA%E5%88%B6/"><span class="level-item">JVM沙箱机制</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#一、什么是-JMM（Java-Memory-Model）？"><span class="level-left"><span class="level-item">一、什么是 JMM（Java Memory Model）？</span></span></a></li><li><a class="level is-mobile" href="#二、JMM-的核心问题"><span class="level-left"><span class="level-item">二、JMM 的核心问题</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#1-可见性"><span class="level-left"><span class="level-item">1. 可见性</span></span></a></li><li><a class="level is-mobile" href="#2-原子性"><span class="level-left"><span class="level-item">2. 原子性</span></span></a></li><li><a class="level is-mobile" href="#3-有序性"><span class="level-left"><span class="level-item">3. 有序性</span></span></a></li></ul></li><li><a class="level is-mobile" href="#三、JMM-的内存模型结构"><span class="level-left"><span class="level-item">三、JMM 的内存模型结构</span></span></a></li><li><a class="level is-mobile" href="#四、JMM-定义的-8-种内存交互操作"><span class="level-left"><span class="level-item">四、JMM 定义的 8 种内存交互操作</span></span></a></li><li><a class="level is-mobile" href="#五、JMM-与关键字的关系"><span class="level-left"><span class="level-item">五、JMM 与关键字的关系</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#对-volatile-变量："><span class="level-left"><span class="level-item">对 volatile 变量：</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#volatile-写操作的完整交互流程"><span class="level-left"><span class="level-item">volatile 写操作的完整交互流程</span></span></a></li></ul></li></ul></li><li><a class="level is-mobile" href="#六、JMM-的-happens-before-规则（重要）"><span class="level-left"><span class="level-item">六、JMM 的 happens-before 规则（重要）</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#happens-before-规则："><span class="level-left"><span class="level-item">happens-before 规则：</span></span></a></li></ul></li><li><a class="level is-mobile" href="#七、JMM-解决的问题场景（举例）"><span class="level-left"><span class="level-item">七、JMM 解决的问题场景（举例）</span></span></a></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/js/lightgallery.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script><script type="text/javascript" src="/js/imaegoo/universe.js"></script></body></html>

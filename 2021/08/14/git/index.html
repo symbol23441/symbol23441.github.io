@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>git - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="Git 是一个开源的分布式版本控制系统，用于敏捷高效地处理任何或小或大的项目。"><meta property="og:type" content="blog"><meta property="og:title" content="git"><meta property="og:url" content="http://symbol23441.top/2021/08/14/git/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="Git 是一个开源的分布式版本控制系统，用于敏捷高效地处理任何或小或大的项目。"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/2021/08/14/git/image-20210727091750377-1627348671405.png"><meta property="og:image" content="http://symbol23441.top/2021/08/14/git/4374748-4d31d77af4034233-1628762855897.png"><meta property="og:image" content="http://symbol23441.top/2021/08/14/git/image-20210727092758101-1627349279182.png"><meta property="og:image" content="http://symbol23441.top/2021/08/14/git/image-20210727100014737-1627351222324.png"><meta property="og:image" content="http://symbol23441.top/2021/08/14/git/image-20210727102348092-1627352629766.png"><meta property="og:image" content="http://symbol23441.top/2021/08/14/git/image-20210727102358865-1627352639717.png"><meta property="article:published_time" content="2021-08-14T07:48:05.000Z"><meta property="article:modified_time" content="2021-08-14T07:48:05.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="article:tag" content="git"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/2021/08/14/git/image-20210727091750377-1627348671405.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2021/08/14/git/"},"headline":"git","image":["http://symbol23441.top/2021/08/14/git/image-20210727091750377-1627348671405.png","http://symbol23441.top/2021/08/14/git/4374748-4d31d77af4034233-1628762855897.png","http://symbol23441.top/2021/08/14/git/image-20210727092758101-1627349279182.png","http://symbol23441.top/2021/08/14/git/image-20210727100014737-1627351222324.png","http://symbol23441.top/2021/08/14/git/image-20210727102348092-1627352629766.png","http://symbol23441.top/2021/08/14/git/image-20210727102358865-1627352639717.png"],"datePublished":"2021-08-14T07:48:05.000Z","dateModified":"2021-08-14T07:48:05.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"Git 是一个开源的分布式版本控制系统，用于敏捷高效地处理任何或小或大的项目。"}</script><link rel="canonical" href="http://symbol23441.top/2021/08/14/git/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2021-08-14T07:48:05.000Z" title="8/14/2021, 3:48:05 PM">2021-08-14</time>发表</span><span class="level-item"><time dateTime="2021-08-14T07:48:05.000Z" title="8/14/2021, 3:48:05 PM">2021-08-14</time>更新</span><span class="level-item">11 分钟读完 (大约1659个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">git</h1><div class="content"><h1 id="linux常用基本命令"><a href="#linux常用基本命令" class="headerlink" title="linux常用基本命令"></a>linux常用基本命令</h1><blockquote>
+<p>基本linux命令学习</p>
+</blockquote>
+<ol>
+<li>cd：改变目录</li>
+<li>cd.. 回退到上一个目录，直接cd进入默认目录</li>
+<li>pwd：显示当前所在的目录路径</li>
+<li>ls（ll）：都是列出当前目录的所有文件。只不过ll更为详细</li>
+<li>touch：新建一个文件。如touch index.js</li>
+<li>rm：删除一个文件。例如，rm index.js</li>
+<li>mkdir:新建一个目录，就是新建一个文件夹</li>
+<li>rm-r：删除一个目录，就是创建一个文件夹</li>
+<li>mv移动文件， mv index.html src index.html </li>
+<li>reset 重新初始化终端/清屏</li>
+<li>clear：清屏</li>
+<li>history 查看命令历史</li>
+<li>help 帮助</li>
+<li>exit推出</li>
+<li>#标识注释</li>
+</ol>
+<h1 id="git配置"><a href="#git配置" class="headerlink" title="git配置"></a>git配置</h1><p>查看配置</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">git config -l</span><br><span class="line">git config --global --list</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">查看用户、邮箱</span></span><br><span class="line">git config user.name  </span><br><span class="line">git config user.email</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">配置名字、邮箱</span></span><br><span class="line">git config --global user.name &quot;symbol&quot;</span><br><span class="line">git config --global user.email &quot;symbol23441@163.com&quot;</span><br></pre></td></tr></table></figure>
+
+<h1 id="git的基本操作"><a href="#git的基本操作" class="headerlink" title="git的基本操作"></a>git的基本操作</h1><p><img src="/2021/08/14/git/image-20210727091750377-1627348671405.png"></p>
+<p><img src="/2021/08/14/git/4374748-4d31d77af4034233-1628762855897.png" alt="img"></p>
+<h2 id="git项目的创建和克隆"><a href="#git项目的创建和克隆" class="headerlink" title="git项目的创建和克隆"></a>git项目的创建和克隆</h2><h3 id="本地仓库搭建"><a href="#本地仓库搭建" class="headerlink" title="本地仓库搭建"></a>本地仓库搭建</h3><p>一种是创建全新仓库，一种是克隆远程仓库</p>
+<p>1、创建全新仓库，需要用git管理的项目的根目录执行</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git init</span><br></pre></td></tr></table></figure>
+
+<p>执行后可以看到，在项目目录多出了一个.git目录，关于版本等所有信息都在这个目录里</p>
+<h3 id="克隆远程仓库"><a href="#克隆远程仓库" class="headerlink" title="克隆远程仓库"></a>克隆远程仓库</h3><p>1、克隆远程仓库，将服务器上的仓库完全镜像到本地一份</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#克隆一个项目和它整个历史代码（版本信息）</span><br><span class="line">git clone [url]</span><br></pre></td></tr></table></figure>
+
+<h2 id="git的文件操作"><a href="#git的文件操作" class="headerlink" title="git的文件操作"></a>git的文件操作</h2><p>首先，文件有四种状态</p>
+<p><img src="/2021/08/14/git/image-20210727092758101-1627349279182.png" alt="image-20210727092758101"></p>
+<h3 id="1、git-status"><a href="#1、git-status" class="headerlink" title="1、git status"></a>1、git status</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">查看指定文件状态</span></span><br><span class="line">git status [filename]</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">查看所有文件状态</span></span><br><span class="line">git status</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="2、git-add"><a href="#2、git-add" class="headerlink" title="2、git add ."></a>2、git add .</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">添加所有文件到暂存区</span></span><br><span class="line">git add .</span><br></pre></td></tr></table></figure>
+
+<h3 id="3、commit"><a href="#3、commit" class="headerlink" title="3、commit"></a>3、commit</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">单个文件提交</span></span><br><span class="line">git commit 文件1 文件2... -m &quot;新增两个文件&quot;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">提交暂存区的内容到本地仓库</span></span><br><span class="line">git commit -m</span><br><span class="line"><span class="meta">#</span><span class="bash">-m <span class="string">&quot;我更新了xxxx&quot;</span>  ,提交文件的说明信息</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p>commit合并</p>
+<p><code>git rebase -i  &lt;commit的id，可从gitlog中看到，找到所有要合并的前一个&gt;</code></p>
+<p>随后改成s</p>
+<h4 id="4、忽略文件"><a href="#4、忽略文件" class="headerlink" title="4、忽略文件"></a>4、忽略文件</h4><p>​        有些文件我们不用纳入版本控制，比如数据库文件、临时文件、设计文件。具体如，前端的npm_moudles，idea中的.idea文件</p>
+<p>​        那么我们就有了，在主目录文件下建立”.gitignore”文件，该文件有以下规则：</p>
+<ol>
+<li>忽略文件中的空行，忽略#开头的行</li>
+<li>可以使用Linux通配符。例如：星号（*）代表任意多个字符，问号（?）代表一个字符，方括号（[abc]）代表可选字符范围，大括号（{String1，String3,…}）代表可选的字符串</li>
+<li>如果名称前有一个感叹号（!）,表示例外规则，将不会被忽视</li>
+<li>如果名称的最前面是一个路径分隔符(/),表示要忽略的文件在此目录下，而子目录的文件不忽视</li>
+<li>如果名称最后面的一个路径分隔符(/)，表示要忽略的是此目录名称下该名称的子目录，而非文件(默认文件或目录都忽视)</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">为注释</span></span><br><span class="line">*.txt			#忽略所有.txt结尾的文件</span><br><span class="line">！lib.txt   		#但lib.txt除外</span><br><span class="line">/temp			#仅忽略项目根目录下的TODO文件，不包括其他目录temp</span><br><span class="line">build/			#忽略build目录下的所有文件</span><br><span class="line">doc/*.txt		#会忽略doc/notes.txt但不包括doc/server/arch.txt</span><br></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<p><img src="/2021/08/14/git/image-20210727100014737-1627351222324.png" alt="image-20210727100014737"></p>
+<h2 id="git-log"><a href="#git-log" class="headerlink" title="git log"></a>git log</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">log</span></span><br><span class="line"></span><br><span class="line">git <span class="built_in">log</span> --oneline</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="git分支"><a href="#git分支" class="headerlink" title="git分支"></a>git分支</h2><p>分支就是科幻电影里的平行宇宙，如果两个宇宙互不干扰，那么对现在的你也没有什么影响。不过在某个时间点，两个平行宇宙合并了，我们就需要处理一个问题了。</p>
+<p><img src="/2021/08/14/git/image-20210727102348092-1627352629766.png"></p>
+<p><img src="/2021/08/14/git/image-20210727102358865-1627352639717.png"></p>
+<p>git分支中的常用命令:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">查看当前分支</span></span><br><span class="line">git branch</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">列出所有分支（包括远程）</span></span><br><span class="line">git branch -a</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">仅切换分支</span></span><br><span class="line">git checkout [branch-name]</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">新建一个分支，但现在依然在原来的分支中</span></span><br><span class="line">git branch [branch-name]</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">新建一个分支，并切换到该分支</span></span><br><span class="line">git checkout -b [branch]</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">对分支进行重命名</span></span><br><span class="line">git branch -m  &lt;旧名称&gt;  &lt;新名称&gt;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">和并指定分支到当前分支</span></span><br><span class="line">git merge [branch]</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">删除分支</span></span><br><span class="line"><span class="meta">#</span><span class="bash">-d 用于删除已经合并过的分支</span></span><br><span class="line"><span class="meta">#</span><span class="bash">-D 强制删除分支(不管是否合并过)</span></span><br><span class="line">git branch -d [branch-name]</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">删除远程分支</span></span><br><span class="line">git push origin	--delete[branch-name]</span><br><span class="line">git branch -dr [remote/branch]</span><br></pre></td></tr></table></figure>
+
+<p>多个代码如果并行执行，就会导致我们代码不冲突，也就是同时存在多个版本！</p>
+<p>但当代码合并的时候，会有文件冲突，那么就需要协商。</p>
+<p><strong>master主分支应该非常稳定，用来发布新的版本，一般情况不允许在上面工作，工作一般情况下在新建的dev分支上工作，工作完后，比如要发布，或者说dev分支代码稳定后可以合并到主分支master上来</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">合并指定分支到当前分支</span></span><br><span class="line">git merge [branch]</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">合并指定远程分支到当前分支</span></span><br><span class="line">git merge [origin/branch]</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">git取消合并</span></span><br><span class="line">git merge --abort</span><br></pre></td></tr></table></figure>
+
+<h2 id="git撤销"><a href="#git撤销" class="headerlink" title="git撤销"></a>git撤销</h2><p>git reset</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- git reset --soft: 将分支回退到指定提交，工作区维持现状不变,暂存区会在现有基础上增加该commit之后的提交。</span><br><span class="line">- git reset --mixed: （默认操作）将分支回退到指定提交，暂存区也被同步为该指定提交，工作区保持不变。</span><br><span class="line">- git reset --hard: 将分支回退到指定分支，暂存区和工作区都会被同步为该指定的提交。</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>git reset后的三个参数回退程度是依次递进。soft最轻微，它不会重置当前工作区和暂存区，只会将回退版本后续的提交加到暂存区。</li>
+<li>mixed会改变暂存区，使它和回退版本同步。</li>
+<li>hard则会重置工作区和暂存区，使它和回退版本一致。</li>
+</ol>
+<h2 id="回退"><a href="#回退" class="headerlink" title="回退"></a>回退</h2><ul>
+<li><code>git reset --soft HEAD^</code>：将最近一次提交节点的提交记录回退到暂存区</li>
+<li><code>git reset --mixed HEAD^</code>：将最近一次提交节点的提交记录回退到工作区</li>
+<li><code>git reset --hard HEAD^</code>：将最近一次提交节点的提交记录全部清除</li>
+<li>git revert是用一次新的commit来回滚之前的commit，git reset是直接删除指定的commit</li>
+</ul>
+</div><div class="article-licensing box"><div class="licensing-title"><p>git</p><p><a href="http://symbol23441.top/2021/08/14/git/">http://symbol23441.top/2021/08/14/git/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2021-08-14</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2021-08-14</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/git/">git</a></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2021/08/15/json/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">json</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2021/08/14/%E9%98%BF%E9%87%8C%E4%BA%91%E9%83%A8%E7%BD%B2%E4%B8%8E%E5%9B%BE%E7%89%87%E8%B7%AF%E5%BE%84%E9%97%AE%E9%A2%98/"><span class="level-item">hexo阿里云部署与图片路径问题</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#linux常用基本命令"><span class="level-left"><span class="level-item">linux常用基本命令</span></span></a></li><li><a class="level is-mobile" href="#git配置"><span class="level-left"><span class="level-item">git配置</span></span></a></li><li><a class="level is-mobile" href="#git的基本操作"><span class="level-left"><span class="level-item">git的基本操作</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#git项目的创建和克隆"><span class="level-left"><span class="level-item">git项目的创建和克隆</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#本地仓库搭建"><span class="level-left"><span class="level-item">本地仓库搭建</span></span></a></li><li><a class="level is-mobile" href="#克隆远程仓库"><span class="level-left"><span class="level-item">克隆远程仓库</span></span></a></li></ul></li><li><a class="level is-mobile" href="#git的文件操作"><span class="level-left"><span class="level-item">git的文件操作</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#1、git-status"><span class="level-left"><span class="level-item">1、git status</span></span></a></li><li><a class="level is-mobile" href="#2、git-add"><span class="level-left"><span class="level-item">2、git add .</span></span></a></li><li><a class="level is-mobile" href="#3、commit"><span class="level-left"><span class="level-item">3、commit</span></span></a></li></ul></li><li><a class="level is-mobile" href="#git-log"><span class="level-left"><span class="level-item">git log</span></span></a></li><li><a class="level is-mobile" href="#git分支"><span class="level-left"><span class="level-item">git分支</span></span></a></li><li><a class="level is-mobile" href="#git撤销"><span class="level-left"><span class="level-item">git撤销</span></span></a></li><li><a class="level is-mobile" href="#回退"><span class="level-left"><span class="level-item">回退</span></span></a></li></ul></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/js/lightgallery.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script><script type="text/javascript" src="/js/imaegoo/universe.js"></script></body></html>

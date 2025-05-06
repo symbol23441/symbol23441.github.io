@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>处理Http请求的完整过程(Tomcat + SpringMVC) - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="简单流程： 1浏览器 --&amp;gt; HTTP 请求 --&amp;gt; Tomcat（Servlet 容器）--&amp;gt; DispatcherServlet（SpringMVC的核心）"><meta property="og:type" content="blog"><meta property="og:title" content="处理Http请求的完整过程(Tomcat + SpringMVC)"><meta property="og:url" content="http://symbol23441.top/2025/04/23/%E5%A4%84%E7%90%86Http%E8%AF%B7%E6%B1%82%E7%9A%84%E5%AE%8C%E6%95%B4%E8%BF%87%E7%A8%8B-Tomcat-SpringMVC/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="简单流程： 1浏览器 --&amp;gt; HTTP 请求 --&amp;gt; Tomcat（Servlet 容器）--&amp;gt; DispatcherServlet（SpringMVC的核心）"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/img/og_image.png"><meta property="article:published_time" content="2025-04-23T07:53:57.000Z"><meta property="article:modified_time" content="2025-04-23T07:53:57.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="article:tag" content="Spring"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/img/og_image.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2025/04/23/%E5%A4%84%E7%90%86Http%E8%AF%B7%E6%B1%82%E7%9A%84%E5%AE%8C%E6%95%B4%E8%BF%87%E7%A8%8B-Tomcat-SpringMVC/"},"headline":"处理Http请求的完整过程(Tomcat + SpringMVC)","image":["http://symbol23441.top/img/og_image.png"],"datePublished":"2025-04-23T07:53:57.000Z","dateModified":"2025-04-23T07:53:57.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"简单流程： 1浏览器 --&gt; HTTP 请求 --&gt; Tomcat（Servlet 容器）--&gt; DispatcherServlet（SpringMVC的核心）"}</script><link rel="canonical" href="http://symbol23441.top/2025/04/23/%E5%A4%84%E7%90%86Http%E8%AF%B7%E6%B1%82%E7%9A%84%E5%AE%8C%E6%95%B4%E8%BF%87%E7%A8%8B-Tomcat-SpringMVC/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2025-04-23T07:53:57.000Z" title="4/23/2025, 3:53:57 PM">2025-04-23</time>发表</span><span class="level-item"><time dateTime="2025-04-23T07:53:57.000Z" title="4/23/2025, 3:53:57 PM">2025-04-23</time>更新</span><span class="level-item">3 分钟读完 (大约401个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">处理Http请求的完整过程(Tomcat + SpringMVC)</h1><div class="content"><p>简单流程：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">浏览器 --&gt; HTTP 请求 --&gt; Tomcat（Servlet 容器）--&gt; DispatcherServlet（SpringMVC的核心）</span><br></pre></td></tr></table></figure>
+
+<span id="more"></span>
+
+<h1 id="1、Tomcat-接收并处理网络层请求"><a href="#1、Tomcat-接收并处理网络层请求" class="headerlink" title="1、Tomcat 接收并处理网络层请求"></a>1、Tomcat 接收并处理网络层请求</h1><table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1.1</td>
+<td>监听端口（默认 8080），接收 <strong>TCP 连接</strong></td>
+</tr>
+<tr>
+<td>1.2</td>
+<td><strong>从线程池中取出工作线程</strong>，解析 TCP 数据，识别为 HTTP 请求</td>
+</tr>
+<tr>
+<td>1.3</td>
+<td>将 HTTP 请求封装为 <code>HttpServletRequest</code> 对象，创建空的 <code>HttpServletResponse</code> 对象</td>
+</tr>
+<tr>
+<td>1.4</td>
+<td>调用SpringMVC 的 <code>DispatcherServlet</code>，从 URL 匹配对应的 <strong>Servlet</strong></td>
+</tr>
+</tbody></table>
+<h1 id="2、SpringMVC-接管：DispatcherServlet-登场"><a href="#2、SpringMVC-接管：DispatcherServlet-登场" class="headerlink" title="2、SpringMVC 接管：DispatcherServlet 登场"></a>2、SpringMVC 接管：DispatcherServlet 登场</h1><table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>2.1</td>
+<td>DispatcherServlet 接收到 <code>HttpServletRequest/Response</code> 对象</td>
+</tr>
+<tr>
+<td>2.2</td>
+<td>查找 <code>HandlerMapping</code>，根据 URL 找到对应的 Controller 方法</td>
+</tr>
+<tr>
+<td>2.3</td>
+<td>调用 <code>HandlerAdapter</code> 执行这个方法</td>
+</tr>
+<tr>
+<td>2.4</td>
+<td>Controller 执行业务逻辑，返回 <code>ModelAndView</code> 或响应体（如 JSON）</td>
+</tr>
+<tr>
+<td>2.5</td>
+<td>如果是视图，使用 <code>ViewResolver</code> 渲染成 HTML 页面</td>
+</tr>
+<tr>
+<td>2.6</td>
+<td>返回响应数据，写入 <code>HttpServletResponse</code></td>
+</tr>
+</tbody></table>
+<h1 id="3-Tomcat-回传响应给客户端"><a href="#3-Tomcat-回传响应给客户端" class="headerlink" title="3.Tomcat 回传响应给客户端"></a>3.Tomcat 回传响应给客户端</h1><table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>4.1</td>
+<td>SpringMVC 方法执行完成，Tomcat 拿到填充好的 <code>HttpServletResponse</code></td>
+</tr>
+<tr>
+<td>4.2</td>
+<td>将响应数据写入底层 Socket，转为 TCP 数据发回客户端</td>
+</tr>
+<tr>
+<td>4.3</td>
+<td>请求处理线程释放，回到线程池等待下一个请求</td>
+</tr>
+</tbody></table>
+<h1 id="4-总结"><a href="#4-总结" class="headerlink" title="4.总结"></a>4.总结</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[浏览器请求]</span><br><span class="line">      ↓</span><br><span class="line">[Tomcat 接收 TCP → HTTP]</span><br><span class="line">      ↓</span><br><span class="line">[封装成 HttpServletRequest/Response]</span><br><span class="line">      ↓</span><br><span class="line">[调用 DispatcherServlet.service()]</span><br><span class="line">      ↓</span><br><span class="line">[SpringMVC 分发：HandlerMapping → Controller → ViewResolver]</span><br><span class="line">      ↓</span><br><span class="line">[返回响应数据]</span><br><span class="line">      ↓</span><br><span class="line">[Tomcat 发送响应 → 客户端]</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>层级</th>
+<th>谁负责</th>
+<th>关键工作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>TCP/HTTP</td>
+<td>Tomcat</td>
+<td>监听端口，解析请求，封装 Servlet 请求对象</td>
+</tr>
+<tr>
+<td>请求分发</td>
+<td>DispatcherServlet（SpringMVC）</td>
+<td>Controller 分发、视图解析</td>
+</tr>
+<tr>
+<td>响应</td>
+<td>Tomcat</td>
+<td>写入响应数据并发送回客户端</td>
+</tr>
+<tr>
+<td>线程管理</td>
+<td>Tomcat</td>
+<td>请求线程池，控制并发数量</td>
+</tr>
+</tbody></table>
+</div><div class="article-licensing box"><div class="licensing-title"><p>处理Http请求的完整过程(Tomcat + SpringMVC)</p><p><a href="http://symbol23441.top/2025/04/23/处理Http请求的完整过程-Tomcat-SpringMVC/">http://symbol23441.top/2025/04/23/处理Http请求的完整过程-Tomcat-SpringMVC/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2025-04-23</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2025-04-23</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/Spring/">Spring</a></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2025/04/24/%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%B4%BE%E6%9C%BA%E5%88%B6/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">双亲委派机制</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2025/04/23/Spring-Boot%E5%90%AF%E5%8A%A8%E5%86%85%E5%B5%8CTomcat-%E7%9A%84%E5%85%A8%E8%BF%87%E7%A8%8B/"><span class="level-item">Spring Boot启动内嵌Tomcat 的全过程</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#1、Tomcat-接收并处理网络层请求"><span class="level-left"><span class="level-item">1、Tomcat 接收并处理网络层请求</span></span></a></li><li><a class="level is-mobile" href="#2、SpringMVC-接管：DispatcherServlet-登场"><span class="level-left"><span class="level-item">2、SpringMVC 接管：DispatcherServlet 登场</span></span></a></li><li><a class="level is-mobile" href="#3-Tomcat-回传响应给客户端"><span class="level-left"><span class="level-item">3.Tomcat 回传响应给客户端</span></span></a></li><li><a class="level is-mobile" href="#4-总结"><span class="level-left"><span class="level-item">4.总结</span></span></a></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/js/lightgallery.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script><script type="text/javascript" src="/js/imaegoo/universe.js"></script></body></html>

@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>如何用布隆过滤器和空值缓存抵御黑产刷接口攻击 - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="随着业务规模扩大，各类黑产攻击（如接口刷取、暴力破解、资源盗刷）越来越频繁。为了有效防御黑产刷接口，同时减少后端数据库的压力，我们可以结合 布隆过滤器 和 空值缓存，搭建一套高效、可扩展的防御体系。 本文将从 Key设计维度、布隆过滤器应用、空值缓存机制、误判率控制 以及 整体架构设计 五个方面展开详细分享。"><meta property="og:type" content="blog"><meta property="og:title" content="如何用布隆过滤器和空值缓存抵御黑产刷接口攻击"><meta property="og:url" content="http://symbol23441.top/2025/04/28/%E5%A6%82%E4%BD%95%E7%94%A8%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8%E5%92%8C%E7%A9%BA%E5%80%BC%E7%BC%93%E5%AD%98%E6%8A%B5%E5%BE%A1%E9%BB%91%E4%BA%A7%E5%88%B7%E6%8E%A5%E5%8F%A3%E6%94%BB%E5%87%BB/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="随着业务规模扩大，各类黑产攻击（如接口刷取、暴力破解、资源盗刷）越来越频繁。为了有效防御黑产刷接口，同时减少后端数据库的压力，我们可以结合 布隆过滤器 和 空值缓存，搭建一套高效、可扩展的防御体系。 本文将从 Key设计维度、布隆过滤器应用、空值缓存机制、误判率控制 以及 整体架构设计 五个方面展开详细分享。"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/img/og_image.png"><meta property="article:published_time" content="2025-04-27T16:12:48.000Z"><meta property="article:modified_time" content="2025-04-27T16:12:48.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="article:tag" content="redis"><meta property="article:tag" content="布隆过滤器"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/img/og_image.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2025/04/28/%E5%A6%82%E4%BD%95%E7%94%A8%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8%E5%92%8C%E7%A9%BA%E5%80%BC%E7%BC%93%E5%AD%98%E6%8A%B5%E5%BE%A1%E9%BB%91%E4%BA%A7%E5%88%B7%E6%8E%A5%E5%8F%A3%E6%94%BB%E5%87%BB/"},"headline":"如何用布隆过滤器和空值缓存抵御黑产刷接口攻击","image":["http://symbol23441.top/img/og_image.png"],"datePublished":"2025-04-27T16:12:48.000Z","dateModified":"2025-04-27T16:12:48.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"随着业务规模扩大，各类黑产攻击（如接口刷取、暴力破解、资源盗刷）越来越频繁。为了有效防御黑产刷接口，同时减少后端数据库的压力，我们可以结合 布隆过滤器 和 空值缓存，搭建一套高效、可扩展的防御体系。 本文将从 Key设计维度、布隆过滤器应用、空值缓存机制、误判率控制 以及 整体架构设计 五个方面展开详细分享。"}</script><link rel="canonical" href="http://symbol23441.top/2025/04/28/%E5%A6%82%E4%BD%95%E7%94%A8%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8%E5%92%8C%E7%A9%BA%E5%80%BC%E7%BC%93%E5%AD%98%E6%8A%B5%E5%BE%A1%E9%BB%91%E4%BA%A7%E5%88%B7%E6%8E%A5%E5%8F%A3%E6%94%BB%E5%87%BB/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2025-04-27T16:12:48.000Z" title="4/28/2025, 12:12:48 AM">2025-04-28</time>发表</span><span class="level-item"><time dateTime="2025-04-27T16:12:48.000Z" title="4/28/2025, 12:12:48 AM">2025-04-28</time>更新</span><span class="level-item">9 分钟读完 (大约1309个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">如何用布隆过滤器和空值缓存抵御黑产刷接口攻击</h1><div class="content"><p>随着业务规模扩大，各类黑产攻击（如接口刷取、暴力破解、资源盗刷）越来越频繁。为了有效防御黑产刷接口，同时减少后端数据库的压力，我们可以结合 <strong>布隆过滤器</strong> 和 <strong>空值缓存</strong>，搭建一套高效、可扩展的防御体系。</p>
+<p>本文将从 <strong>Key设计维度</strong>、<strong>布隆过滤器应用</strong>、<strong>空值缓存机制</strong>、<strong>误判率控制</strong> 以及 <strong>整体架构设计</strong> 五个方面展开详细分享。</p>
+<span id="more"></span>
+
+<h2 id="1-确定Key的维度"><a href="#1-确定Key的维度" class="headerlink" title="1. 确定Key的维度"></a>1. 确定Key的维度</h2><p>要防御黑产攻击，首先要明确：<strong>什么特征能代表一次恶意请求</strong>？这些特征就是我们需要拦截和缓存的“Key”。</p>
+<p>常见的维度包括：</p>
+<ul>
+<li><strong>用户标识</strong>：如用户ID、手机号、设备ID、设备指纹。</li>
+<li><strong>请求特征</strong>：如IP地址 + 接口路径的组合。</li>
+<li><strong>行为特征</strong>：如不存在的订单号、商品ID、券码等非法查询。</li>
+</ul>
+<p><strong>举例：</strong><br> 若遭遇大量随机订单ID查询，可以选择 <code>用户IP+订单ID</code> 作为Key；如果是单个IP频繁刷接口，可以选择 <code>IP地址</code> 作为Key。</p>
+<hr>
+<h2 id="2-布隆过滤器的应用"><a href="#2-布隆过滤器的应用" class="headerlink" title="2. 布隆过滤器的应用"></a>2. 布隆过滤器的应用</h2><p>布隆过滤器（Bloom Filter）是一种空间效率极高的数据结构，适合用于判断某个元素是否存在于集合中。它有一定的<strong>误判率</strong>（即有小概率误认为存在），但在抵御黑产场景下是可以接受的。</p>
+<p><strong>应用步骤如下：</strong></p>
+<h3 id="a-初始化阶段"><a href="#a-初始化阶段" class="headerlink" title="a. 初始化阶段"></a>a. 初始化阶段</h3><ul>
+<li>将已有的恶意Key（如黑名单IP、无效订单号）预加载到布隆过滤器中。</li>
+</ul>
+<h3 id="b-动态更新"><a href="#b-动态更新" class="headerlink" title="b. 动态更新"></a>b. 动态更新</h3><ul>
+<li>当检测到新的恶意行为时，实时将对应Key添加进布隆过滤器中。</li>
+</ul>
+<h3 id="c-优化误判率"><a href="#c-优化误判率" class="headerlink" title="c. 优化误判率"></a>c. 优化误判率</h3><ul>
+<li>合理设置布隆过滤器参数：<ul>
+<li>增大位数组容量。</li>
+<li>选择合适数量的哈希函数。</li>
+</ul>
+</li>
+<li>引入<strong>白名单机制</strong>：<ul>
+<li>白名单用户、白名单IP不走布隆过滤器校验，避免误伤。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="3-空值缓存的应用"><a href="#3-空值缓存的应用" class="headerlink" title="3. 空值缓存的应用"></a>3. 空值缓存的应用</h2><p>对于无效查询（如不存在的订单号、商品ID），即使通过布隆过滤器，也可能查询到数据库，增加压力。此时，可以使用<strong>空值缓存</strong>机制。</p>
+<p><strong>核心逻辑：</strong></p>
+<ul>
+<li>将查询结果为空的Key，缓存到Redis等缓存层。</li>
+<li>设置合理的TTL（过期时间），比如5-10分钟，防止缓存长期污染。</li>
+<li>下次同样请求到来时，直接在缓存层返回“无数据”，不再穿透数据库。</li>
+</ul>
+<hr>
+<h2 id="4-控制误判率"><a href="#4-控制误判率" class="headerlink" title="4. 控制误判率"></a>4. 控制误判率</h2><p>虽然布隆过滤器存在误判率，但我们可以通过多种策略，将误判影响控制在可接受范围内：</p>
+<h3 id="a-动态调整布隆过滤器"><a href="#a-动态调整布隆过滤器" class="headerlink" title="a. 动态调整布隆过滤器"></a>a. 动态调整布隆过滤器</h3><ul>
+<li>监控日志，观察误判情况。</li>
+<li>动态扩容位数组或调整哈希函数数量。</li>
+<li>使用支持扩容或删除元素的布隆变种，如<strong>Counting Bloom Filter</strong>。</li>
+</ul>
+<h3 id="b-兜底校验机制"><a href="#b-兜底校验机制" class="headerlink" title="b. 兜底校验机制"></a>b. 兜底校验机制</h3><ul>
+<li>对被布隆过滤器拦截的请求，允许用户通过二次验证（如短信验证码、滑动验证）解除封禁。</li>
+<li>或结合数据库进行最终一致性校验，确保不会误杀正常用户。</li>
+</ul>
+<h3 id="c-多层防御"><a href="#c-多层防御" class="headerlink" title="c. 多层防御"></a>c. 多层防御</h3><ul>
+<li>限流保护：根据IP、用户ID设置访问速率上限。</li>
+<li>行为分析：引入机器学习模型，识别异常访问模式。</li>
+<li>验证码策略：针对高频异常请求自动弹出验证码，人机分离。</li>
+</ul>
+<h3 id="d-精确数据结构"><a href="#d-精确数据结构" class="headerlink" title="d. 精确数据结构"></a>d. 精确数据结构</h3><ul>
+<li>在数据量不大或关键场景中，采用哈希表、字典等精确数据结构，做到绝无误判。</li>
+</ul>
+<hr>
+<h2 id="5-总体防御架构设计"><a href="#5-总体防御架构设计" class="headerlink" title="5. 总体防御架构设计"></a>5. 总体防御架构设计</h2><p>结合以上方案，我们可以设计如下防御流程：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">请求进入 </span><br><span class="line">    ↓</span><br><span class="line">布隆过滤器拦截恶意Key</span><br><span class="line">    ↓</span><br><span class="line">空值缓存拦截无效查询</span><br><span class="line">    ↓</span><br><span class="line">限流/验证码二次验证</span><br><span class="line">    ↓</span><br><span class="line">最终穿透至数据库查询</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意：</strong></p>
+<ul>
+<li><strong>Key维度</strong>要贴合业务特点，重点拦截高频攻击特征。</li>
+<li><strong>误判率</strong>通过参数优化、白名单机制、动态扩容等手段控制。</li>
+<li><strong>空值缓存</strong>要合理设置TTL，避免正常业务受损。</li>
+</ul>
+<hr>
+<h1 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h1><p>应对黑产刷接口攻击，不仅要靠限流、验证码等传统手段，更要合理运用数据结构和缓存机制，做到既拦截恶意流量，又保障正常用户体验。</p>
+<p>布隆过滤器+空值缓存的组合，轻量、高效、实用，非常适合在微服务、接口型系统中推广应用。</p>
+<p>未来，我们还可以在此基础上，结合 <strong>动态黑白名单</strong>、<strong>机器学习模型识别</strong>，打造更智能的防护体系。</p>
+</div><div class="article-licensing box"><div class="licensing-title"><p>如何用布隆过滤器和空值缓存抵御黑产刷接口攻击</p><p><a href="http://symbol23441.top/2025/04/28/如何用布隆过滤器和空值缓存抵御黑产刷接口攻击/">http://symbol23441.top/2025/04/28/如何用布隆过滤器和空值缓存抵御黑产刷接口攻击/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2025-04-28</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2025-04-28</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/redis/">redis</a><a class="link-muted mr-2" rel="tag" href="/tags/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/">布隆过滤器</a></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2025/04/28/InnoDB%E7%B4%A2%E5%BC%95%E6%B7%B1%E5%BA%A6%E5%89%96%E6%9E%90%EF%BC%9A%E4%BB%A3%E4%BB%B7%E3%80%81%E5%9B%9E%E8%A1%A8%E3%80%81%E7%B4%A2%E5%BC%95%E4%BC%98%E5%8C%96%E6%8C%87%E5%8D%97/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">InnoDB索引深度剖析：代价、回表、索引优化指南</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2025/04/24/synchronized-%E5%BA%95%E5%B1%82%E5%AE%9E%E7%8E%B0%E6%96%B9%E5%BC%8F/"><span class="level-item">synchronized 底层实现方式</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><ul class="menu-list"><li><a class="level is-mobile" href="#1-确定Key的维度"><span class="level-left"><span class="level-item">1. 确定Key的维度</span></span></a></li><li><a class="level is-mobile" href="#2-布隆过滤器的应用"><span class="level-left"><span class="level-item">2. 布隆过滤器的应用</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#a-初始化阶段"><span class="level-left"><span class="level-item">a. 初始化阶段</span></span></a></li><li><a class="level is-mobile" href="#b-动态更新"><span class="level-left"><span class="level-item">b. 动态更新</span></span></a></li><li><a class="level is-mobile" href="#c-优化误判率"><span class="level-left"><span class="level-item">c. 优化误判率</span></span></a></li></ul></li><li><a class="level is-mobile" href="#3-空值缓存的应用"><span class="level-left"><span class="level-item">3. 空值缓存的应用</span></span></a></li><li><a class="level is-mobile" href="#4-控制误判率"><span class="level-left"><span class="level-item">4. 控制误判率</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#a-动态调整布隆过滤器"><span class="level-left"><span class="level-item">a. 动态调整布隆过滤器</span></span></a></li><li><a class="level is-mobile" href="#b-兜底校验机制"><span class="level-left"><span class="level-item">b. 兜底校验机制</span></span></a></li><li><a class="level is-mobile" href="#c-多层防御"><span class="level-left"><span class="level-item">c. 多层防御</span></span></a></li><li><a class="level is-mobile" href="#d-精确数据结构"><span class="level-left"><span class="level-item">d. 精确数据结构</span></span></a></li></ul></li><li><a class="level is-mobile" href="#5-总体防御架构设计"><span class="level-left"><span class="level-item">5. 总体防御架构设计</span></span></a></li></ul><li><a class="level is-mobile" href="#小结"><span class="level-left"><span class="level-item">小结</span></span></a></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/js/lightgallery.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script><script type="text/javascript" src="/js/imaegoo/universe.js"></script></body></html>

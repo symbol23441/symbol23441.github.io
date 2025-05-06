@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>Redis主从复制(高可用) - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="在 Redis 的高可用架构设计中，主从复制（Replication）是一个核心机制。通过主从复制，Redis 可以实现读写分离、故障恢复、数据备份等能力，是构建高可用、高性能系统的基础。 本文将系统讲解 Redis 主从复制的实现原理，包括全量复制、基于长连接的命令传播、以及增量复制三大部分。"><meta property="og:type" content="blog"><meta property="og:title" content="Redis主从复制(高可用)"><meta property="og:url" content="http://symbol23441.top/2025/04/21/Redis%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6-%E9%AB%98%E5%8F%AF%E7%94%A8/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="在 Redis 的高可用架构设计中，主从复制（Replication）是一个核心机制。通过主从复制，Redis 可以实现读写分离、故障恢复、数据备份等能力，是构建高可用、高性能系统的基础。 本文将系统讲解 Redis 主从复制的实现原理，包括全量复制、基于长连接的命令传播、以及增量复制三大部分。"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/img/og_image.png"><meta property="article:published_time" content="2025-04-21T06:51:01.000Z"><meta property="article:modified_time" content="2025-04-21T06:51:01.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="article:tag" content="redis"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/img/og_image.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2025/04/21/Redis%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6-%E9%AB%98%E5%8F%AF%E7%94%A8/"},"headline":"Redis主从复制(高可用)","image":["http://symbol23441.top/img/og_image.png"],"datePublished":"2025-04-21T06:51:01.000Z","dateModified":"2025-04-21T06:51:01.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"在 Redis 的高可用架构设计中，主从复制（Replication）是一个核心机制。通过主从复制，Redis 可以实现读写分离、故障恢复、数据备份等能力，是构建高可用、高性能系统的基础。 本文将系统讲解 Redis 主从复制的实现原理，包括全量复制、基于长连接的命令传播、以及增量复制三大部分。"}</script><link rel="canonical" href="http://symbol23441.top/2025/04/21/Redis%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6-%E9%AB%98%E5%8F%AF%E7%94%A8/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2025-04-21T06:51:01.000Z" title="4/21/2025, 2:51:01 PM">2025-04-21</time>发表</span><span class="level-item"><time dateTime="2025-04-21T06:51:01.000Z" title="4/21/2025, 2:51:01 PM">2025-04-21</time>更新</span><span class="level-item">8 分钟读完 (大约1172个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">Redis主从复制(高可用)</h1><div class="content"><p>在 Redis 的高可用架构设计中，<strong>主从复制</strong>（Replication）是一个核心机制。通过主从复制，Redis 可以实现读写分离、故障恢复、数据备份等能力，是构建高可用、高性能系统的基础。</p>
+<p>本文将系统讲解 Redis 主从复制的实现原理，包括<strong>全量复制</strong>、<strong>基于长连接的命令传播</strong>、以及<strong>增量复制</strong>三大部分。</p>
+<span id="more"></span>
+
+<h2 id="一、Redis-主从复制概览"><a href="#一、Redis-主从复制概览" class="headerlink" title="一、Redis 主从复制概览"></a>一、Redis 主从复制概览</h2><p>在 Redis 中，一个主节点（master）可以有多个从节点（slave）。从节点通过复制主节点的数据和命令，实现与主节点的数据同步。</p>
+<p>一旦配置了主从关系，从节点将不断从主节点同步数据，并保持尽可能一致的状态。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">           客户端</span><br><span class="line">             |</span><br><span class="line">    +--------+--------+</span><br><span class="line">    |        |        |</span><br><span class="line">写/读操作  读操作   读操作</span><br><span class="line">    |        |        |</span><br><span class="line">  主服务器  从服务器 从服务器</span><br><span class="line">    |        (只读)   (只读)</span><br><span class="line">写操作同步</span><br><span class="line">    |</span><br><span class="line">  从服务器</span><br><span class="line">    |</span><br><span class="line"> (只读)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>Redis 复制的大致流程可以分为：</p>
+<ul>
+<li>初次连接时进行<strong>全量复制</strong></li>
+<li>后续保持<strong>基于长连接的命令传播</strong></li>
+<li>在连接中断恢复后，进行<strong>增量复制</strong></li>
+</ul>
+<p>下面逐一详细展开。</p>
+<h2 id="二、全量复制（Full-Resync）"><a href="#二、全量复制（Full-Resync）" class="headerlink" title="二、全量复制（Full Resync）"></a>二、全量复制（Full Resync）</h2><p><strong>场景</strong>：</p>
+<ul>
+<li>从节点第一次连接主节点</li>
+<li>从节点重启或与主节点断连后重新连接，且无有效增量复制缓存时</li>
+</ul>
+<p><strong>流程</strong>：</p>
+<ol>
+<li><strong>从节点发送 <code>PSYNC</code> 命令</strong>请求同步。</li>
+<li>如果主节点判定需要全量同步，则：<ul>
+<li>主节点执行 <code>BGSAVE</code> 操作生成一个<strong>RDB快照</strong>。</li>
+<li>同时将生成 RDB 期间的新写入命令缓存在内存中（复制缓冲区）。</li>
+</ul>
+</li>
+<li>主节点将生成的 RDB 文件通过网络发送给从节点。</li>
+<li>从节点收到 RDB 文件后，清空当前数据库并重新载入快照数据。</li>
+<li>主节点再把 BGSAVE 期间累积的写命令发送给从节点，保证最终数据一致。</li>
+<li>主从连接建立成功，进入持续同步阶段。</li>
+</ol>
+<blockquote>
+<p>注意：全量复制开销大，尤其是数据量很大时，会导致主节点阻塞，影响性能。</p>
+</blockquote>
+<h2 id="三、基于长连接的命令传播（Continuous-Command-Propagation）"><a href="#三、基于长连接的命令传播（Continuous-Command-Propagation）" class="headerlink" title="三、基于长连接的命令传播（Continuous Command Propagation）"></a>三、基于长连接的命令传播（Continuous Command Propagation）</h2><p><strong>场景</strong>：</p>
+<ul>
+<li>全量复制完成后，主从保持同步状态</li>
+<li>主节点持续处理客户端写操作</li>
+</ul>
+<p><strong>机制</strong>：</p>
+<ul>
+<li>主节点将<strong>所有写命令</strong>实时发送给从节点。</li>
+<li>通信基于<strong>持久化的 TCP 长连接</strong>，使用<strong>异步</strong>方式。</li>
+<li>命令传播使用 Redis 自己的协议（RESP 协议格式）。</li>
+</ul>
+<p>从节点接收到命令后，<strong>直接在自己的数据库中重新执行</strong>这些命令，从而保证数据的一致性。</p>
+<p>举例：</p>
+<p>如果主节点执行：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SET key1 value1</span><br></pre></td></tr></table></figure>
+
+<p>主节点会立即将这个命令以协议格式推送给从节点，从节点收到后在本地数据库执行 <code>SET key1 value1</code>。</p>
+<p>这种机制可以确保主从之间的数据变化能实时同步。</p>
+<h2 id="四、增量复制（Partial-Resync）"><a href="#四、增量复制（Partial-Resync）" class="headerlink" title="四、增量复制（Partial Resync）"></a>四、增量复制（Partial Resync）</h2><p><strong>场景</strong>：</p>
+<ul>
+<li>主从之间的连接短暂中断后（如网络闪断）</li>
+<li>从节点重新连接，且主节点仍保留了中断期间的写命令日志</li>
+</ul>
+<p><strong>机制</strong>：</p>
+<ul>
+<li>Redis 主节点维护一个<strong>复制积压缓冲区</strong>（Replication Backlog Buffer）。<ul>
+<li>它是一个固定大小的环形缓冲区，记录最近一段时间内主节点的写命令。</li>
+</ul>
+</li>
+<li>从节点重连时，带上自己上次同步的位置（<code>offset</code>）请求同步。</li>
+<li>主节点比对 offset，如果积压区内仍有需要的数据，就直接发送缺失的命令，无需全量复制。</li>
+<li>如果 offset 匹配失败（积压区数据已被覆盖），则退回执行<strong>全量复制</strong>。</li>
+</ul>
+<blockquote>
+<p>增量复制大大减少了因网络抖动引起的重同步开销，是 Redis 复制机制优化的重要部分。</p>
+</blockquote>
+<h2 id="五、总结"><a href="#五、总结" class="headerlink" title="五、总结"></a>五、总结</h2><p>Redis 主从复制通过<strong>全量复制</strong>、<strong>基于长连接的命令传播</strong>、和<strong>增量复制</strong>三种机制，实现了高效、实时的数据同步。整体特点是：</p>
+<ul>
+<li>初次连接或严重异常时使用全量复制。</li>
+<li>正常情况下，基于长连接持续传播命令，保持同步。</li>
+<li>短时断连后，使用增量复制快速恢复同步。</li>
+</ul>
+</div><div class="article-licensing box"><div class="licensing-title"><p>Redis主从复制(高可用)</p><p><a href="http://symbol23441.top/2025/04/21/Redis主从复制-高可用/">http://symbol23441.top/2025/04/21/Redis主从复制-高可用/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2025-04-21</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2025-04-21</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/redis/">redis</a></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2025/04/21/Redis%E5%93%A8%E5%85%B5%E6%9C%BA%E5%88%B6-%E9%AB%98%E5%8F%AF%E7%94%A8/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">Redis哨兵机制(高可用)</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2025/04/20/spring%E7%9A%84%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/"><span class="level-item">spring的循环依赖解决方案</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#一、Redis-主从复制概览"><span class="level-left"><span class="level-item">一、Redis 主从复制概览</span></span></a></li><li><a class="level is-mobile" href="#二、全量复制（Full-Resync）"><span class="level-left"><span class="level-item">二、全量复制（Full Resync）</span></span></a></li><li><a class="level is-mobile" href="#三、基于长连接的命令传播（Continuous-Command-Propagation）"><span class="level-left"><span class="level-item">三、基于长连接的命令传播（Continuous Command Propagation）</span></span></a></li><li><a class="level is-mobile" href="#四、增量复制（Partial-Resync）"><span class="level-left"><span class="level-item">四、增量复制（Partial Resync）</span></span></a></li><li><a class="level is-mobile" href="#五、总结"><span class="level-left"><span class="level-item">五、总结</span></span></a></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/js/lightgallery.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script><script type="text/javascript" src="/js/imaegoo/universe.js"></script></body></html>
