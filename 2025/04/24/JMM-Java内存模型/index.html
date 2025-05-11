@@ -1,167 +1,165 @@
 <!doctype html>
-<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>JMM(Java内存模型) - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="什么是 JMM（Java Memory Model）？ JMM 的核心问题 JMM 的内存模型结构 JMM 定义的 8 种内存交互操作 解决 JMM的关键字 JMM 的 happens-before 规则（重要） JMM 解决的问题场景（举例）"><meta property="og:type" content="blog"><meta property="og:title" content="JMM(Java内存模型)"><meta property="og:url" content="http://symbol23441.top/2025/04/24/JMM-Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="什么是 JMM（Java Memory Model）？ JMM 的核心问题 JMM 的内存模型结构 JMM 定义的 8 种内存交互操作 解决 JMM的关键字 JMM 的 happens-before 规则（重要） JMM 解决的问题场景（举例）"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/img/og_image.png"><meta property="article:published_time" content="2025-04-24T05:38:35.000Z"><meta property="article:modified_time" content="2025-04-24T05:38:35.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="article:tag" content="JVM"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/img/og_image.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2025/04/24/JMM-Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/"},"headline":"JMM(Java内存模型)","image":["http://symbol23441.top/img/og_image.png"],"datePublished":"2025-04-24T05:38:35.000Z","dateModified":"2025-04-24T05:38:35.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"什么是 JMM（Java Memory Model）？ JMM 的核心问题 JMM 的内存模型结构 JMM 定义的 8 种内存交互操作 解决 JMM的关键字 JMM 的 happens-before 规则（重要） JMM 解决的问题场景（举例）"}</script><link rel="canonical" href="http://symbol23441.top/2025/04/24/JMM-Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>JMM(Java内存模型) - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="​        现代CPU往往通过多级缓存与指令重排加速处理，但这些设计在多线程情况下导致并发的数据问题。并且，为保证JAVA跨平台运行特性，对不同操作系统的内存结构进行了抽象表示，提出了JMM (Java内存模型)。 ​        JMM 本质上是 Java 定义的并发编程中对&amp;#x3D;&amp;#x3D;共享变量&amp;#x3D;&amp;#x3D;的读写操作的行为规范。除了抽象了线程和主内存之间的关系之外，其还规定了从 Java 源代码到 CP"><meta property="og:type" content="blog"><meta property="og:title" content="JMM(Java内存模型)"><meta property="og:url" content="http://symbol23441.top/2025/04/24/JMM-Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="​        现代CPU往往通过多级缓存与指令重排加速处理，但这些设计在多线程情况下导致并发的数据问题。并且，为保证JAVA跨平台运行特性，对不同操作系统的内存结构进行了抽象表示，提出了JMM (Java内存模型)。 ​        JMM 本质上是 Java 定义的并发编程中对&amp;#x3D;&amp;#x3D;共享变量&amp;#x3D;&amp;#x3D;的读写操作的行为规范。除了抽象了线程和主内存之间的关系之外，其还规定了从 Java 源代码到 CP"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/2025/04/24/JMM-Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/image-20250510170201038.png"><meta property="og:image" content="http://symbol23441.top/2025/04/24/JMM-Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/image-20250510203313128.png"><meta property="article:published_time" content="2025-04-24T05:38:35.000Z"><meta property="article:modified_time" content="2025-04-24T05:38:35.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="article:tag" content="JVM"><meta property="article:tag" content="Java"><meta property="article:tag" content="JUC"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/2025/04/24/JMM-Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/image-20250510170201038.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2025/04/24/JMM-Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/"},"headline":"JMM(Java内存模型)","image":["http://symbol23441.top/2025/04/24/JMM-Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/image-20250510170201038.png","http://symbol23441.top/2025/04/24/JMM-Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/image-20250510203313128.png"],"datePublished":"2025-04-24T05:38:35.000Z","dateModified":"2025-04-24T05:38:35.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"​        现代CPU往往通过多级缓存与指令重排加速处理，但这些设计在多线程情况下导致并发的数据问题。并且，为保证JAVA跨平台运行特性，对不同操作系统的内存结构进行了抽象表示，提出了JMM (Java内存模型)。 ​        JMM 本质上是 Java 定义的并发编程中对&#x3D;&#x3D;共享变量&#x3D;&#x3D;的读写操作的行为规范。除了抽象了线程和主内存之间的关系之外，其还规定了从 Java 源代码到 CP"}</script><link rel="canonical" href="http://symbol23441.top/2025/04/24/JMM-Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
-<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2025-04-24T05:38:35.000Z" title="4/24/2025, 1:38:35 PM">2025-04-24</time>发表</span><span class="level-item"><time dateTime="2025-04-24T05:38:35.000Z" title="4/24/2025, 1:38:35 PM">2025-04-24</time>更新</span><span class="level-item">10 分钟读完 (大约1484个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">JMM(Java内存模型)</h1><div class="content"><ul>
-<li>什么是 JMM（Java Memory Model）？</li>
-<li>JMM 的核心问题</li>
-<li>JMM 的内存模型结构</li>
-<li>JMM 定义的 8 种内存交互操作</li>
-<li>解决 JMM的关键字</li>
-<li>JMM 的 happens-before 规则（重要）</li>
-<li>JMM 解决的问题场景（举例）</li>
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2025-04-24T05:38:35.000Z" title="4/24/2025, 1:38:35 PM">2025-04-24</time>发表</span><span class="level-item"><time dateTime="2025-04-24T05:38:35.000Z" title="4/24/2025, 1:38:35 PM">2025-04-24</time>更新</span><span class="level-item">29 分钟读完 (大约4377个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">JMM(Java内存模型)</h1><div class="content"><p>​        现代CPU往往通过<code>多级缓存</code>与<code>指令重排</code>加速处理，但这些设计在多线程情况下导致并发的数据问题。并且，为保证JAVA<code>跨平台</code>运行特性，对不同操作系统的内存结构进行了抽象表示，提出了JMM (Java内存模型)。</p>
+<p>​        <strong>JMM 本质上是 Java 定义的并发编程中对==共享变量==的读写操作的行为规范</strong>。除了抽象了线程和主内存之间的关系之外，其还规定了从 Java 源代码到 CPU 可执行指令的这个转化过程要遵守哪些和并发相关的原则和规范。其主要目的是为了简化多线程编程，增强程序可移植性的。</p>
+<p>本文主要通过一下几个方面进行讨论</p>
+<ul>
+<li>背景：并发问题与解决<ul>
+<li>多级缓存–&gt;内存缓存不一致问题–&gt;MESI等一致性协议</li>
+<li>指令重排–&gt;内存屏障–&gt;抽象：happen-before原则</li>
+<li>不同内存结构，操作实现不同–&gt;JMM抽象层表示</li>
+</ul>
+</li>
+<li>JMM定义与抽象内存结构</li>
+<li>主、副本内存的交互协议</li>
+<li>happen-before原则保证指令的有序性</li>
+<li>JMM中实现的volatile、synchronized、final的关键字与实现原理</li>
 </ul>
 <span id="more"></span>
 
-<h2 id="一、什么是-JMM（Java-Memory-Model）？"><a href="#一、什么是-JMM（Java-Memory-Model）？" class="headerlink" title="一、什么是 JMM（Java Memory Model）？"></a>一、什么是 JMM（Java Memory Model）？</h2><p><strong>JMM，全称 Java Memory Model（Java 内存模型）</strong>，是 Java 语言对多线程环境中 <strong>共享变量的读写操作的行为规范</strong>。</p>
-<p>它定义了：</p>
-<ul>
-<li>多线程之间 <strong>共享变量</strong> 如何被读/写。</li>
-<li>编译器、JVM、硬件如何协同保证 Java 程序的并发安全。</li>
-</ul>
-<p>JMM <strong>不是一块物理内存</strong>，而是一个 <strong>抽象的规范</strong>，解决的是“多线程之间<strong>可见性</strong>、<strong>有序性</strong>、<strong>原子性</strong>”的问题。</p>
-<blockquote>
-<p>JMM 是 Java 规定线程读写共享变量的规则，定义了内存可见性、原子性、有序性，保证多线程程序能安全、稳定运行。</p>
+<h2 id="1-背景"><a href="#1-背景" class="headerlink" title="1. 背景"></a>1. 背景</h2><blockquote>
+<p>JMM主要目的：JVM为解决<code>多级缓存的不可见问题</code>、<code>指令重排</code>、<code>跨平台多OS抽象统一</code>的三个主要问题</p>
 </blockquote>
-<h2 id="二、JMM-的核心问题"><a href="#二、JMM-的核心问题" class="headerlink" title="二、JMM 的核心问题"></a>二、JMM 的核心问题</h2><h3 id="1-可见性"><a href="#1-可见性" class="headerlink" title="1. 可见性"></a>1. 可见性</h3><ul>
-<li>一个线程对变量的修改，<strong>另一个线程是否能立即看到？</strong></li>
-<li>比如一个线程修改了共享变量 <code>flag = true</code>，另一个线程什么时候能看到？</li>
-</ul>
-<h3 id="2-原子性"><a href="#2-原子性" class="headerlink" title="2. 原子性"></a>2. 原子性</h3><ul>
-<li><p>一个操作是<strong>不可分割</strong>的，比如 <code>i++</code> 并不是原子的，它其实包含：</p>
-<ul>
-<li>读变量</li>
-<li>自增</li>
-<li>写变量</li>
-</ul>
-<p>可用synchronized来保证方法代码段的原子性</p>
-</li>
-</ul>
-<h3 id="3-有序性"><a href="#3-有序性" class="headerlink" title="3. 有序性"></a>3. 有序性</h3><ul>
-<li>指令是否按照代码的顺序执行？</li>
-<li>JMM 允许编译器和 CPU <strong>进行指令重排序优化</strong>，只要最终结果与单线程一致即可（<strong>as-if-serial</strong>）。</li>
-</ul>
-<h2 id="三、JMM-的内存模型结构"><a href="#三、JMM-的内存模型结构" class="headerlink" title="三、JMM 的内存模型结构"></a>三、JMM 的内存模型结构</h2><p>JMM 抽象出两部分内存：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">     [主内存（Main Memory）]</span><br><span class="line">          ↑       ↑</span><br><span class="line">       ↓           ↓</span><br><span class="line">[线程<span class="number">1</span>工作内存]  [线程<span class="number">2</span>工作内存]</span><br></pre></td></tr></table></figure>
+<h3 id="1-1-CPU多级缓存–-gt-共享变量“不可见问”"><a href="#1-1-CPU多级缓存–-gt-共享变量“不可见问”" class="headerlink" title="1.1 CPU多级缓存–&gt;共享变量“不可见问”"></a>1.1 CPU多级缓存–&gt;共享变量“不可见问”</h3><p><img src="/2025/04/24/JMM-Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/image-20250510170201038.png" alt="CPU多级缓存模型"></p>
+<p>​        CPU通过速度更快的缓存对CPU的执行过程（取数据）进行加速。</p>
+<p>​        <strong>CPU Cache 的工作方式：</strong> 首次使用数据会缓存到 CPU Cache 中，后续缓存命中可直接用，在合适的时候（不一定运算完成后立即），再将运算得到的数据写主存中。</p>
+<p>​    当内存中的一个变量，被多个线程共享都载入到各个核心的缓存时候，不同核心线程对这个数据的更改就会不可见，从而导致一系列问题（如写丢失、无法感知数据变化等等）。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">kejianxing</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> flag = <span class="keyword">true</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        Thread t1 = <span class="keyword">new</span> Thread(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">while</span> (flag) &#123;</span><br><span class="line">                <span class="comment">// xxx</span></span><br><span class="line">            &#125;</span><br><span class="line">            System.out.println(<span class="string">&quot;t1 finished&quot;</span>);</span><br><span class="line">        &#125;);</span><br><span class="line">        t1.start();</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">        flag = <span class="keyword">false</span>;</span><br><span class="line">        System.out.println(<span class="string">&quot;main set flag to false&quot;</span>);</span><br><span class="line">        t1.join();</span><br><span class="line">        System.out.println(<span class="string">&quot;main thread finished&quot;</span>);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p><strong>含义：</strong></p>
+<p>运行的结果只有<code>main set flag to false</code>，因为主线程对flag 的修改，子线程不可见。</p>
+<h3 id="1-2-指令重排"><a href="#1-2-指令重排" class="headerlink" title="1.2 指令重排"></a>1.2 指令重排</h3><p>为了提升执行速度/性能，计算机在执行程序代码的时候，会对指令进行重排序。</p>
+<p>常见的指令重排序有下面 2 种情况：</p>
 <ul>
-<li><strong>主内存</strong>（Main Memory）：存放所有共享变量</li>
-<li><strong>工作内存</strong>（每个线程独有）：存储主内存中共享变量的副本</li>
-<li>线程对变量的操作，<strong>必须在自己的工作内存中进行</strong></li>
-<li>不允许一个线程直接访问另一个线程的工作内存</li>
+<li><strong>编译器优化重排</strong>：编译器（包括 JVM、JIT 编译器等）在不改变单线程程序语义的前提下，重新安排语句的执行顺序。</li>
+<li><strong>指令并行重排</strong>：现代处理器采用了指令级并行技术(Instruction-Level Parallelism，ILP)来将多条指令重叠执行。如果不存在数据依赖性，处理器可以改变语句对应机器指令的执行顺序。</li>
+<li>内存系统也会有“重排序”，但又不是真正意义上的重排序。在 JMM 里表现为主存和本地内存的内容可能不一致，进而导致程序在多线程下执行可能出现问题。</li>
 </ul>
-<h2 id="四、JMM-定义的-8-种内存交互操作"><a href="#四、JMM-定义的-8-种内存交互操作" class="headerlink" title="四、JMM 定义的 8 种内存交互操作"></a>四、JMM 定义的 8 种内存交互操作</h2><p>为了让线程之间正确读写变量，JMM 定义了 8 个原子性指令：</p>
+<p>​        Java 源代码会经历 <strong>编译器优化重排 —&gt; 指令并行重排 —&gt; 内存系统重排</strong> 的过程，最终才变成操作系统可执行的指令序列。在单线程情况可以执行加速，但是多线程情况产生并发错误</p>
+<p>例如，在<strong>单例模式DCL问题</strong>下，指令重排导致的问题。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Singleton instance;  <span class="comment">// 不使用 volatile</span></span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;  <span class="comment">// 第一次检查（非同步）</span></span><br><span class="line">            <span class="keyword">synchronized</span> (Singleton.class) &#123;</span><br><span class="line">                <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;  <span class="comment">// 第二次检查（同步）</span></span><br><span class="line">                    instance = <span class="keyword">new</span> Singleton();  <span class="comment">// 可能发生指令重排！</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> instance;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>问题分析</strong></p>
+<p>​        <code>instance = new Singleton()</code> 在字节码层面分为3步：① 分配内存空间  ② 初始化对象（调用构造方法）③ 将引用赋值给 <code>instance</code></p>
+<p>如果发生指令重排（②和③交换）：</p>
+<ul>
+<li>线程A 执行 <code>instance = new Singleton()</code>，但 <code>instance</code> 先被赋值（③），而对象未初始化（②未执行）。</li>
+<li>线程B 进入 <code>getInstance()</code>，发现 <code>instance != null</code>，直接返回一个<strong>未初始化完成的对象</strong>，导致程序错误。其他线程，便会使用这个未初始化的对象，</li>
+</ul>
+<p><strong>解决方案</strong></p>
+<p><code>volatile</code> 确保：</p>
+<ol>
+<li>可见性：线程A的修改对线程B立即可见。</li>
+<li>禁止指令重排：<code>new Singleton()</code> 的步骤不会被重排。</li>
+</ol>
+<h3 id="1-3-操作系统内存实现的多样性"><a href="#1-3-操作系统内存实现的多样性" class="headerlink" title="1.3 操作系统内存实现的多样性"></a>1.3 操作系统内存实现的多样性</h3><p>​        ==结构统一==：不同的硬件、缓存的结构并不相同（如寄存器，多级缓存等等），因此JMM抽象成了<code>主内存</code>和<code>工作内存</code>。</p>
+<p>​        ==缓存数据一致性==：为解决内存缓存的不一致，不同的CPU采用缓存一致性协议通常也会有所不同。有些使用<code>MESI协议</code>来保证数据的“可见性”。</p>
+<blockquote>
+<p>​        <strong>MESI</strong> 是一种典型的多核 CPU 缓存一致性协议，用于保证多个 CPU 核访问共享内存时保持一致。它的名字来自 4 种缓存行的状态：</p>
+</blockquote>
 <table>
 <thead>
 <tr>
-<th>操作</th>
+<th>状态</th>
 <th>含义</th>
 </tr>
 </thead>
 <tbody><tr>
-<td><code>lock</code></td>
-<td>给变量加锁，独占</td>
+<td>Modified（已修改）</td>
+<td>缓存中有最新数据，主内存中是旧的，<strong>这个缓存行是独占的</strong>，必须将数据写回主内存后，其他 CPU 才能读到</td>
 </tr>
 <tr>
-<td><code>unlock</code></td>
-<td>解锁，释放控制权</td>
+<td>Exclusive（独占）</td>
+<td>缓存中与主内存一致，但<strong>只有当前 CPU 拥有</strong>这个缓存行，可以直接读写，不需要通知别人</td>
 </tr>
 <tr>
-<td><code>read</code></td>
-<td>从主内存读取变量值</td>
+<td>Shared（共享）</td>
+<td>缓存中与主内存一致，<strong>可能被多个 CPU 缓存</strong>，只能读，不能写</td>
 </tr>
 <tr>
-<td><code>load</code></td>
-<td>把 read 得到的值放入工作内存副本</td>
-</tr>
-<tr>
-<td><code>use</code></td>
-<td>把工作内存变量用于计算</td>
-</tr>
-<tr>
-<td><code>assign</code></td>
-<td>给工作内存变量赋值</td>
-</tr>
-<tr>
-<td><code>store</code></td>
-<td>把工作内存变量写回主内存</td>
-</tr>
-<tr>
-<td><code>write</code></td>
-<td>将 store 的值写入主内存变量</td>
+<td>Invalid（无效）</td>
+<td>缓存行无效，必须重新从主内存加载数据</td>
 </tr>
 </tbody></table>
-<p>📌 读操作 = <code>read + load</code>，写操作 = <code>assign + store + write</code></p>
-<h2 id="五、JMM-与关键字的关系"><a href="#五、JMM-与关键字的关系" class="headerlink" title="五、JMM 与关键字的关系"></a>五、JMM 与关键字的关系</h2><table>
+<p><strong>情境</strong>：Core 0 想写一个变量（写操作）</p>
+<p>步骤如下：</p>
+<ol>
+<li>Core 0 检查缓存行状态。当前状态是 <code>Shared</code>，不能直接写。</li>
+<li>Core 0 向其他 CPU 发出总线请求（Bus Upgrading）。它发出一个“写意图通知（Invalidate Request）”，广播到总线（Bus）上。</li>
+<li>其他 CPU 接收到请求。Core 1 收到后，将该缓存行的状态变为 <code>Invalid</code>（无效）。</li>
+<li>Core 0 把缓存行状态从 <code>Shared</code> 升级为 <code>Modified</code>。它现在拥有该缓存行的唯一副本，可以放心修改了；写操作发生在自己的缓存中，之后可以异步写回主内存。</li>
+</ol>
+<p>==禁止指令乱序==：<strong>内存屏障（Memory Barrier）</strong> 是一种用于控制 CPU 和编译器对内存操作<strong>重排序和缓存行为</strong>的指令，目的是在多线程环境下<strong>确保内存可见性和执行顺序的正确性</strong>。</p>
+<table>
 <thead>
 <tr>
-<th>关键字</th>
-<th>与 JMM 的关系</th>
+<th>类型</th>
+<th>作用描述</th>
 </tr>
 </thead>
 <tbody><tr>
-<td><code>volatile</code></td>
-<td>保证 <strong>可见性</strong>、禁止重排序</td>
+<td><strong>LoadLoad</strong></td>
+<td>保证前一个读取完成后，才能读取下一个</td>
 </tr>
 <tr>
-<td><code>synchronized</code></td>
-<td>保证 <strong>可见性 + 原子性 + 有序性</strong>（通过 lock/unlock）</td>
+<td><strong>StoreStore</strong></td>
+<td>保证前一个写操作完成后，才能执行后一个写</td>
 </tr>
 <tr>
-<td><code>final</code></td>
-<td>保证 <strong>构造过程中的可见性</strong>（不可变对象）</td>
+<td><strong>LoadStore</strong></td>
+<td>防止写操作提前于前面的读执行</td>
+</tr>
+<tr>
+<td><strong>StoreLoad</strong></td>
+<td>最强屏障，阻止写后的读操作被重排序（跨线程通信常用）</td>
 </tr>
 </tbody></table>
-<h3 id="对-volatile-变量："><a href="#对-volatile-变量：" class="headerlink" title="对 volatile 变量："></a>对 <code>volatile</code> 变量：</h3><table>
+<p>Java 的 <code>volatile</code> 和 <code>synchronized</code> 底层正是依赖内存屏障来实现其内存语义的。****</p>
+<p><strong>volatile</strong></p>
+<ul>
+<li><strong>写操作</strong>插入 <code>StoreStore + StoreLoad</code> 屏障；</li>
+<li><strong>读操作</strong>插入 <code>LoadLoad + LoadStore</code> 屏障；</li>
+<li>作用：确保变量在多线程之间及时可见，并防止重排序。</li>
+</ul>
+<p><strong>synchronized</strong></p>
+<ul>
+<li><p>进入临界区时插入读相关屏障；</p>
+</li>
+<li><p>退出临界区时插入写相关屏障；</p>
+</li>
+<li><p>作用：配合锁的语义，建立 <strong>Happens-Before</strong> 保证。</p>
+</li>
+</ul>
+<h2 id="2-JMM定义与抽象内存结构"><a href="#2-JMM定义与抽象内存结构" class="headerlink" title="2.  JMM定义与抽象内存结构"></a>2.  JMM定义与抽象内存结构</h2><p>​        一般来说，编程语言也可以直接复用操作系统层面的内存模型。不过，不同的操作系统内存模型不同。如果直接复用操作系统层面的内存模型，就可能会导致同样一套代码换了一个操作系统就无法执行了。Java 语言是跨平台的，它需要自己提供一套内存模型以屏蔽系统差异。</p>
+<blockquote>
+<p>​        <strong>JMM</strong>，全称 Java Memory Model（Java 内存模型），是 Java 语言对多线程环境中 <strong>共享变量的读写操作的行为规范</strong>。主要解决跨平台通用的并发问题，如<code>多级缓存</code>与<code>指令重排</code>。</p>
+</blockquote>
+<p>JMM抽象的<strong>内存结构</strong>：</p>
+<ul>
+<li><strong>主内存</strong>（Main Memory）：存放所有共享变量。</li>
+<li><strong>工作内存</strong>（每个线程独有）：存储主内存中共享变量的副本。实际可能是寄存器、缓存、写缓冲区等等地方。</li>
+</ul>
+<p><img src="/2025/04/24/JMM-Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/image-20250510203313128.png" alt="JMM内存结构"></p>
+<p>此外，线程对变量的操作，<strong>必须在自己的工作内存中进行</strong>，不允许一个线程直接访问另一个线程的工作内存。</p>
+<h2 id="3-内存的交互协议"><a href="#3-内存的交互协议" class="headerlink" title="3. 内存的交互协议*"></a>3. 内存的交互协议*</h2><p>（了解即可，无需记）</p>
+<p>关于主内存与工作内存直接的具体交互协议，即一个变量如何从主内存拷贝到工作内存，如何从工作内存同步到主内存之间的实现细节，Java 内存模型定义来以下八种同步操作</p>
+<p><strong>锁定（lock）</strong>: 作用于主内存中的变量，将他标记为一个线程独享变量。</p>
+<p><strong>解锁（unlock）</strong>: 作用于主内存中的变量，解除变量的锁定状态，被解除锁定状态的变量才能被其他线程锁定。</p>
+<p><strong>read（读取）</strong>：作用于主内存的变量，它把一个变量的值从主内存传输到线程的工作内存中，以便随后的 load 动作使用。</p>
+<p>**load(载入)**：把 read 操作从主内存中得到的变量值放入工作内存的变量的副本中。</p>
+<p>**use(使用)**：把工作内存中的一个变量的值传给执行引擎，每当虚拟机遇到一个使用到变量的指令时都会使用该指令。</p>
+<p><strong>assign（赋值）</strong>：作用于工作内存的变量，它把一个从执行引擎接收到的值赋给工作内存的变量，每当虚拟机遇到一个给变量赋值的字节码指令时执行这个操作。</p>
+<p><strong>store（存储）</strong>：作用于工作内存的变量，它把工作内存中一个变量的值传送到主内存中，以便随后的 write 操作使用。</p>
+<p><strong>write（写入）</strong>：作用于主内存的变量，它把 store 操作从工作内存中得到的变量的值放入主内存的变量中。</p>
+<h2 id="4-JMM的happen-before原则"><a href="#4-JMM的happen-before原则" class="headerlink" title="4.  JMM的happen-before原则*"></a>4.  JMM的happen-before原则*</h2><p>（了解即可，无需记）</p>
+<p><strong>as-if-serial</strong>是针对单线程语义的重排序规则。编译器和 CPU <strong>可以对指令优化重排</strong>，只要单线程的执行结果与顺序执行结果一致，就符合 <code>as-if-serial</code> 原则。</p>
+<p><strong>指令重排序</strong>就可能会让多线程程序的执行出现问题，为此针对多线程并发的内存可见性规则，JMM 抽象了 <strong>happens-before 原则</strong>。</p>
+<table>
 <thead>
 <tr>
-<th>操作</th>
-<th>行为</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><strong>写（赋值）</strong></td>
-<td>线程 <strong>直接将值写入主内存（store + write）</strong>，并 <strong>刷新工作内存中的副本</strong></td>
-</tr>
-<tr>
-<td><strong>读（取值）</strong></td>
-<td>线程 <strong>从主内存中强制读取最新值（read + load）</strong>，<strong>不使用工作内存中的旧副本</strong></td>
-</tr>
-</tbody></table>
-<p>所以，<code>volatile</code> <strong>保证了可见性</strong>，但 <strong>不保证原子性</strong>！</p>
-<h4 id="volatile-写操作的完整交互流程"><a href="#volatile-写操作的完整交互流程" class="headerlink" title="volatile 写操作的完整交互流程"></a>volatile 写操作的完整交互流程</h4><p>假设线程 A 执行：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">volatile</span> <span class="keyword">boolean</span> flag = <span class="keyword">true</span>;</span><br></pre></td></tr></table></figure>
-
-<p><strong>🌊 内存交互流程如下（线程 A）：</strong></p>
-<ol>
-<li><strong>assign</strong>：线程 A 在工作内存中把 <code>flag = true</code></li>
-<li><strong>store</strong>：把这个值准备写回主内存（进入写缓冲区或写通道）</li>
-<li><strong>write</strong>：将值真正写入主内存中 <code>flag</code> 的位置</li>
-<li>🚫 清除其他线程工作内存中对 <code>flag</code> 的缓存副本（实现强制刷新）</li>
-</ol>
-<blockquote>
-<p>✅ 重点：volatile 写操作 <strong>直接写主内存，并强制使其他线程对该变量的工作内存副本失效</strong></p>
-</blockquote>
-<p><strong>volatile 读操作的完整交互流程</strong></p>
-<p>设线程 B 执行：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (flag) &#123;</span><br><span class="line">    <span class="comment">// do something</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>🌊 内存交互流程如下（线程 B）：</strong></p>
-<ol>
-<li><strong>read</strong>：线程 B 从主内存中读取 <code>flag</code> 的最新值</li>
-<li><strong>load</strong>：将读取的值加载到自己工作内存中的 <code>flag</code> 副本</li>
-<li><strong>use</strong>：使用这个值进行判断（if 语句）</li>
-</ol>
-<blockquote>
-<p>✅ 重点：volatile 读操作 <strong>不使用工作内存的副本，一定从主内存中重新读取最新值</strong></p>
-</blockquote>
-<h2 id="六、JMM-的-happens-before-规则（重要）"><a href="#六、JMM-的-happens-before-规则（重要）" class="headerlink" title="六、JMM 的 happens-before 规则（重要）"></a>六、JMM 的 happens-before 规则（重要）</h2><p>JMM 使用 <strong>happens-before</strong> 关系定义哪些操作必须对另一个线程“可见”：</p>
-<h3 id="happens-before-规则："><a href="#happens-before-规则：" class="headerlink" title="happens-before 规则："></a>happens-before 规则：</h3><table>
-<thead>
-<tr>
-<th>规则</th>
+<th>happens-before规则</th>
 <th>描述</th>
 </tr>
 </thead>
@@ -195,16 +193,100 @@
 <li><strong>前者的修改对后者是可见的</strong></li>
 <li><strong>前者的执行顺序在后者之前</strong></li>
 </ul>
-<h2 id="七、JMM-解决的问题场景（举例）"><a href="#七、JMM-解决的问题场景（举例）" class="headerlink" title="七、JMM 解决的问题场景（举例）"></a>七、JMM 解决的问题场景（举例）</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">volatile</span> <span class="keyword">boolean</span> running = <span class="keyword">true</span>;</span><br><span class="line"></span><br><span class="line">Thread A:  <span class="comment">// 修改线程</span></span><br><span class="line">  running = <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">Thread B:  <span class="comment">// 读取线程</span></span><br><span class="line">  <span class="keyword">while</span> (running) &#123;</span><br><span class="line">    <span class="comment">// do work</span></span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>如果 <code>running</code> 没加 <code>volatile</code>，线程 B 可能永远看不到线程 A 改的 <code>false</code>（<strong>可见性问题</strong>）</li>
-<li>加了 <code>volatile</code>，JMM 保证线程 A 的写入操作 <strong>write</strong> 后会对 B 的 <strong>read</strong> 可见。</li>
+<h2 id="5-JMM-与关键字的关系"><a href="#5-JMM-与关键字的关系" class="headerlink" title="5.JMM 与关键字的关系"></a>5.JMM 与关键字的关系</h2><table>
+<thead>
+<tr>
+<th>关键字</th>
+<th>与 JMM 的关系</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>volatile</code></td>
+<td>保证 <strong>可见性</strong>、<strong>禁止重排序</strong></td>
+</tr>
+<tr>
+<td><code>synchronized</code></td>
+<td>保证 <strong>可见性 + 原子性 + 有序性</strong>（通过 lock/unlock）</td>
+</tr>
+<tr>
+<td><code>final</code></td>
+<td>保证 <strong>构造过程中的可见性</strong>（不可变对象）</td>
+</tr>
+</tbody></table>
+<h3 id="5-1-volatile"><a href="#5-1-volatile" class="headerlink" title="5.1 volatile"></a>5.1 <code>volatile</code></h3><p>volatile 是 Java 提供的一种轻量级的同步机制，它主要有两个功能：</p>
+<ol>
+<li>保证变量的可见性</li>
+<li>禁止指令重排序</li>
+</ol>
+<p>volatile 底层通过<strong>内存屏障</strong>实现。</p>
+<p><strong>内存屏障实现</strong></p>
+<p>在底层实现上，volatile 主要通过插入<strong>内存屏障</strong>（Memory Barrier）来实现其功能：</p>
+<ol>
+<li><strong>写操作</strong>：在 volatile 写操作后会插入一个 StoreStore 屏障和 StoreLoad 屏障<ul>
+<li>StoreStore 屏障：确保 volatile 写之前的普通写操作对其他处理器可见。（ <code>volatile</code> 写操作之前的所有普通写操作先完成，并刷新到主内存。）</li>
+<li>StoreLoad 屏障：确保 <code>volatile</code> 写操作<strong>立即刷新到主内存</strong>，并且<strong>使其他 CPU 的缓存失效</strong>（例如MESI缓存一致协议）。</li>
 </ul>
+</li>
+<li><strong>读操作</strong>：在 volatile 读操作前会插入 LoadLoad 屏障和 LoadStore 屏障<ul>
+<li>LoadLoad 屏障：确保 volatile 读操作先于后续的所有读操作</li>
+<li>LoadStore 屏障：确保 volatile 读操作先于后续的所有写操作</li>
+</ul>
+</li>
+</ol>
+<p>JMM中抽象的动作定义为：</p>
+<table>
+<thead>
+<tr>
+<th>JMM定义的操作</th>
+<th>行为</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>写（赋值）</td>
+<td>线程 直接将值写入主内存（store + write），并刷新工作内存中的副本</td>
+</tr>
+<tr>
+<td>读（取值）</td>
+<td>线程 从主内存中强制读取最新值（read + load），不使用工作内存中的旧副本</td>
+</tr>
+</tbody></table>
+<p><strong>JMM规定（happens-before 规则中的 volatile 特殊规则）：</strong></p>
 <blockquote>
-<p><strong>JMM 是 Java 规定线程读写共享变量的规则，定义了内存可见性、原子性、有序性，保证多程程序能安全、稳定运行。</strong></p>
+<p><strong>对一个 volatile 变量的写操作，happens-before 后续对这个变量的读操作。</strong></p>
 </blockquote>
-</div><div class="article-licensing box"><div class="licensing-title"><p>JMM(Java内存模型)</p><p><a href="http://symbol23441.top/2025/04/24/JMM-Java内存模型/">http://symbol23441.top/2025/04/24/JMM-Java内存模型/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2025-04-24</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2025-04-24</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/JVM/">JVM</a></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2025/04/24/synchronized-%E5%BA%95%E5%B1%82%E5%AE%9E%E7%8E%B0%E6%96%B9%E5%BC%8F/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">synchronized 底层实现方式</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2025/04/24/JVM%E6%B2%99%E7%AE%B1%E6%9C%BA%E5%88%B6/"><span class="level-item">JVM沙箱机制</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#一、什么是-JMM（Java-Memory-Model）？"><span class="level-left"><span class="level-item">一、什么是 JMM（Java Memory Model）？</span></span></a></li><li><a class="level is-mobile" href="#二、JMM-的核心问题"><span class="level-left"><span class="level-item">二、JMM 的核心问题</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#1-可见性"><span class="level-left"><span class="level-item">1. 可见性</span></span></a></li><li><a class="level is-mobile" href="#2-原子性"><span class="level-left"><span class="level-item">2. 原子性</span></span></a></li><li><a class="level is-mobile" href="#3-有序性"><span class="level-left"><span class="level-item">3. 有序性</span></span></a></li></ul></li><li><a class="level is-mobile" href="#三、JMM-的内存模型结构"><span class="level-left"><span class="level-item">三、JMM 的内存模型结构</span></span></a></li><li><a class="level is-mobile" href="#四、JMM-定义的-8-种内存交互操作"><span class="level-left"><span class="level-item">四、JMM 定义的 8 种内存交互操作</span></span></a></li><li><a class="level is-mobile" href="#五、JMM-与关键字的关系"><span class="level-left"><span class="level-item">五、JMM 与关键字的关系</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#对-volatile-变量："><span class="level-left"><span class="level-item">对 volatile 变量：</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#volatile-写操作的完整交互流程"><span class="level-left"><span class="level-item">volatile 写操作的完整交互流程</span></span></a></li></ul></li></ul></li><li><a class="level is-mobile" href="#六、JMM-的-happens-before-规则（重要）"><span class="level-left"><span class="level-item">六、JMM 的 happens-before 规则（重要）</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#happens-before-规则："><span class="level-left"><span class="level-item">happens-before 规则：</span></span></a></li></ul></li><li><a class="level is-mobile" href="#七、JMM-解决的问题场景（举例）"><span class="level-left"><span class="level-item">七、JMM 解决的问题场景（举例）</span></span></a></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+<p>这意味着：如果线程 A 写了一个 volatile 变量，线程 B 读这个变量，那么线程 A 之前对内存的写入对线程 B 是可见的。</p>
+<h3 id="5-2-synchronized"><a href="#5-2-synchronized" class="headerlink" title="5.2 synchronized"></a>5.2 synchronized</h3><p>​            synchronized 是通过对象锁从 JVM 层面实现的，其底层依赖对象头中的 Mark Word 和 Monitor（监视器锁）。</p>
+<p>在字节码层面，<code>synchronized</code> 的实现依赖于 JVM 的指令和<strong>对象头的监视器锁（Monitor）机制</strong>：</p>
+<ul>
+<li><strong>同步代码块</strong>：编译后会生成 <code>monitorenter</code> 和 <code>monitorexit</code> 字节码指令。</li>
+<li><strong>同步方法</strong>：方法的 <code>access_flags</code> 中会有 <code>ACC_SYNCHRONIZED</code> 标志。</li>
+</ul>
+<p><strong>对象头与 Monitor</strong></p>
+<p>每个 Java 对象都有一个对象头，其中包含：</p>
+<ul>
+<li>Mark Word：存储对象的哈希码、GC 分代年龄、锁状态等信息</li>
+<li>Klass Pointer：指向对象所属类的元数据</li>
+</ul>
+<p>​        在Java中，Object类提供了wait和notify，因此所有的对象都可以作为一把锁。在同步状态下，Mark Word 会指向一个 Monitor 对象（也称为管程或监视器锁）。</p>
+<blockquote>
+<p>进入和退出 synchronized 块时，JVM 会通过插入<strong>内存屏障</strong>来保障线程之间的可见性和有序性。线程在进入同步块前必须从主内存中重新读取变量值，退出时则会将变量值刷新到主内存。</p>
+</blockquote>
+<p>​        具体来说：<strong>monitorenter</strong> 指令前插入了<strong>Store Barrier（写屏障）</strong>；<strong>monitorexit</strong> 指令后插入了<strong>Load Barrier（读屏障）</strong>。保证写入主内存、读取最新值，防止指令重排序。</p>
+<p><strong>Synchronized优化</strong></p>
+<p>Jdk1.5 提出了rentrantlock 性能远高于synchronized。因为synchronized 未抢到锁会进行挂起，等待资源。因此在jdk1.6 进行优化（锁消除、锁膨胀、锁升级），目前和reentrantlock性能差不多，但reentrantlock更灵活。</p>
+<ul>
+<li>锁消除：消除不必要的锁（例如用的全是局部变量）</li>
+<li>所膨胀：扩大锁的范围，从而避免频繁加锁解锁</li>
+<li>锁升级：无锁—&gt;偏向锁-&gt;CAS锁-&gt;重量锁（挂起）。（锁一但升级不可降级）</li>
+</ul>
+<h3 id="5-3-final"><a href="#5-3-final" class="headerlink" title="5.3 final"></a>5.3 final</h3><p>final 在JMM中具有非常特殊的语义，<strong>主要是为了保证对象构造过程中的“初始化安全性”</strong>。</p>
+<p>final通过插入屏障防止指令重排序，避免其他线程看到未初始化的字段：</p>
+<ul>
+<li>在构造函数中对 <code>final</code> 字段的写操作，在字节码中会在写入后插入一个<strong>StoreStore 屏障</strong>，防止该写入与对象引用的发布发生重排序；</li>
+<li>在其他线程第一次读取包含 <code>final</code> 字段的对象引用时，会插入一个<strong>LoadLoad 屏障</strong>，保证能看到构造函数中对 <code>final</code> 字段的写操作。</li>
+</ul>
+<p>这种规则不适用于非-final 字段，所以构造对象时即使正确发布了引用，如果字段不是 final，可能仍会看到未初始化或旧的值。</p>
+</div><div class="article-licensing box"><div class="licensing-title"><p>JMM(Java内存模型)</p><p><a href="http://symbol23441.top/2025/04/24/JMM-Java内存模型/">http://symbol23441.top/2025/04/24/JMM-Java内存模型/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2025-04-24</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2025-04-24</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/JVM/">JVM</a><a class="link-muted mr-2" rel="tag" href="/tags/Java/">Java</a><a class="link-muted mr-2" rel="tag" href="/tags/JUC/">JUC</a></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2025/04/24/synchronized-%E5%BA%95%E5%B1%82%E5%AE%9E%E7%8E%B0%E6%96%B9%E5%BC%8F/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">synchronized 底层实现方式</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2025/04/24/JVM%E6%B2%99%E7%AE%B1%E6%9C%BA%E5%88%B6/"><span class="level-item">JVM沙箱机制</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#1-背景"><span class="level-left"><span class="level-item">1. 背景</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#1-1-CPU多级缓存–-gt-共享变量“不可见问”"><span class="level-left"><span class="level-item">1.1 CPU多级缓存–&gt;共享变量“不可见问”</span></span></a></li><li><a class="level is-mobile" href="#1-2-指令重排"><span class="level-left"><span class="level-item">1.2 指令重排</span></span></a></li><li><a class="level is-mobile" href="#1-3-操作系统内存实现的多样性"><span class="level-left"><span class="level-item">1.3 操作系统内存实现的多样性</span></span></a></li></ul></li><li><a class="level is-mobile" href="#2-JMM定义与抽象内存结构"><span class="level-left"><span class="level-item">2.  JMM定义与抽象内存结构</span></span></a></li><li><a class="level is-mobile" href="#3-内存的交互协议"><span class="level-left"><span class="level-item">3. 内存的交互协议*</span></span></a></li><li><a class="level is-mobile" href="#4-JMM的happen-before原则"><span class="level-left"><span class="level-item">4.  JMM的happen-before原则*</span></span></a></li><li><a class="level is-mobile" href="#5-JMM-与关键字的关系"><span class="level-left"><span class="level-item">5.JMM 与关键字的关系</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#5-1-volatile"><span class="level-left"><span class="level-item">5.1 volatile</span></span></a></li><li><a class="level is-mobile" href="#5-2-synchronized"><span class="level-left"><span class="level-item">5.2 synchronized</span></span></a></li><li><a class="level is-mobile" href="#5-3-final"><span class="level-left"><span class="level-item">5.3 final</span></span></a></li></ul></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
             article: {
                 highlight: {
                     clipboard: true,

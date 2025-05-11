@@ -3,7 +3,511 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
-<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-6-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-12-07T08:21:25.000Z" title="12/7/2023, 4:21:25 PM">2023-12-07</time>发表</span><span class="level-item"><time dateTime="2023-12-07T08:21:25.000Z" title="12/7/2023, 4:21:25 PM">2023-12-07</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/Linux-C%E7%BC%96%E7%A8%8B/">Linux C编程</a></span><span class="level-item">23 分钟读完 (大约3473个字)</span></div></div><h1 class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2023/12/07/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/">编译与链接</a></h1><div class="content"><p>本文介绍了c语言的编译、链接、动态链接、PIC地址无关代码、PLT延迟绑定、以及一些gcc指令与ELF分析指令。</p></div><a class="article-more button is-small is-size-7" href="/2023/12/07/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/#more">阅读更多</a></article></div><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-12-06T08:07:40.000Z" title="12/6/2023, 4:07:40 PM">2023-12-06</time>发表</span><span class="level-item"><time dateTime="2023-12-06T08:07:40.000Z" title="12/6/2023, 4:07:40 PM">2023-12-06</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/Linux-C%E7%BC%96%E7%A8%8B/">Linux C编程</a></span><span class="level-item">1 小时读完 (大约9307个字)</span></div></div><h1 class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2023/12/06/Linux%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/">Linux基本操作</a></h1><div class="content"><p>linux基本操作</p></div><a class="article-more button is-small is-size-7" href="/2023/12/06/Linux%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/#more">阅读更多</a></article></div><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-12-03T09:24:28.000Z" title="12/3/2023, 5:24:28 PM">2023-12-03</time>发表</span><span class="level-item"><time dateTime="2023-12-03T09:24:28.000Z" title="12/3/2023, 5:24:28 PM">2023-12-03</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/Linux-C%E7%BC%96%E7%A8%8B/">Linux C编程</a></span><span class="level-item">16 分钟读完 (大约2389个字)</span></div></div><h1 class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2023/12/03/Linux%E6%96%87%E4%BB%B6%E9%94%81/">Linux文件锁</a></h1><div class="content"><h1 id="1、linux文件锁简介"><a href="#1、linux文件锁简介" class="headerlink" title="1、linux文件锁简介"></a>1、linux文件锁简介</h1><p>Linux中软件、硬件资源都是文件（一切皆文件），文件在多用户环境中是可共享的。</p>
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-6-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2024-05-06T08:03:10.000Z" title="5/6/2024, 4:03:10 PM">2024-05-06</time>发表</span><span class="level-item"><time dateTime="2024-05-06T08:03:10.000Z" title="5/6/2024, 4:03:10 PM">2024-05-06</time>更新</span><span class="level-item">3 分钟读完 (大约456个字)</span></div></div><h1 class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2024/05/06/%E5%A6%82%E4%BD%95%E7%A1%AE%E5%AE%9A%E7%BA%BF%E7%A8%8B%E6%95%B0/">如何确定线程数</a></h1><div class="content"><p>在高并发环境下，合理设置线程池的线程数，能有效控制资源开销，提升系统响应速度和稳定性。线程数设置过少或过多，都会影响系统性能，因此需要结合实际情况精心确定。</p>
+<h2 id="1-为什么要合理设置线程数"><a href="#1-为什么要合理设置线程数" class="headerlink" title="1. 为什么要合理设置线程数"></a>1. 为什么要合理设置线程数</h2><ul>
+<li><strong>线程太少</strong>：任务堆积，吞吐量低，响应慢。</li>
+<li><strong>线程太多</strong>：频繁上下文切换，增加CPU调度开销，甚至导致内存耗尽、性能下降。</li>
+</ul>
+<h2 id="2-了解任务类型"><a href="#2-了解任务类型" class="headerlink" title="2. 了解任务类型"></a>2. 了解任务类型</h2><p>线程数量的设定要根据任务性质分类处理：</p>
+<ul>
+<li><strong>CPU密集型任务</strong><ul>
+<li>特点：主要消耗CPU计算资源。</li>
+<li>线程数建议：<strong>CPU核心数 + 1</strong>。</li>
+<li>理由：避免线程过多导致无谓的切换开销。</li>
+</ul>
+</li>
+<li><strong>IO密集型任务</strong><ul>
+<li>特点：经常等待外部资源（磁盘、网络等）。</li>
+<li>线程数建议：<strong>CPU核心数 × 2+1（或更高）</strong>。</li>
+<li>理由：等待期间CPU空闲，可以用更多线程提高并发度。</li>
+</ul>
+</li>
+<li><strong>混合型任务</strong><ul>
+<li>特点：既有计算又有IO。</li>
+<li>建议：<strong>将计算和IO拆分</strong>，分别使用不同配置的线程池。</li>
+</ul>
+</li>
+</ul>
+<h2 id="3-理论指导-实际调整"><a href="#3-理论指导-实际调整" class="headerlink" title="3. 理论指导 + 实际调整"></a>3. 理论指导 + 实际调整</h2><ul>
+<li>理论计算只能作为初步参考。</li>
+<li>必须通过<strong>性能监控</strong>和<strong>压力测试</strong>，动态调整线程池参数。</li>
+<li>重点监控指标：<ul>
+<li>CPU利用率</li>
+<li>吞吐量</li>
+<li>响应时间</li>
+<li>内存使用情况</li>
+</ul>
+</li>
+</ul>
+<h2 id="4-小结"><a href="#4-小结" class="headerlink" title="4. 小结"></a>4. 小结</h2><p>确定线程池线程数，需要根据任务类型，结合系统硬件情况，理论估算 + 压测验证，最终找到<strong>最适合自身业务的最佳值</strong>，而不是盲目套用公式。</p>
+</div></article></div><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2024-05-06T08:00:19.000Z" title="5/6/2024, 4:00:19 PM">2024-05-06</time>发表</span><span class="level-item"><time dateTime="2024-05-06T08:00:19.000Z" title="5/6/2024, 4:00:19 PM">2024-05-06</time>更新</span><span class="level-item">5 分钟读完 (大约736个字)</span></div></div><h1 class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2024/05/06/Mysql%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0ACID/">Mysql如何实现ACID</a></h1><div class="content"><h2 id="MySQL-是怎么实现-ACID-的"><a href="#MySQL-是怎么实现-ACID-的" class="headerlink" title="MySQL 是怎么实现 ACID 的"></a>MySQL 是怎么实现 <strong>ACID</strong> 的</h2><p> InnoDB 引擎。</p>
+<p>先简单回顾一下：<br> <strong>ACID</strong> 是指数据库事务需要满足的四个特性：</p>
+<ul>
+<li><strong>A</strong>（Atomicity）原子性</li>
+<li><strong>C</strong>（Consistency）一致性</li>
+<li><strong>I</strong>（Isolation）隔离性</li>
+<li><strong>D</strong>（Durability）持久性</li>
+</ul>
+<hr>
+<h3 id="1-Atomicity（原子性）"><a href="#1-Atomicity（原子性）" class="headerlink" title="1. Atomicity（原子性）"></a>1. Atomicity（原子性）</h3><p><strong>含义</strong>：事务中的操作要么全部成功，要么全部失败。</p>
+<p><strong>MySQL实现方式</strong>：</p>
+<ul>
+<li><strong>Undo Log（回滚日志）</strong>：在执行事务之前，InnoDB 会把数据的旧版本写到 Undo Log 中。如果事务中途失败或回滚了，就可以利用 Undo Log 恢复到事务开始前的状态。</li>
+<li><strong>事务控制</strong>：事务提交之前，所有修改都在私有空间（缓冲区）进行，只有提交后才真正写入数据库。</li>
+</ul>
+<hr>
+<h3 id="2-Consistency（一致性）"><a href="#2-Consistency（一致性）" class="headerlink" title="2. Consistency（一致性）"></a>2. Consistency（一致性）</h3><p><strong>含义</strong>：事务必须使数据库从一个一致性状态变到另一个一致性状态。</p>
+<p><strong>MySQL实现方式</strong>：</p>
+<ul>
+<li><strong>外键、约束、触发器</strong>：这些数据库规则本身可以保证数据的一致性。</li>
+<li><strong>事务本身的原子性 + 隔离性</strong>：事务执行时，即使出现中断或并发问题，利用回滚和隔离控制，依然可以保持一致性。</li>
+</ul>
+<p>简单说就是，Consistency 是靠数据库本身的规则 + ACID 其他三个特性一起保证的。</p>
+<hr>
+<h3 id="3-Isolation（隔离性）"><a href="#3-Isolation（隔离性）" class="headerlink" title="3. Isolation（隔离性）"></a>3. Isolation（隔离性）</h3><p><strong>含义</strong>：并发执行的事务之间互不干扰。</p>
+<p><strong>MySQL实现方式</strong>：</p>
+<ul>
+<li><strong>多版本并发控制（MVCC）</strong>：InnoDB 默认采用 MVCC，给每行数据打上版本号，读操作读自己能看到的版本，写操作修改新版本，互不影响。</li>
+<li><strong>锁机制</strong>：<ul>
+<li><strong>行锁（Record Lock）</strong>：锁定一行。</li>
+<li><strong>间隙锁（Gap Lock）</strong>：锁定一段范围，防止幻读。</li>
+<li><strong>意向锁（Intention Lock）</strong>：事务想加锁，先声明意向，提高锁管理效率。</li>
+</ul>
+</li>
+<li><strong>隔离级别（事务隔离级别）</strong>：<ul>
+<li>READ UNCOMMITTED</li>
+<li>READ COMMITTED</li>
+<li>REPEATABLE READ（InnoDB默认）</li>
+<li>SERIALIZABLE</li>
+</ul>
+</li>
+<li>InnoDB 通过 MVCC + 锁机制结合实现了事务隔离。</li>
+</ul>
+<hr>
+<h3 id="4-Durability（持久性）"><a href="#4-Durability（持久性）" class="headerlink" title="4. Durability（持久性）"></a>4. Durability（持久性）</h3><p><strong>含义</strong>：事务一旦提交，就永久保存，即使宕机也不丢失。</p>
+<p><strong>MySQL实现方式</strong>：</p>
+<ul>
+<li><strong>Redo Log（重做日志）</strong>：<ul>
+<li>InnoDB 在事务提交前，会先把修改写到 Redo Log（物理日志）。</li>
+<li>Redo Log 是持久保存的，即使 MySQL 崩了，重启时可以用 Redo Log 重放最近的修改。</li>
+</ul>
+</li>
+<li><strong>两阶段提交</strong>（特别重要）：<ul>
+<li>第一步：事务准备好后，写入 Redo Log 并打上 “prepare” 标记。</li>
+<li>第二步：事务真正提交，Redo Log 打上 “commit” 标记。</li>
+<li>保证即使宕机在 prepare 和 commit 之间，恢复时也能正确决定要回滚还是提交。</li>
+</ul>
+</li>
+</ul>
+</div></article></div><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2024-04-10T13:45:22.000Z" title="4/10/2024, 9:45:22 PM">2024-04-10</time>发表</span><span class="level-item"><time dateTime="2024-04-10T13:45:22.000Z" title="4/10/2024, 9:45:22 PM">2024-04-10</time>更新</span><span class="level-item">4 分钟读完 (大约602个字)</span></div></div><h1 class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2024/04/10/cmake/">cmake常用指令</a></h1><div class="content"><h1 id="cmake"><a href="#cmake" class="headerlink" title="cmake"></a>cmake</h1><p>cmake是管理代码构建的工具，跨平台（如windows Bisual Studio,linux g++ make）。</p>
+<p>可以简化C/C++的第三方库的引入</p></div><a class="article-more button is-small is-size-7" href="/2024/04/10/cmake/#more">阅读更多</a></article></div><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-12-18T11:27:43.000Z" title="12/18/2023, 7:27:43 PM">2023-12-18</time>发表</span><span class="level-item"><time dateTime="2023-12-18T11:27:43.000Z" title="12/18/2023, 7:27:43 PM">2023-12-18</time>更新</span><span class="level-item">1 小时读完 (大约7119个字)</span></div></div><h1 class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2023/12/18/unix-xv6/">unix xv6 系统实现</a></h1><div class="content"><span id="more"></span>
+
+<h1 id="1、"><a href="#1、" class="headerlink" title="1、"></a>1、</h1><p>重定向</p>
+<p>c语言一般习惯上默认，文件描述描述符0,1分别表示标准输入、标准输出，这两个文件都连接于shell终端显示。</p>
+<p>例如：</p>
+<p>一个简单的echo程序：</p>
+ <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;kernel/types.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;kernel/stat.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;user/user.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span></span></span><br><span class="line"><span class="function"><span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">int</span> i;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span>(i = <span class="number">1</span>; i &lt; argc; i++)&#123;</span><br><span class="line">    write(<span class="number">1</span>, argv[i], <span class="built_in">strlen</span>(argv[i]));</span><br><span class="line">    <span class="keyword">if</span>(i + <span class="number">1</span> &lt; argc)&#123;</span><br><span class="line">      write(<span class="number">1</span>, <span class="string">&quot; &quot;</span>, <span class="number">1</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      write(<span class="number">1</span>, <span class="string">&quot;\n&quot;</span>, <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">exit</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>如果不想使得0,1连接shell，可以进行重定向。关闭0,1，在使用open即可（open使用的文件描述符取为可用的最小).</p>
+<p>fork &amp;&amp; exec</p>
+<p>fork 创建一个新进程，其内存内容完全复制原进程（除去一些特定内容，如锁等）。其中，parent进程fork()返回值为子进程号，child进程fork()返回为0。</p>
+<p>exec 加载一个文件，并将进程空间全部更替为该文件代码的内容，直行exce()后进程完全替换执行。</p>
+<p>以下是一些例子：</p>
+<p>fork()</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;kernel/type.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;user/user.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span></span></span><br><span class="line"><span class="function"><span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> pid;</span><br><span class="line"></span><br><span class="line">	pid = fork();</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;fork() returned %d\n&quot;</span>, pid);</span><br><span class="line">	<span class="keyword">if</span>(pid ==<span class="number">0</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;child\n&quot;</span>);</span><br><span class="line">	&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;parent\n&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">exit</span>();</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>exec.c</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;kernel/types.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;user/user.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span></span></span><br><span class="line"><span class="function"><span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">char</span> *argv[] = &#123;<span class="string">&quot;echo&quot;</span>, <span class="string">&quot;this&quot;</span>,<span class="string">&quot;is&quot;</span>,<span class="string">&quot;echo&quot;</span>,<span class="number">0</span>&#125;;</span><br><span class="line">    exec(<span class="string">&quot;echo&quot;</span>, argv);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;exec failed!\n&quot;</span>);</span><br><span class="line">    <span class="built_in">exit</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Fork and exec</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;kernel/types.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;user/user.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> <span class="keyword">const</span> *argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> pid,status;</span><br><span class="line">    pid = fork();</span><br><span class="line">    <span class="keyword">if</span>(pid == <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">char</span> *argv[] = &#123;<span class="string">&quot;echo&quot;</span>,<span class="string">&quot;This&quot;</span>,<span class="string">&quot;is&quot;</span>,<span class="string">&quot;Echo&quot;</span>,<span class="number">0</span>&#125;;</span><br><span class="line">        exec(<span class="string">&quot;echo&quot;</span>,argv);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;echo failed!\n&quot;</span>);</span><br><span class="line">        <span class="built_in">exit</span>();</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;parent waiting!\n&quot;</span>);</span><br><span class="line">        wait();</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;the child exited with status %d\n&quot;</span>,status);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">exit</span>();</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="2、用户态和内核态的隔离"><a href="#2、用户态和内核态的隔离" class="headerlink" title="2、用户态和内核态的隔离"></a>2、用户态和内核态的隔离</h1><p>isolate</p>
+<p>kernel/user mode</p>
+<p>systemcall</p>
+<p>shell     echo     find   </p>
+<p>-—————————</p>
+<p>​            OS</p>
+<p>-—————————-</p>
+<p>HW    (Such as cpu)</p>
+<p> 如果没有操作系统进行调度，我们有一种原始的模式：协作模式。协作模式要求每个进程隔一段时间放弃cpu的使用，进行切换。</p>
+<p>非强制隔离</p>
+<h1 id="3、page"><a href="#3、page" class="headerlink" title="3、page"></a>3、page</h1><p>内部的隔离</p>
+<p>进程cpu资源的切换</p>
+<p>内核应该被保护</p>
+<p>内核和应用进程的隔离</p>
+<p>两种方式隔离，用户内核态、虚拟内存</p>
+<p>用户内核态</p>
+<p>特权指令：设置页表、设置时钟中断</p>
+<p>非特权指令：加减，trap</p>
+<p>用户系统调用来请求内核的特权服务</p>
+<p>页表：把虚拟地址映射成物理地址</p>
+<p>内核进程有自己的页表，只能访问页表中映射的页。页的映射由操作系统完成分配与回收。</p>
+<p>内核：可信计算基础</p>
+<p>两种设计模式。</p>
+<p>为减少内核bug,提高安全性，提出了微内核的架构。只有少量必须由内核完成的包含在内核内。然而，大量进程在用户态，他们之间相互通信需要通过内核态的转换，与内核的通信IPC。因此效率较低。</p>
+<p>而unix,windows，macOS这些宏内核，可以大部分处于内核态，可以直接进行通信，但随着规模的增大，容易出bug。</p>
+<p>实验：</p>
+<p>Util实验，并发</p>
+<p>QEMU gdb启动</p>
+<p>0x8000开始</p>
+<p>kernel.asm</p>
+<p>main.c</p>
+<p>proc.c</p>
+<p>initcode.S</p>
+<p>init.c</p>
+<p>系统调用systemcall </p>
+<p>cpu mmu 内存</p>
+<p>页表</p>
+<p>mmu通过satp找到映射关系完成映射</p>
+<p>虚拟地址到物理地址的映射（内存）</p>
+<p>页表完成映射</p>
+<p>多级页表的原因：不必一次性载入所有页表</p>
+<p>64位计算机，为什么多级页表一级为9位？</p>
+<p>8B一条目，4KB一物理内存，可存512条目，因此9位表示</p>
+<p>多级页表，导致了多次访存，为此取一条指令时间成本大大增加（访存时间远大于一次计算时间）。</p>
+<p>解决方案，快表TLB translation lockside buufer</p>
+<p>记录VA：PA。 虚拟地址到最终页表结果得到的实际物理地址</p>
+<p>进程切换时，TLB全部失效，重新访问页表获得。这也是进程切换，所提到的开销大的原因。因为在进程切入之初，所有的指令地址，数据地址，都需要进行多次访存（多级页表）。</p>
+<p>普通缓存，有些由虚拟地址索引，有些由物理地址索引。虚拟地址索引在mmu前，物理地址索引在mmu后。</p>
+<h1 id="4-syscall-系统调用"><a href="#4-syscall-系统调用" class="headerlink" title="4.syscall 系统调用"></a>4.syscall 系统调用</h1><p>用户态：</p>
+<p>user/user.h                    用户态函数调用的声明</p>
+<p>user/usys.pl                    普通进程进行系统调用的具体操作（pl文件编译为user/usys.S）</p>
+<p>内核态：</p>
+<p>kernel/syscall.h              系统调用编号</p>
+<p>kernel/syscall.c                系统调用，调用号，在函数数组中去执行具体函数</p>
+<p>进程相关的代码：</p>
+<p>kernel/proc.h</p>
+<p>Kernel/proc.c</p>
+<p>trap</p>
+<p>进入内核后，将会保存用户态的寄存器（包括通用寄存器，satp，pc等等）</p>
+<p>操作系统要认为所有的用户进程都是恶意的，为此进行隔离，保护内核的安全</p>
+<p><img src="/2023/12/18/unix-xv6/%E6%88%AA%E5%B1%8F2023-12-20%2015.07.04.png" alt="截屏2023-12-20 15.07.04"></p>
+<p>ecall所做的三件事：</p>
+<p>1、从用户态变到内核态</p>
+<p>2、保存用户进程pc到sepc、以及保存其他寄存器的值，如到trapframe</p>
+<p>3、跳转到stvec指令（放入pc）</p>
+<p>其中，stvec中执行了trampoline的内容</p>
+<p><code>stvec</code> 是 RISC-V 架构中的一个 CSR（Control and Status Register，控制和状态寄存器）的名称，用于设置异常向量基址（Exception Vector Base Address）。</p>
+<p>在 RISC-V 架构中，异常（例如中断、陷阱或其他处理器异常）的处理是通过异常处理向量表来实现的。<code>stvec</code> 指令可以用于设置异常处理向量表的基址。异常处理向量表存储了异常发生时相应的处理程序的地址。</p>
+<p>trapframe这一页保存了进程的一些内容，其中包括了32个插槽，用于保存32个寄存器。</p>
+<p>pc存储于sepc寄存器。</p>
+<p>trapframe 在xv6中的地址始终是0x3fffffff000地址，代码定义于kernel/proc.h.</p>
+<p>risc-v提供了sscratch寄存器，在用户态转为内核态的过程中，sscratch存储了指向trapframe的地址。</p>
+<p>当系统调用正在trampoline的代码上执行时，cpu会将satp更新为内核（将页面更新为内核页面），问：pc依旧指向原来的下一条，然而此时我们更换了内核页面，也就说pc可能指向一个不知道是什么的地方，为什么整个操作系统没有崩溃？</p>
+<p>因为所有进程的trampoline页面都映射在0x3fffffff000中，这使得更换页面之后依旧可以正常运行。</p>
+<p>进程内核栈的守护页</p>
+<p>linux将内核和用户空间处于同一套页表中，这使得内核态的切换不必切换整套页表。事实上直至今日，linux也是这么做的。不过这么做容易受到熔断攻击，侧通道攻击。</p>
+<p>kpti mode</p>
+<p>利用页错误的技巧</p>
+<p>lazy alocation</p>
+<p>sbrk()</p>
+<p>umunmap panic修改</p>
+<p>zero-fill on demand</p>
+<p>所有BBS段都映射到同一个只读的全0页</p>
+<p>一但需要写入，就会有page fault。</p>
+<p>解决：copy+undate pte、restart instruction</p>
+<p>copy on write       fork</p>
+<p>所有子进程的页表都从父进程的页表复制，并且父进程和子进程将权限都设置为只读。如此做，意义在于父进程和子进程的页表都映射到同一物理内存，节省了物理内存。当父进程和子进程其中一方写入页面是，会发生页错误，此时内核为子进程复制一份物理页表，父进程仍然指向原来的物理页，权限设置为刻度科协，子进程pte指向新的物理页面，可读可写。然后返回原来的执行，重新执行userret()。</p>
+<p>x86有复制内存范围的硬件指令 指令，而risc-v没有。</p>
+<p>demand paging</p>
+<p>按需分配时对于加载执行文件来说的。若一个二进制文件非常大，那么打开（将程序从磁盘加载到内存）该程序将花费许多时间，为此我们可以延迟加载该部分内容。</p>
+<p>当程序运行到一个未加载的虚拟内存的时候（访问程序段或者数据段），会出现页错误。此时我们再加载该页的实际内容，并且va和pa映射，之后再重新执行原来的指令。</p>
+<p>demand paging2</p>
+<p>如果某个进程的二进制文件很大，或者运行了许多进程，会耗尽物理内存的资源，即out-of-memory。</p>
+<p>那么就应该：</p>
+<p>淘汰一个页面</p>
+<p>在载入所需要的页面</p>
+<p>重新执行原来的指令</p>
+<p>那么如何淘汰就会涉及一些算法（替换策略），如FIFO，LRU等等。</p>
+<p>以及一些脏页和非脏页的概念。有些换出非脏页。若换出脏页则需要进行写入磁盘。</p>
+<p>内存映射文件memory-mapped-files</p>
+<p>汇编ld，sd，加载内存和存储内存</p>
+<p>os实现mmap，mmap（va，len，protected，flags，fd，off）</p>
+<p>文件描述符fd 会指向一点内存的虚拟地址，通过off偏移来指定相对位置，并且prot会有一些保护标识，如只读只写等等。</p>
+<p>unmap(va,len)</p>
+<p>在这里需要把脏页（pte D标志位为1）的数据写回到磁盘。</p>
+<p>在内存实现中，unmap不是立即完成的，只需要在某个地方保存副本，比如一个pte属于一个特定的文件描述符，在旁边会有一些控制信息，例如结构体VMA=virtual memory area。</p>
+<p>VMA（Virtual Memory Area，虚拟内存区域）是操作系统中用于管理进程虚拟地址空间的抽象概念。它代表了进程地址空间中的一块连续的虚拟内存区域，包含了相似属性的内存页。</p>
+<p>如果多个进程对文件进行写入，那么他可能是任意进程写入的一个。如果不进行同步控制，会出现覆盖的情况。这就需要引入文件锁了。</p>
+<h1 id="中断interrupts"><a href="#中断interrupts" class="headerlink" title="中断interrupts"></a>中断interrupts</h1><p>hw wants attention now</p>
+<p>Sw</p>
+<p>save its work</p>
+<p>process interrupt</p>
+<p>resume its work</p>
+<p>和系统调用类似</p>
+<p>涉及了</p>
+<p>异步asynachornous</p>
+<p>并发 concyrency</p>
+<p>设备编程</p>
+<p>课题：</p>
+<p>shell如何打印$ 以及如何读入数据</p>
+<p>PLIC</p>
+<p><img src="/2023/12/18/unix-xv6/image-20231225165427747.png" alt="image-20231225165427747"></p>
+<p>PLIC（Platform-Level Interrupt Controller）和 CLINT（Core Local Interruptor）是 RISC-V 处理器架构中常见的两种中断控制器。</p>
+<ul>
+<li><strong>PLIC</strong>：PLIC 是 RISC-V 处理器中用于管理外部中断的控制器。它负责管理来自外部设备（如外部 I/O 设备）的中断，并向处理器内核传递这些中断请求。PLIC 通常是多核处理器系统中的共享组件，可以连接多个处理器核心，为每个核心提供中断信息。</li>
+<li><strong>CLINT</strong>：CLINT 是 RISC-V 处理器中的本地中断控制器。它主要负责处理与特定核心相关的中断。每个核心都有一个本地定时器和本地中断控制器。CLINT 用于处理定时器中断，还包含一个用于处理全局中断的计时器。</li>
+</ul>
+<p>driver manages device</p>
+<p>uart.c 是uart芯片的驱动程序</p>
+<p><img src="/2023/12/18/unix-xv6/image-20231225170601352.png" alt="image-20231225170601352"></p>
+<p>一个驱动程序大致有如下结构：</p>
+<p>​    中断处理：接收一些设备或者cpu的一些中断信号，进行处理。</p>
+<p>​    上层：如系统调用等等，进行一些数据与信号的传输。</p>
+<p>​    队列buffer:缓冲队列进行暂存数据，这使得cpu和设备进行解耦。不必等待彼此。</p>
+<p>编程设备</p>
+<p>​    memory mapped i/o </p>
+<p>​    例如在risc-v中对一些特定的物理地址进行映射。</p>
+<p>​    程序通过ld、st进行read、write 设备的控制寄存器（control register device）</p>
+<p>$：设备把$放到uart中，然后uart在此之后产生一个中断</p>
+<p>ls： 键盘连接到接收line，并且产生中断</p>
+<p>RISC-V支持的中断</p>
+<p>SIE    one bit for E，S，T</p>
+<p>SSTATUS onr bit 开启禁用中断</p>
+<p>SIP    展示时什么中断</p>
+<p>SCAUSE    用于存储导致异常或中断的原因代码（cause code）</p>
+<p>STVEC    用于指定异常处理程序的基址</p>
+<p>设备和cpu并行运行，通过生产者消费者方式进行解耦运行</p>
+<p>中断的启停，uart、plic、cpu</p>
+<p>以上为一些慢速设备的终端，倘若有快速设备的中断，例如网卡，每秒需要处理的速度大于cpu的中断处理能力。操作系统对于这种快速的设备，操作系统进行轮询接收，其处理速率会远高于中断处理，节省了entry和exit的花费。</p>
+<h1 id="锁"><a href="#锁" class="headerlink" title="锁"></a>锁</h1><p>简单的循环判断获取，变量并不能解决竞态问题。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span>(<span class="number">1</span>)&#123;</span><br><span class="line">  <span class="keyword">if</span>(l-&gt;locked==<span class="number">0</span>)&#123;</span><br><span class="line">    l-&gt;locker=<span class="number">1</span>;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>倘若两个核心分别都同时读入l-》locked，那么它们都将成功进入临界区。锁的设计失败了。</p>
+<p>当然也有算法可以实现纯代码的锁，如皮特森算法，面包店算法。</p>
+<p>而在操作系统中更常见的是由硬件实现的锁。（原子操作）</p>
+<p>硬件实现：</p>
+<p>在内存某个位置使用swap的原子操作，进行交换获取锁。</p>
+<p><img src="/2023/12/18/unix-xv6/image-20231226135714121.png" alt="image-20231226135714121"></p>
+<p>另一个问题是，编译器会在不同架构下对代码进行优化。</p>
+<p>那就有可能将要求保护的变量读写的指令，移除了锁的请求和锁的释放之间。这使得实际上锁并没有保护上变量。</p>
+<h1 id="进程切换与调度"><a href="#进程切换与调度" class="headerlink" title="进程切换与调度"></a>进程切换与调度</h1><p>yield  是进程让出cpu的第一步</p>
+<p>shed</p>
+<p>进行了一些检查</p>
+<p>保存了中断的intena</p>
+<p>调用switch</p>
+<p>从switch返回</p>
+<p>Switch</p>
+<p>又汇编编写，保存并切换了了一些寄存器。</p>
+<p>重要的是ra寄存器，保存了返回执行的地址。（调用者调用switch是以函数调用的方式，这也意味着无需保存pc，而是函数返回时自动设置了pc）</p>
+<p>其中switch更换的上下文为，cpu的一段程序，这段程序可以认为是cpu自己的一个进程，代码中自己设置进程号为0（不是一般的进程）；</p>
+<p>进程切换的整体流程如下：</p>
+<p>​        使得进程放弃cpu资源进行切换的原因有三：时间中断（时间片用完）、睡眠（等待IO）、进程退出。</p>
+<p>​        进程不会主动放弃cpu使用权，大多数情况下进程切换是因时间中断。倘若时间中断发生，无论在用户态和内核态，都会进行切换。usertrapret或kerneltrap进行处理时间中断，调用yield函数（上锁、修改当前进程的状态为就绪runable、然后进行sched切换），sched()（进行了安全检查，switch切换到cpu的进程上下文，即调度）。switch中保存了一些寄存器，其中重要的有ra(return address)寄存器，保存了switch程序返回的执行地址。</p>
+<p>​        切换到另一端是在proc.c中的scheduler()函数switch()后的函数中，在这个scheduler函数中进行了调度的操作。</p>
+<p>​        一个值得注意点是，普通进程和cpu调度进程之间的p-&gt;locked锁是交错上锁解锁的。具体来说，调度进程找到一个可执行的进程，上p-&gt;locked锁，修改为running状态，然后通过switch切换到进程中，进行执行，进程中的switch后便是解锁p-&gt;locked。当进程时间中断的时候,再scheduler中先上p-&gt;locked锁，改为就绪态，switch切换到scheduler上，然后解锁，进行调度下一个进程。</p>
+<p>​        schedluer在每个cpu执行初始化main.c的最后便进入scheduler的循环调度。</p>
+<p>​        对于后续创建的进程来说，在进程创建的时候对该进程的上下文进行fake初始化，ra的返回执行地址为forkret()函数地址（后续对第一个进程执行的过程中，进行文件系统的初始化，后续进程不进行；随后usertrapret返回到用户态执行进程指令）。</p>
+<p><img src="/2023/12/18/unix-xv6/image-20231227201451002.png" alt="image-20231227201451002"></p>
+<p><img src="/2023/12/18/unix-xv6/image-20231227201507277.png" alt="image-20231227201507277"></p>
+<p>COW的实现</p>
+<p>协作</p>
+<p>pipe读写，disk读写</p>
+<p>wait()</p>
+<p>方案：</p>
+<p>busy wait</p>
+<p>​    while（xxxx）；</p>
+<h1 id="文件系统系统"><a href="#文件系统系统" class="headerlink" title="文件系统系统"></a>文件系统系统</h1><p>open</p>
+<p>write</p>
+<p>read</p>
+<p>link</p>
+<p>unlink</p>
+<p>Inode </p>
+<p>Link count</p>
+<p>Open fd count（fd必须维护一个偏移量offset）</p>
+<p>两个都为0，才可删除文件</p>
+<p>names fds</p>
+<p>icache   (目的同步)</p>
+<p>logging</p>
+<p>bufcache</p>
+<p>disk</p>
+<p>cpu-mem</p>
+<p>—–PCIe—–</p>
+<p>SSD    HDD</p>
+<p><img src="/2023/12/18/unix-xv6/image-20231227165032169.png" alt="image-20231227165032169"></p>
+<p><img src="/2023/12/18/unix-xv6/image-20231227165016074.png" alt="image-20231227165016074"></p>
+<p>Max file size :</p>
+<p>(256+12)*1024</p>
+<p><img src="/2023/12/18/unix-xv6/image-20231227170039830.png" alt="image-20231227170039830"></p>
+<p>这是磁盘中目录文件的布局。</p>
+<p>在inode中type也会支持这是个目录文件</p>
+<p>大的文件系统可以用B-tree实现</p>
+<p><img src="/2023/12/18/unix-xv6/image-20231227172806466.png" alt="image-20231227172806466"></p>
+<p>写磁盘</p>
+<p>Inode create</p>
+<p>ialloc</p>
+<p>Bio.c</p>
+<p>bread</p>
+<p>​    bget 在高速缓冲区获取一个插槽（查看相关锁）</p>
+<p>​    brealse</p>
+<p>自旋锁有许多限制条件：</p>
+<p>中断必须关闭</p>
+<p>所需时间必须足够小</p>
+<p>sleep睡眠锁</p>
+<p>所需等待时间较长，为此让出cpu处理资源</p>
+<p>为什么fs.c文件中只调用了bread，而没有bwrite呢？</p>
+<p>那对一个文件的修改是如何保存的呢？</p>
+<p>提示：文件系统的日志</p>
+<h1 id="文件系统的崩溃安全-日志系统log"><a href="#文件系统的崩溃安全-日志系统log" class="headerlink" title="文件系统的崩溃安全\日志系统log"></a>文件系统的崩溃安全\日志系统log</h1><p>crash safety</p>
+<p>文件系统的操作是<strong>多步的</strong>，当我们正在执行一个多步操作的时候如若内核崩溃、设备掉电等等问题，可能会使得文件磁盘数据损坏。</p>
+<p>为此提出了文件日志的解决方案</p>
+<p>文件操作是多步的，例如，读取inode、分配inode等等</p>
+<p>$echo “hi” &gt; x</p>
+<p>Write 33    allocate indoe for x</p>
+<p>Write 33    init inode s</p>
+<p>Write 46    record x in/directory’s data block</p>
+<p>Write 32    update root inode</p>
+<p>Write 33    update inode x</p>
+<p>Write：45 set alloc bit in bitmap block</p>
+<p>write 595 write h to allocated data block</p>
+<p>write 595 write i to allocated data lblock</p>
+<p>write 33  (sizeupdate,bn0)</p>
+<p>….</p>
+<p>​    例如在第二条后崩溃了。在这种情况下，我们已经分配了x的inode，但是我们没有将x记入目录，这使得lose inode，我们甚至没有办法删除该inode</p>
+<p>​    在Write：45 set alloc bit in bitmap block后崩溃呢？lose disk block</p>
+<p>logging</p>
+<p>fs的调用都是原子的</p>
+<p>fast recovery</p>
+<p>high performance</p>
+<p> <img src="/2023/12/18/unix-xv6/image-20231229203543679.png" alt="image-20231229203543679"></p>
+<p>​        在磁盘区域中，我们划出一部分作为日志区域。我们将写入操作，按块写入log区域，当我们commit op时候，我们将log中的block写入文件区域（install），当写入完成后我们清楚该条log。</p>
+<p>​        当设备在commit前崩溃时，就如同未执行写调用一样。当设备在commit op后发生崩溃，系统便可以在重启的时候将log重新写入文件区域。当设备在install后崩溃时，且log块还没有被清楚，此时系统也重新install，由于重复写同一份数据并不会出错，因此正确执行。</p>
+<p>​    一个值得说明的是，追加操作并不在这里体现，因为，追加的这些操作一般在内存中实现，内存中的一个块对应入磁盘一个块，这里做的事情是将内存中修改的脏块安全的载入磁盘。</p>
+<p>xv6中文件log系统的实现，详见代码。</p>
+<p>事实上，上次的write print过程只是卸载log_write中，这次我们将其卸载bwrite中。</p>
+<p>$echo “hi” &gt; x</p>
+<p>Write 33    allocate indoe for x</p>
+<p>Write 33    init inode s</p>
+<p>Write 46    record x in/directory’s data block</p>
+<p>Write 32    update root inode</p>
+<p>Write 33    update inode x</p>
+<p>bwrite 3    allocate indoe for x/init inode s/update inode x     事务原子操作的总结果</p>
+<p>bwrite 4    record x in/directory’s data block     事务原子操作的总结果</p>
+<p>bwrite 5    update root inode                                事务原子操作的总结果</p>
+<p>bwrite 2    write log head（end_op&quot;commit的结果”）</p>
+<p>bwrite 33    install change 33</p>
+<p>bwrite 46    install change 46</p>
+<p>bwrite 32    install change 32</p>
+<p>bwrite 2</p>
+<p>bwrite 3</p>
+<p>bwrite 4</p>
+<p>bwrite 5</p>
+<p>bwrite 2</p>
+<p>bwrite：45 </p>
+<p>bwrite 595 </p>
+<p>bwrite 33  </p>
+<p>bwrite 2</p>
+<p>​    </p>
+<p>challenges ：</p>
+<p>bache  evication </p>
+<p>​        缓存不应该驱逐日志中的任何块。因此，在log_write一个block后，调用者将block–，此时log_write 中使用bpin使得b.ref++,防止一个事务还未完成的时候，内存将该块内容驱逐出去。</p>
+<p>fs op must be fit in log</p>
+<p>max log size is 30</p>
+<p>因为观察得知，一次磁盘的op操作，写入的块基本小于30块。</p>
+<p>同时，bcache&gt;=logsize</p>
+<p>问：当写入一个大文件的时候，是否会超过30block？</p>
+<p>事实上在sys_write函数中，我们将一个大的文件写入拆成小的文件进行写入。</p>
+<p>concernt fs calls，all concurrent ops must fit</p>
+<p>当并发执行文件调用的时候，所有的操作都应该写入log。</p>
+<p>xv6为了解决这个问题，限制了进行fs调用的数量，当超过可调用的数量，程序便进入睡眠，等待可调用。可在log.c中的begin_op中实现。</p>
+<p>这些并发的数据log同时写入，也称为组提交。</p>
+<h1 id="文件系统的性能-file-system-performance"><a href="#文件系统的性能-file-system-performance" class="headerlink" title="文件系统的性能 file system performance"></a>文件系统的性能 file system performance</h1><p>log = “jourual”</p>
+<p>“ext3” = ext2 + jourual</p>
+<p>Xv6 log review</p>
+<p>元数据：indoe、dir（树桩）、bitmap。保存文件的块我们称为文件块。</p>
+<p>log区域</p>
+<p>head、记录块。</p>
+<p>install 真实的文件区域</p>
+<p>带有log的文件系统写入的过程。</p>
+<p>每一次的写入操作，从事务开始到事务结束，这一系列的操作都在内存中（cache中）完成，直到运行到commit位置。将数据写入log区域，先写入log的block区域，然后覆写log的head（记录新写入的每个块区域中对应的block number）。（预写规则）</p>
+<p>​    每次必须等log区域内的block都install后才能再次调用log。</p>
+<p>在xv6中，<code>cache</code> 通常指的是内存中的软件缓存，用于存储磁盘数据的副本，以提高访问速度。</p>
+<p>​    由于xv6在将log区的数据写入文件区域的时候，文件系统不能做任何其他的事情(这里需要许多系统调用、磁盘的操作（磁盘需要写入两次，一次写入log，一次写入文件区域）)。也就是说这个文件系统是同步的(synchchrouous)。因此，该文件系统是低效的。</p>
+<p>xv6给出的log系统并不高效，学习LINUX ext3文件日志系统</p>
+<p>​    ext3</p>
+<p>MEM</p>
+<p>​    cache 【】【】【】</p>
+<p>​    traction wfo</p>
+<p>​    1、SEQ、BLOCK num、 HANDELS</p>
+<p>disk    </p>
+<p>​    LOG</p>
+<p>​    SUPER BLOCK    日志超级块：包含有效书屋偏移量和序列号</p>
+<p>​                OFF、SEQ</p>
+<p>​    DESC    描述块（类似于xv6的log head）</p>
+<p>​    内容块</p>
+<p>​    commit块（一个单独的块）</p>
+<p>为区分文件块、和提交块描述块：提交块和描述块的的开头为魔数开头。</p>
+<p><img src="/2023/12/18/unix-xv6/image-20231230200705791.png" alt="image-20231230200705791"></p>
+<p>ASYNC FILES CALLS</p>
+<p>I/O CONCURRENCY + BATCHING</p>
+<p>fsysuc（fd）        类似于flush</p>
+<p>BATCHING</p>
+<p>​    one “open” traction。总有一个打开着的事务traction。ex3文件系统中，大概一个大的事务打开5秒，一次将5秒内的一次提交。</p>
+<p>​    write absorbtion。比如，位图，相邻inode节点，倘若有多个事务的话，这些块会多次写入，现在我们将许多块的更新都在内存中进行，多次操作吸收后，大事务提交后的io磁盘的次数会有效减少。</p>
+<p>​    disk scheduler：基于一个事实，顺序文件，相近文件的读写会比随机位置的读写快很多（尤其是机械硬盘）。</p>
+<p>CONCURRENCY</p>
+<p>1、sys call in parallel。在ext3决定关闭并提交事务之前，系统调用不必相互等待。在ex3中，许多系统调用都可以更改当前事务。</p>
+<p>2、many older xaction</p>
+<p>​    1、one open</p>
+<p>​    2、commiting to log</p>
+<p>​    3、writing to home</p>
+<p>​    4、freed</p>
+<p>无论是不同块的事务，还是同一块的不同阶段的系统调用都可以并发的运行。</p>
+<p>问：ex3是如何做到在内存cache中写入该块的同时，也在讲该块从内存中写入到磁盘？</p>
+<p>事实上，在同一个内存上这两个是不允许的同时进行的。在事务写入log区的时候，应该进包括由该是五中的系统调用进行的更新，不应包括有后续事务的其他的更新。我们不允许在事务关闭后发生的任何更新。它们可并发的原因、解决方案在于，当事务关闭后复制一个该事物的所有副本，直到操作结束为止。而新的系统调用更新，在另一副本中。同时为了更加高效，系统运用了写入时复制的操作。</p>
+<p>ext3</p>
+<p>​    sys_unlink()</p>
+<p>​    h=start()</p>
+<p>​    get(h,block#)</p>
+<p>​    modify block in cache</p>
+<p>​    stop(h)</p>
+<p>start返回一个句柄，stop(h)时候并不会直接提交事务。每次start、stop都可以计算出事务中正在执行的系统调用所进行的数量。当正在该事务中执行的系统调用为0时候，提交事务。系统会在合适的时候打开一个新的事务。</p>
+<p>commit </p>
+<p>1、block new system calls</p>
+<p>2、wait for 未完成的syscall</p>
+<p>3、open new xaction，（允许新的syscall写入新的事物）</p>
+<p>4、write desc block w/ block #s</p>
+<p>5、write blocks to log</p>
+<p>6、wait for 4、5</p>
+<p>7、write commit block</p>
+<p>8、wait for commit write    “commit point”</p>
+<p>9、write to home locations</p>
+<p>10、re-use LOG</p>
+<p><img src="/2023/12/18/unix-xv6/image-20231230212934420.png" alt="image-20231230212934420"></p>
+<p>事务2的系统调用必须在事务1之后是因为，如果交错运行，T2的一些操作是实实在在写入cache中的，然而当T1提交后崩溃，T2的修改会部分执行，这使得T2丢失了原子性。</p>
+<p><img src="/2023/12/18/unix-xv6/image-20231230214350614.png" alt="image-20231230214350614"></p>
+<p>大内核和微内核</p>
+<p>L4操作系统</p>
+<p>7个系统调用、13000 行代码</p>
+<p>由于微内核中只包含少量的系统调用，磁盘管理、进程管理等等都需要在用户态完成，因此这些模块间的通信IPC便会大大增加，并且用户态和内核态的切换也会更加频繁</p>
+<p>IPC 速度</p>
+<p>RCU</p>
+<p>一个慢的设计</p>
+<p><img src="/2023/12/18/unix-xv6/image-20240103153655545.png" alt="image-20240103153655545"></p>
+<p>通信的过程：P1向P2发送数据，P1利用系统调用send将数据写入操作系统的缓冲区buffer，写入后便返回，P2系统调用recv从buffer中读出数据。</p>
+<p>这样的通信过程我们称之为异步调用。</p>
+<p>缓冲系统。</p>
+<p>P2向P1发送，则类似。因此两个进程通信需要进行4次系统调用。</p>
+<p>L4 fast IPC</p>
+<p>它是同步的</p>
+<p>非缓冲的</p>
+<p>对于小数据来说，零拷贝，将数据放入寄存器后直接切换进程。</p>
+<p>对于大的数据来说，进行页表映射。</p>
+<p>RPC</p>
+<p>​                call—–send+recv</p>
+<p>服务端：sendrecv()</p>
+<p>20倍更快的速度</p>
+</div></article></div><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-12-18T07:12:20.000Z" title="12/18/2023, 3:12:20 PM">2023-12-18</time>发表</span><span class="level-item"><time dateTime="2023-12-18T07:12:20.000Z" title="12/18/2023, 3:12:20 PM">2023-12-18</time>更新</span><span class="level-item">几秒读完 (大约35个字)</span></div></div><h1 class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2023/12/18/unix-xv6-%E7%8E%AF%E5%A2%83/">unix xv6 环境</a></h1><div class="content"><p>环境配置参考：</p>
+<p><a target="_blank" rel="noopener" href="https://pdos.csail.mit.edu/6.828/2019/labs/util.html">https://pdos.csail.mit.edu/6.828/2019/labs/util.html</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/m0_53157173/article/details/130944057">https://blog.csdn.net/m0_53157173/article/details/130944057</a></p>
+<p>s081课程地址：</p>
+<p><a target="_blank" rel="noopener" href="https://pdos.csail.mit.edu/6.828/2019/schedule.html">https://pdos.csail.mit.edu/6.828/2019/schedule.html</a></p>
+</div></article></div><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-12-07T08:21:25.000Z" title="12/7/2023, 4:21:25 PM">2023-12-07</time>发表</span><span class="level-item"><time dateTime="2023-12-07T08:21:25.000Z" title="12/7/2023, 4:21:25 PM">2023-12-07</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/Linux-C%E7%BC%96%E7%A8%8B/">Linux C编程</a></span><span class="level-item">23 分钟读完 (大约3473个字)</span></div></div><h1 class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2023/12/07/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/">编译与链接</a></h1><div class="content"><p>本文介绍了c语言的编译、链接、动态链接、PIC地址无关代码、PLT延迟绑定、以及一些gcc指令与ELF分析指令。</p></div><a class="article-more button is-small is-size-7" href="/2023/12/07/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/#more">阅读更多</a></article></div><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-12-06T08:07:40.000Z" title="12/6/2023, 4:07:40 PM">2023-12-06</time>发表</span><span class="level-item"><time dateTime="2023-12-06T08:07:40.000Z" title="12/6/2023, 4:07:40 PM">2023-12-06</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/Linux-C%E7%BC%96%E7%A8%8B/">Linux C编程</a></span><span class="level-item">1 小时读完 (大约9307个字)</span></div></div><h1 class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2023/12/06/Linux%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/">Linux基本操作</a></h1><div class="content"><p>linux基本操作</p></div><a class="article-more button is-small is-size-7" href="/2023/12/06/Linux%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/#more">阅读更多</a></article></div><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-12-03T09:24:28.000Z" title="12/3/2023, 5:24:28 PM">2023-12-03</time>发表</span><span class="level-item"><time dateTime="2023-12-03T09:24:28.000Z" title="12/3/2023, 5:24:28 PM">2023-12-03</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/Linux-C%E7%BC%96%E7%A8%8B/">Linux C编程</a></span><span class="level-item">16 分钟读完 (大约2389个字)</span></div></div><h1 class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2023/12/03/Linux%E6%96%87%E4%BB%B6%E9%94%81/">Linux文件锁</a></h1><div class="content"><h1 id="1、linux文件锁简介"><a href="#1、linux文件锁简介" class="headerlink" title="1、linux文件锁简介"></a>1、linux文件锁简介</h1><p>Linux中软件、硬件资源都是文件（一切皆文件），文件在多用户环境中是可共享的。</p>
 <p>文件锁是用于解决资源的共享使用的一种机制：当多个用户需要共享一个文件时，Linux通常采用的方法是给文件上锁，来避免共享的资源产生竞争的状态。</p>
 <p>文件锁包括劝告锁和强制性锁：</p>
 <p>劝告锁：要求每个使用上锁文件的进程都要检查是否有锁存在，并且尊重已有的锁。在一般情况下，内核和系统都不使用建议性锁，它们依靠程序员遵守这个规定。</p>
@@ -16,83 +520,7 @@
 <p><strong>写入锁又称为排斥锁，在任何时刻只能有一个进程在文件的某个部分建立写入锁</strong>。</p>
 <p>在文件的同一部分不能同时建立读取锁和写入</p></div><a class="article-more button is-small is-size-7" href="/2023/12/03/Linux%E6%96%87%E4%BB%B6%E9%94%81/#more">阅读更多</a></article></div><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-12-02T16:55:59.000Z" title="12/3/2023, 12:55:59 AM">2023-12-03</time>发表</span><span class="level-item"><time dateTime="2023-12-02T16:55:59.000Z" title="12/3/2023, 12:55:59 AM">2023-12-03</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/Linux-C%E7%BC%96%E7%A8%8B/">Linux C编程</a></span><span class="level-item">11 分钟读完 (大约1643个字)</span></div></div><h1 class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2023/12/03/%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98/">共享内存</a></h1><div class="content"><h1 id="1、共享内存简介"><a href="#1、共享内存简介" class="headerlink" title="1、共享内存简介"></a>1、共享内存简介</h1><p>共享内存是最快的进程间通信方式，没有之一。</p>
 <p>共享内存的原理是<strong>让不同的进程看到同一份内存区域</strong>。操作系统OS，申请一块物理内存空间，并将其映射在不同进程的进程空间（逻辑空间）中。</p>
-<p><img src="/2023/12/03/%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98/8eeef9d80df248aa8347f36b507251b3.png" alt="img"></p></div><a class="article-more button is-small is-size-7" href="/2023/12/03/%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98/#more">阅读更多</a></article></div><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-12-02T08:58:57.000Z" title="12/2/2023, 4:58:57 PM">2023-12-02</time>发表</span><span class="level-item"><time dateTime="2023-12-02T08:58:57.000Z" title="12/2/2023, 4:58:57 PM">2023-12-02</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/Linux-C%E7%BC%96%E7%A8%8B/">Linux C编程</a></span><span class="level-item">19 分钟读完 (大约2802个字)</span></div></div><h1 class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2023/12/02/linux-c%E7%BB%84%E6%92%AD/">linux c组播</a></h1><div class="content"><h1 id="一、什么是UDP组播"><a href="#一、什么是UDP组播" class="headerlink" title="一、什么是UDP组播"></a>一、什么是UDP组播</h1><p>​    UDP组播是指使用<strong>用户数据报协议（UDP）实现的组播方式</strong>。组播是一种数据传输方式，<strong>允许单一数据包同时传输到多个接收者。</strong>在UDP组播中，一个数据包可以被多个接收者同时接收，这样可以降低网络传输的负载和提高数据传输效率。</p></div><a class="article-more button is-small is-size-7" href="/2023/12/02/linux-c%E7%BB%84%E6%92%AD/#more">阅读更多</a></article></div><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-12-02T06:30:21.000Z" title="12/2/2023, 2:30:21 PM">2023-12-02</time>发表</span><span class="level-item"><time dateTime="2023-12-02T06:30:21.000Z" title="12/2/2023, 2:30:21 PM">2023-12-02</time>更新</span><span class="level-item">几秒读完 (大约29个字)</span></div></div><h1 class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2023/12/02/%E5%85%B3%E4%BA%8Ec%E8%AF%AD%E8%A8%80%E7%9A%84%E5%AE%98%E6%96%B9%E6%96%87%E6%A1%A3/">关于c语言的官方文档</a></h1><div class="content"><p>ISO/IEC 9899:TC3        （C语言标准）</p>
-<p><a target="_blank" rel="noopener" href="https://port70.net/~nsz/c/c99/n1256.html">https://port70.net/~nsz/c/c99/n1256.html</a></p>
-<p>The GNU C Library (glibc) manual</p>
-<p><a target="_blank" rel="noopener" href="https://sourceware.org/glibc/manual/">https://sourceware.org/glibc/manual/</a></p>
-</div></article></div><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-12-02T06:04:40.000Z" title="12/2/2023, 2:04:40 PM">2023-12-02</time>发表</span><span class="level-item"><time dateTime="2023-12-02T06:04:40.000Z" title="12/2/2023, 2:04:40 PM">2023-12-02</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/Linux-C%E7%BC%96%E7%A8%8B/">Linux C编程</a></span><span class="level-item">12 分钟读完 (大约1733个字)</span></div></div><h1 class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2023/12/02/%E4%BB%8EC%E8%AF%AD%E8%A8%80%E5%87%BD%E6%95%B0%E6%8C%87%E9%92%88%E5%88%B0%E5%9B%9E%E8%B0%83%E5%87%BD%E6%95%B0/">从C语言函数指针到回调函数</a></h1><div class="content"><p>​        函数指针允许程序将函数作为参数传给另一个程序B。</p>
-<p>​        程序B中某个事件发生或完成后，调用通过程序A传入的函数指针，调用函数。这个函数便成为回调函数。</p>
-<p>​        回调函数优势在于：更灵活（动态调用函数）、控制和处理逻辑分离、异步与事件驱动。</p>
-<h1 id="1、函数指针"><a href="#1、函数指针" class="headerlink" title="1、函数指针"></a>1、函数指针</h1><h2 id="函数定义"><a href="#函数定义" class="headerlink" title="函数定义"></a><strong>函数定义</strong></h2><p>函数返回值类型  函数名(函数参数列表);</p>
-<p>例：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#定义</span><br><span class="line"><span class="function"><span class="keyword">int</span>  <span class="title">fun</span><span class="params">(<span class="keyword">int</span> x,<span class="keyword">int</span> y)</span></span>;</span><br><span class="line"></span><br><span class="line">#使用</span><br><span class="line">fun(<span class="number">1</span>,<span class="number">2</span>);</span><br></pre></td></tr></table></figure>
-
-
-
-<p>函数指针是指向函数的指针变量。</p>
-<h2 id="函数指针定义："><a href="#函数指针定义：" class="headerlink" title="函数指针定义："></a><strong>函数指针定义：</strong></h2><blockquote>
-<p>函数返回值类型  (* 指针变量名) (函数参数列表);</p>
-</blockquote>
-<p>例：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#定义</span><br><span class="line"><span class="keyword">int</span>  （*fun）(<span class="keyword">int</span> x,<span class="keyword">int</span> y);</span><br><span class="line"></span><br><span class="line">#使用</span><br><span class="line">（*fun）(<span class="number">1</span>,<span class="number">2</span>);</span><br></pre></td></tr></table></figure>
-
-<h2 id="typedef简化函数指针定义"><a href="#typedef简化函数指针定义" class="headerlink" title="typedef简化函数指针定义"></a>typedef简化函数指针定义</h2><p>一般为了方便，我们也会选择<strong>typedef简化</strong>定义</p>
-<blockquote>
-<p>typedef 函数返回值类型 (* 指针变量名) (函数参数列表);</p>
-</blockquote>
-<p>例：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#类型定义</span><br><span class="line"><span class="function"><span class="keyword">typedef</span> <span class="title">int</span> <span class="params">(*func_p)</span><span class="params">(<span class="keyword">int</span> x,<span class="keyword">int</span> y)</span></span>;</span><br><span class="line">#定义</span><br><span class="line">func_p p;</span><br><span class="line">#使用</span><br><span class="line">(*p)(<span class="number">1</span>,<span class="number">2</span>);</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="代码实例："><a href="#代码实例：" class="headerlink" title="代码实例："></a>代码实例：</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/*  函数指针的定义、使用 */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">printINT</span><span class="params">(<span class="keyword">int</span> n)</span></span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;num:%d\n&quot;</span>,n);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> (*p)(<span class="keyword">int</span>);</span><br><span class="line">    p=printINT;</span><br><span class="line">    (*p)(<span class="number">21</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/*  typedef简化函数指针定义，函数指针的定义、使用 */</span></span><br><span class="line"><span class="function"><span class="keyword">typedef</span> <span class="title">int</span> <span class="params">(*func_p)</span><span class="params">(<span class="keyword">int</span>)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">printINT</span><span class="params">(<span class="keyword">int</span> n)</span></span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;num:%d\n&quot;</span>,n);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    func_p p;</span><br><span class="line">    p = printINT;</span><br><span class="line">    (*p)(<span class="number">22</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
-<h1 id="2、回调函数"><a href="#2、回调函数" class="headerlink" title="2、回调函数"></a>2、回调函数</h1><p>​        回调函数是将函数作为参数传递给另一个函数的函数。在这种情况下，函数的执行在某些条件下会调用传递进来的回调函数。</p>
-<img src="https://img-blog.csdnimg.cn/20210529232648503.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0ZhaXJMaWtlU25vdw==,size_16,color_FFFFFF,t_70" alt="img" style="zoom:50%;">
-
-<img src="https://img0.baidu.com/it/u=38348026,1147000341&fm=253&fmt=auto&app=138&f=PNG?w=600&h=364" alt="img" style="zoom:67%;">
-
-
-
-<p>​        通常，回调函数的目的是在某个特定事件发生时执行某些操作。例如，异步操作、事件驱动等。</p>
-<ul>
-<li><strong>事件处理：</strong> 操作系统中的图形用户界面(GUI)经常使用回调函数来处理事件，比如按钮点击、键盘输入、鼠标移动等。当用户执行某些操作时，系统会调用相应的回调函数来响应这些事件。</li>
-<li><strong>异步操作：</strong> 操作系统中的I/O操作通常是异步进行的，当一个I/O操作完成时，操作系统会通过回调函数来通知应用程序，以便应用程序可以继续处理已完成的数据。</li>
-</ul>
-<p>回调函数的优势：</p>
-<ol>
-<li><strong>灵活性和可重用性：</strong> 允许开发者编写通用的代码，以便在不同的上下文中重复使用。通过将函数指针传递给其他函数，可以在运行时<strong>动态指定</strong>要执行的代码，从而实现不同的行为。</li>
-<li><strong>事件驱动和异步操作：</strong> 在事件驱动的系统中，回调函数常用于处理异步操作和事件处理。当某个事件发生时，可以调用相应的回调函数来处理，这使得编写异步代码更为简单和直观。</li>
-<li><strong>分离逻辑和控制流：</strong> 回调函数允许将程序的控制流和特定的逻辑分离开来。例如，在图形用户界面 (GUI) 中，可以使用回调函数来处理按钮点击、鼠标移动等事件，使得界面逻辑和事件处理逻辑分离，易于维护和管理。</li>
-</ol>
-<p>示例：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">Callback_1</span><span class="params">(<span class="keyword">int</span> a)</span>   <span class="comment">///&lt; 回调函数1</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;Hello, this is Callback_1: a = %d &quot;</span>, a);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">Callback_2</span><span class="params">(<span class="keyword">int</span> b)</span>  <span class="comment">///&lt; 回调函数2</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;Hello, this is Callback_2: b = %d &quot;</span>, b);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">Callback_3</span><span class="params">(<span class="keyword">int</span> c)</span>   <span class="comment">///&lt; 回调函数3</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;Hello, this is Callback_3: c = %d &quot;</span>, c);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">Handle</span><span class="params">(<span class="keyword">int</span> x, <span class="keyword">int</span> (*Callback)(<span class="keyword">int</span>))</span> <span class="comment">///&lt; 注意这里用到的函数指针定义</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    (*Callback)(x);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 事实上，main应该是另一个程序B，程序A提供回调函数以及回调函数的指针。</span></span><br><span class="line"><span class="comment">    B在某个事件完成或发生后，在进行回调函数进行相关处理 */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Handle(<span class="number">4</span>, Callback_1);</span><br><span class="line">    Handle(<span class="number">5</span>, Callback_2);</span><br><span class="line">    Handle(<span class="number">6</span>, Callback_3);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
-<p>四则运算的简单回调函数例子：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/****************************************</span></span><br><span class="line"><span class="comment"> * 函数指针结构体</span></span><br><span class="line"><span class="comment"> ***************************************/</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">OP</span> &#123;</span></span><br><span class="line">    <span class="keyword">float</span> (*p_add)(<span class="keyword">float</span>, <span class="keyword">float</span>); </span><br><span class="line">    <span class="keyword">float</span> (*p_sub)(<span class="keyword">float</span>, <span class="keyword">float</span>); </span><br><span class="line">    <span class="keyword">float</span> (*p_mul)(<span class="keyword">float</span>, <span class="keyword">float</span>); </span><br><span class="line">    <span class="keyword">float</span> (*p_div)(<span class="keyword">float</span>, <span class="keyword">float</span>); </span><br><span class="line">&#125; OP; </span><br><span class="line"></span><br><span class="line"><span class="comment">/****************************************</span></span><br><span class="line"><span class="comment"> * 加减乘除函数</span></span><br><span class="line"><span class="comment"> ***************************************/</span></span><br><span class="line"><span class="function"><span class="keyword">float</span> <span class="title">ADD</span><span class="params">(<span class="keyword">float</span> a, <span class="keyword">float</span> b)</span> </span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> a + b;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">float</span> <span class="title">SUB</span><span class="params">(<span class="keyword">float</span> a, <span class="keyword">float</span> b)</span> </span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> a - b;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">float</span> <span class="title">MUL</span><span class="params">(<span class="keyword">float</span> a, <span class="keyword">float</span> b)</span> </span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> a * b;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">float</span> <span class="title">DIV</span><span class="params">(<span class="keyword">float</span> a, <span class="keyword">float</span> b)</span> </span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> a / b;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/****************************************</span></span><br><span class="line"><span class="comment"> * 初始化函数指针</span></span><br><span class="line"><span class="comment"> ***************************************/</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">init_op</span><span class="params">(OP *op)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    op-&gt;p_add = ADD;</span><br><span class="line">    op-&gt;p_sub = SUB;</span><br><span class="line">    op-&gt;p_mul = &amp;MUL;</span><br><span class="line">    op-&gt;p_div = &amp;DIV;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/****************************************</span></span><br><span class="line"><span class="comment"> * 库函数</span></span><br><span class="line"><span class="comment"> ***************************************/</span></span><br><span class="line"><span class="function"><span class="keyword">float</span> <span class="title">add_sub_mul_div</span><span class="params">(<span class="keyword">float</span> a, <span class="keyword">float</span> b, <span class="keyword">float</span> (*op_func)(<span class="keyword">float</span>, <span class="keyword">float</span>))</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (*op_func)(a, b);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span> </span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    OP *op = (OP *)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(OP)); </span><br><span class="line">    init_op(op);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* 直接使用函数指针调用函数 */</span> </span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;ADD = %f, SUB = %f, MUL = %f, DIV = %f\n&quot;</span>, (op-&gt;p_add)(<span class="number">1.3</span>, <span class="number">2.2</span>), (*op-&gt;p_sub)(<span class="number">1.3</span>, <span class="number">2.2</span>), </span><br><span class="line">            (op-&gt;p_mul)(<span class="number">1.3</span>, <span class="number">2.2</span>), (*op-&gt;p_div)(<span class="number">1.3</span>, <span class="number">2.2</span>));</span><br><span class="line">     </span><br><span class="line">    <span class="comment">/* 调用回调函数 */</span> </span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;ADD = %f, SUB = %f, MUL = %f, DIV = %f\n&quot;</span>, </span><br><span class="line">            add_sub_mul_div(<span class="number">1.3</span>, <span class="number">2.2</span>, ADD), </span><br><span class="line">            add_sub_mul_div(<span class="number">1.3</span>, <span class="number">2.2</span>, SUB), </span><br><span class="line">            add_sub_mul_div(<span class="number">1.3</span>, <span class="number">2.2</span>, MUL), </span><br><span class="line">            add_sub_mul_div(<span class="number">1.3</span>, <span class="number">2.2</span>, DIV));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
-<p>回调函数实例（很有用）<br>一个GPRS模块联网的小项目，使用过的同学大概知道2G、4G、NB等模块要想实现无线联网功能都需要经历模块上电初始化、注册网络、查询网络信息质量、连接服务器等步骤，这里的的例子就是，利用一个状态机函数（根据不同状态依次调用不同实现方法的函数），通过回调函数的方式依次调用不同的函数，实现模块联网功能，如下：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*********  工作状态处理  *********/</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"> <span class="keyword">uint8_t</span> mStatus;</span><br><span class="line"> <span class="keyword">uint8_t</span> (* Funtion)(<span class="keyword">void</span>); <span class="comment">//函数指针的形式</span></span><br><span class="line">&#125; M26_WorkStatus_TypeDef;  <span class="comment">//M26的工作状态集合调用函数</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/**********************************************</span></span><br><span class="line"><span class="comment">** &gt;M26工作状态集合函数</span></span><br><span class="line"><span class="comment">***********************************************/</span></span><br><span class="line">M26_WorkStatus_TypeDef M26_WorkStatus_Tab[] =</span><br><span class="line">&#123;    </span><br><span class="line">    &#123;GPRS_NETWORK_CLOSE,  M26_PWRKEY_Off  &#125;, <span class="comment">//模块关机</span></span><br><span class="line">    &#123;GPRS_NETWORK_OPEN,  M26_PWRKEY_On  &#125;, <span class="comment">//模块开机</span></span><br><span class="line">    &#123;GPRS_NETWORK_Start,   M26_Work_Init  &#125;, <span class="comment">//管脚初始化</span></span><br><span class="line">    &#123;GPRS_NETWORK_CONF,  M26_NET_Config  &#125;, /AT指令配置</span><br><span class="line">    &#123;GPRS_NETWORK_LINK_CTC,  M26_LINK_CTC  &#125;, <span class="comment">//连接调度中心  </span></span><br><span class="line">    &#123;GPRS_NETWORK_WAIT_CTC, M26_WAIT_CTC  &#125;,  <span class="comment">//等待调度中心回复 </span></span><br><span class="line">    &#123;GPRS_NETWORK_LINK_FEM, M26_LINK_FEM  &#125;, <span class="comment">//连接前置机</span></span><br><span class="line">    &#123;GPRS_NETWORK_WAIT_FEM, M26_WAIT_FEM  &#125;, <span class="comment">//等待前置机回复</span></span><br><span class="line">    &#123;GPRS_NETWORK_COMM,  M26_COMM   &#125;, <span class="comment">//正常工作    </span></span><br><span class="line">    &#123;GPRS_NETWORK_WAIT_Sig,  M26_WAIT_Sig  &#125;,  <span class="comment">//等待信号回复</span></span><br><span class="line">    &#123;GPRS_NETWORK_GetSignal,  M26_GetSignal  &#125;, <span class="comment">//获取信号值</span></span><br><span class="line">    &#123;GPRS_NETWORK_RESTART,  M26_RESET   &#125;, <span class="comment">//模块重启</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**********************************************</span></span><br><span class="line"><span class="comment">** &gt;M26模块工作状态机，依次调用里面的12个函数   </span></span><br><span class="line"><span class="comment">***********************************************/</span></span><br><span class="line"><span class="keyword">uint8_t</span> M26_WorkStatus_Call(<span class="keyword">uint8_t</span> Start)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">uint8_t</span> i = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; <span class="number">12</span>; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(Start == M26_WorkStatus_Tab[i].mStatus)</span><br><span class="line">        &#123;          </span><br><span class="line">      <span class="keyword">return</span> M26_WorkStatus_Tab[i].Funtion();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>所以，如果有人想做个<code>NB</code>模块联网项目，可以<code>copy</code>上面的框架，只需要修改回调函数内部的具体实现，或者增加、减少回调函数，就可以很简洁快速的实现模块联网。</p>
-<p>参考博客：<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_41854911/article/details/121058935">https://blog.csdn.net/qq_41854911/article/details/121058935</a></p>
-</div></article></div><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-11-30T14:48:12.000Z" title="11/30/2023, 10:48:12 PM">2023-11-30</time>发表</span><span class="level-item"><time dateTime="2023-11-30T14:48:12.000Z" title="11/30/2023, 10:48:12 PM">2023-11-30</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/Linux-C%E7%BC%96%E7%A8%8B/">Linux C编程</a></span><span class="level-item">12 分钟读完 (大约1808个字)</span></div></div><h1 class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2023/11/30/UnixDomainSocket/">UnixDomainSocket</a></h1><div class="content"><h1 id="unixDomainSocket简介"><a href="#unixDomainSocket简介" class="headerlink" title="unixDomainSocket简介"></a>unixDomainSocket简介</h1><p>unixDomainSocket是同一机器上<strong>进程间通信</strong>的方式。USD通过同网络Socket几乎相同的操作，在<strong>内存</strong>上，实现进程间通信。USD不必实现网络协议栈、也无需拷贝到内核缓冲区，因此比127.0.0.1的网络socket通信更快。</p></div><a class="article-more button is-small is-size-7" href="/2023/11/30/UnixDomainSocket/#more">阅读更多</a></article></div><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-11-25T04:16:14.000Z" title="11/25/2023, 12:16:14 PM">2023-11-25</time>发表</span><span class="level-item"><time dateTime="2023-11-25T04:16:14.000Z" title="11/25/2023, 12:16:14 PM">2023-11-25</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/Linux-C%E7%BC%96%E7%A8%8B/">Linux C编程</a></span><span class="level-item">2 分钟读完 (大约225个字)</span></div></div><h1 class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2023/11/25/wireshark-tshark/">wireshark&amp;&amp;tshark</a></h1><div class="content"><p>暂时常用：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tshark -f <span class="string">&#x27;port 67 or port 68&#x27;</span></span><br><span class="line">tshark -f <span class="string">&#x27;port 67 or port 68&#x27;</span>-F pcapng -w <span class="number">1.</span>pcapng</span><br></pre></td></tr></table></figure></div><a class="article-more button is-small is-size-7" href="/2023/11/25/wireshark-tshark/#more">阅读更多</a></article></div><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-11-24T13:42:38.000Z" title="11/24/2023, 9:42:38 PM">2023-11-24</time>发表</span><span class="level-item"><time dateTime="2023-11-24T13:42:38.000Z" title="11/24/2023, 9:42:38 PM">2023-11-24</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/Linux-C%E7%BC%96%E7%A8%8B/">Linux C编程</a></span><span class="level-item">7 分钟读完 (大约1034个字)</span></div></div><h1 class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2023/11/24/Linux-socket/">Linux socket</a></h1><div class="content"><h1 id="1、基本流程"><a href="#1、基本流程" class="headerlink" title="1、基本流程"></a>1、基本流程</h1><p><code>linux-gun/sys/socket</code>使用的基本流程：</p>
-<ol>
-<li>创建socket</li>
-<li>socket设置参数</li>
-<li>socket绑定一个地址:端口</li>
-<li>发送与接收</li>
-</ol>
-<p>以及一个技巧，多socket下的监控——select。</p></div><a class="article-more button is-small is-size-7" href="/2023/11/24/Linux-socket/#more">阅读更多</a></article></div><nav class="pagination" role="navigation" aria-label="pagination"><div class="pagination-previous"><a href="/page/3/">上一页</a></div><div class="pagination-next"><a href="/page/5/">下一页</a></div><ul class="pagination-list is-hidden-mobile"><li><a class="pagination-link" href="/">1</a></li><li><a class="pagination-link" href="/page/2/">2</a></li><li><a class="pagination-link" href="/page/3/">3</a></li><li><a class="pagination-link is-current" href="/page/4/">4</a></li><li><a class="pagination-link" href="/page/5/">5</a></li><li><span class="pagination-ellipsis">&hellip;</span></li><li><a class="pagination-link" href="/page/8/">8</a></li></ul></nav></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1"><div class="card widget" data-type="profile"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="avatar" src="/img/s1.png" alt="Mr.Symbol"></figure><p class="title is-size-4 is-block" style="line-height:inherit;">Mr.Symbol</p><p class="is-size-6 is-block">忍耐与沉默都是一种能力</p><p class="is-size-6 is-flex justify-content-center"><i class="fas fa-map-marker-alt mr-1"></i><span>Hangzhou,China</span></p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">文章</p><a href="/archives"><p class="title">72</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">分类</p><a href="/categories"><p class="title">7</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">标签</p><a href="/tags"><p class="title">34</p></a></div></div></nav><div class="level"><a class="level-item button is-primary is-rounded" href="https://github.com/ppoffice" target="_blank" rel="noopener">关注我</a></div></div></div><!--!--><div class="card widget" data-type="categories"><div class="card-content"><div class="menu"><h3 class="menu-label">分类</h3><ul class="menu-list"><li><a class="level is-mobile" href="/categories/Linux-C%E7%BC%96%E7%A8%8B/"><span class="level-start"><span class="level-item">Linux C编程</span></span><span class="level-end"><span class="level-item tag">9</span></span></a></li><li><a class="level is-mobile" href="/categories/hexo/"><span class="level-start"><span class="level-item">hexo</span></span><span class="level-end"><span class="level-item tag">4</span></span></a></li><li><a class="level is-mobile" href="/categories/%E5%B7%A5%E5%85%B7%E5%9B%BE/"><span class="level-start"><span class="level-item">工具图</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%9C%AA%E5%88%86%E7%B1%BB/"><span class="level-start"><span class="level-item">未分类</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/"><span class="level-start"><span class="level-item">深度学习</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/%E7%BD%91%E7%BB%9C/"><span class="level-start"><span class="level-item">网络</span></span><span class="level-end"><span class="level-item tag">1</span></span></a><ul><li><a class="level is-mobile" href="/categories/%E7%BD%91%E7%BB%9C/%E5%AF%86%E7%A0%81%E5%AD%A6/"><span class="level-start"><span class="level-item">密码学</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></li></ul></div></div></div><div class="card widget" data-type="tags"><div class="card-content"><div class="menu"><h3 class="menu-label">标签</h3><div class="field is-grouped is-grouped-multiline"><div class="control"><a class="tags has-addons" href="/tags/DHCP/"><span class="tag">DHCP</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/JVM/"><span class="tag">JVM</span><span class="tag">6</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Java/"><span class="tag">Java</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Spring/"><span class="tag">Spring</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/UnixDomainSocket/"><span class="tag">UnixDomainSocket</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/cmake/"><span class="tag">cmake</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/conda/"><span class="tag">conda</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/cross-attention/"><span class="tag">cross-attention</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/c%E8%AF%AD%E8%A8%80/"><span class="tag">c语言</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/face-recogntion/"><span class="tag">face_recogntion</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/git/"><span class="tag">git</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/hexo/"><span class="tag">hexo</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/hexo%E5%8D%9A%E5%AE%A2/"><span class="tag">hexo博客</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/javaSE/"><span class="tag">javaSE</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/linux/"><span class="tag">linux</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/redis/"><span class="tag">redis</span><span class="tag">7</span></a></div><div class="control"><a class="tags has-addons" href="/tags/self-attention/"><span class="tag">self-attention</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/socket/"><span class="tag">socket</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/transformer/"><span class="tag">transformer</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/typora%E6%B7%BB%E5%8A%A0%E6%95%B0%E5%AD%A6%E5%85%AC%E5%BC%8F/"><span class="tag">typora添加数学公式</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/unix-xv6/"><span class="tag">unix xv6</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/yaml/"><span class="tag">yaml</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98/"><span class="tag">共享内存</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E5%88%B7%E9%A2%98/"><span class="tag">刷题</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E5%9B%9E%E8%B0%83%E5%87%BD%E6%95%B0/"><span class="tag">回调函数</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E5%AF%86%E7%A0%81%E5%AD%A6/"><span class="tag">密码学</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E5%B7%A5%E5%85%B7%E5%9B%BE/"><span class="tag">工具图</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/"><span class="tag">布隆过滤器</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/"><span class="tag">数据库</span><span class="tag">7</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E6%96%87%E4%BB%B6%E9%94%81/"><span class="tag">文件锁</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E6%9C%AA%E5%88%86%E7%B1%BB/"><span class="tag">未分类</span><span class="tag">5</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E7%BB%84%E6%92%AD/"><span class="tag">组播</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/"><span class="tag">编译与链接</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E7%BD%91%E7%BB%9C%E6%8A%93%E5%8C%85/"><span class="tag">网络抓包</span><span class="tag">1</span></a></div></div></div></div></div><div class="column-right-shadow is-hidden-widescreen"></div></div><div class="column column-right is-4-tablet is-4-desktop is-3-widescreen is-hidden-touch is-hidden-desktop-only order-3"><div class="card widget" data-type="recent-posts"><div class="card-content"><h3 class="menu-label">最新文章</h3><article class="media"><div class="media-content"><p class="date"><time dateTime="2025-05-06T12:59:39.000Z">2025-05-06</time></p><p class="title"><a href="/2025/05/06/Redis%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/">Redis分布式锁</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2025-05-06T07:20:40.000Z">2025-05-06</time></p><p class="title"><a href="/2025/05/06/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1-%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97-rabbitmq-rocketmq/">分布式事务--消息队列(rabbitmq\rocketmq)</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2025-05-06T07:05:57.000Z">2025-05-06</time></p><p class="title"><a href="/2025/05/06/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1-TCC/">分布式事务--TCC</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2025-04-29T07:34:12.000Z">2025-04-29</time></p><p class="title"><a href="/2025/04/29/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1--2PC%E3%80%813PC/">分布式事务--2PC、3PC</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2025-04-28T11:36:02.000Z">2025-04-28</time></p><p class="title"><a href="/2025/04/28/InnoDB%E7%B4%A2%E5%BC%95%E6%B7%B1%E5%BA%A6%E5%89%96%E6%9E%90%EF%BC%9A%E4%BB%A3%E4%BB%B7%E3%80%81%E5%9B%9E%E8%A1%A8%E3%80%81%E7%B4%A2%E5%BC%95%E4%BC%98%E5%8C%96%E6%8C%87%E5%8D%97/">InnoDB索引深度剖析：代价、回表、索引优化指南</a></p></div></article></div></div><div class="card widget" data-type="archives"><div class="card-content"><div class="menu"><h3 class="menu-label">归档</h3><ul class="menu-list"><li><a class="level is-mobile" href="/archives/2025/05/"><span class="level-start"><span class="level-item">五月 2025</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/archives/2025/04/"><span class="level-start"><span class="level-item">四月 2025</span></span><span class="level-end"><span class="level-item tag">21</span></span></a></li><li><a class="level is-mobile" href="/archives/2025/03/"><span class="level-start"><span class="level-item">三月 2025</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2024/05/"><span class="level-start"><span class="level-item">五月 2024</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/archives/2024/04/"><span class="level-start"><span class="level-item">四月 2024</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2023/12/"><span class="level-start"><span class="level-item">十二月 2023</span></span><span class="level-end"><span class="level-item tag">9</span></span></a></li><li><a class="level is-mobile" href="/archives/2023/11/"><span class="level-start"><span class="level-item">十一月 2023</span></span><span class="level-end"><span class="level-item tag">17</span></span></a></li><li><a class="level is-mobile" href="/archives/2021/09/"><span class="level-start"><span class="level-item">九月 2021</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2021/08/"><span class="level-start"><span class="level-item">八月 2021</span></span><span class="level-end"><span class="level-item tag">10</span></span></a></li><li><a class="level is-mobile" href="/archives/2020/12/"><span class="level-start"><span class="level-item">十二月 2020</span></span><span class="level-end"><span class="level-item tag">5</span></span></a></li><li><a class="level is-mobile" href="/archives/2020/11/"><span class="level-start"><span class="level-item">十一月 2020</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li></ul></div></div></div></div></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+<p><img src="/2023/12/03/%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98/8eeef9d80df248aa8347f36b507251b3.png" alt="img"></p></div><a class="article-more button is-small is-size-7" href="/2023/12/03/%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98/#more">阅读更多</a></article></div><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2023-12-02T08:58:57.000Z" title="12/2/2023, 4:58:57 PM">2023-12-02</time>发表</span><span class="level-item"><time dateTime="2023-12-02T08:58:57.000Z" title="12/2/2023, 4:58:57 PM">2023-12-02</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/Linux-C%E7%BC%96%E7%A8%8B/">Linux C编程</a></span><span class="level-item">19 分钟读完 (大约2802个字)</span></div></div><h1 class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2023/12/02/linux-c%E7%BB%84%E6%92%AD/">linux c组播</a></h1><div class="content"><h1 id="一、什么是UDP组播"><a href="#一、什么是UDP组播" class="headerlink" title="一、什么是UDP组播"></a>一、什么是UDP组播</h1><p>​    UDP组播是指使用<strong>用户数据报协议（UDP）实现的组播方式</strong>。组播是一种数据传输方式，<strong>允许单一数据包同时传输到多个接收者。</strong>在UDP组播中，一个数据包可以被多个接收者同时接收，这样可以降低网络传输的负载和提高数据传输效率。</p></div><a class="article-more button is-small is-size-7" href="/2023/12/02/linux-c%E7%BB%84%E6%92%AD/#more">阅读更多</a></article></div><nav class="pagination" role="navigation" aria-label="pagination"><div class="pagination-previous"><a href="/page/3/">上一页</a></div><div class="pagination-next"><a href="/page/5/">下一页</a></div><ul class="pagination-list is-hidden-mobile"><li><a class="pagination-link" href="/">1</a></li><li><a class="pagination-link" href="/page/2/">2</a></li><li><a class="pagination-link" href="/page/3/">3</a></li><li><a class="pagination-link is-current" href="/page/4/">4</a></li><li><a class="pagination-link" href="/page/5/">5</a></li><li><span class="pagination-ellipsis">&hellip;</span></li><li><a class="pagination-link" href="/page/8/">8</a></li></ul></nav></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1"><div class="card widget" data-type="profile"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="avatar" src="/img/s1.png" alt="Mr.Symbol"></figure><p class="title is-size-4 is-block" style="line-height:inherit;">Mr.Symbol</p><p class="is-size-6 is-block">忍耐与沉默都是一种能力</p><p class="is-size-6 is-flex justify-content-center"><i class="fas fa-map-marker-alt mr-1"></i><span>Hangzhou,China</span></p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">文章</p><a href="/archives"><p class="title">77</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">分类</p><a href="/categories"><p class="title">7</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">标签</p><a href="/tags"><p class="title">35</p></a></div></div></nav><div class="level"><a class="level-item button is-primary is-rounded" href="https://github.com/ppoffice" target="_blank" rel="noopener">关注我</a></div></div></div><!--!--><div class="card widget" data-type="categories"><div class="card-content"><div class="menu"><h3 class="menu-label">分类</h3><ul class="menu-list"><li><a class="level is-mobile" href="/categories/Linux-C%E7%BC%96%E7%A8%8B/"><span class="level-start"><span class="level-item">Linux C编程</span></span><span class="level-end"><span class="level-item tag">9</span></span></a></li><li><a class="level is-mobile" href="/categories/hexo/"><span class="level-start"><span class="level-item">hexo</span></span><span class="level-end"><span class="level-item tag">4</span></span></a></li><li><a class="level is-mobile" href="/categories/%E5%B7%A5%E5%85%B7%E5%9B%BE/"><span class="level-start"><span class="level-item">工具图</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%9C%AA%E5%88%86%E7%B1%BB/"><span class="level-start"><span class="level-item">未分类</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/"><span class="level-start"><span class="level-item">深度学习</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/%E7%BD%91%E7%BB%9C/"><span class="level-start"><span class="level-item">网络</span></span><span class="level-end"><span class="level-item tag">1</span></span></a><ul><li><a class="level is-mobile" href="/categories/%E7%BD%91%E7%BB%9C/%E5%AF%86%E7%A0%81%E5%AD%A6/"><span class="level-start"><span class="level-item">密码学</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></li></ul></div></div></div><div class="card widget" data-type="tags"><div class="card-content"><div class="menu"><h3 class="menu-label">标签</h3><div class="field is-grouped is-grouped-multiline"><div class="control"><a class="tags has-addons" href="/tags/DHCP/"><span class="tag">DHCP</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/JUC/"><span class="tag">JUC</span><span class="tag">5</span></a></div><div class="control"><a class="tags has-addons" href="/tags/JVM/"><span class="tag">JVM</span><span class="tag">6</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Java/"><span class="tag">Java</span><span class="tag">9</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Spring/"><span class="tag">Spring</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/UnixDomainSocket/"><span class="tag">UnixDomainSocket</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/cmake/"><span class="tag">cmake</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/conda/"><span class="tag">conda</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/cross-attention/"><span class="tag">cross-attention</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/c%E8%AF%AD%E8%A8%80/"><span class="tag">c语言</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/face-recogntion/"><span class="tag">face_recogntion</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/git/"><span class="tag">git</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/hexo/"><span class="tag">hexo</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/hexo%E5%8D%9A%E5%AE%A2/"><span class="tag">hexo博客</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/javaSE/"><span class="tag">javaSE</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/linux/"><span class="tag">linux</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/redis/"><span class="tag">redis</span><span class="tag">7</span></a></div><div class="control"><a class="tags has-addons" href="/tags/self-attention/"><span class="tag">self-attention</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/socket/"><span class="tag">socket</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/transformer/"><span class="tag">transformer</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/typora%E6%B7%BB%E5%8A%A0%E6%95%B0%E5%AD%A6%E5%85%AC%E5%BC%8F/"><span class="tag">typora添加数学公式</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/unix-xv6/"><span class="tag">unix xv6</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/yaml/"><span class="tag">yaml</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98/"><span class="tag">共享内存</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E5%88%B7%E9%A2%98/"><span class="tag">刷题</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E5%9B%9E%E8%B0%83%E5%87%BD%E6%95%B0/"><span class="tag">回调函数</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E5%AF%86%E7%A0%81%E5%AD%A6/"><span class="tag">密码学</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E5%B7%A5%E5%85%B7%E5%9B%BE/"><span class="tag">工具图</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/"><span class="tag">布隆过滤器</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/"><span class="tag">数据库</span><span class="tag">7</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E6%96%87%E4%BB%B6%E9%94%81/"><span class="tag">文件锁</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E6%9C%AA%E5%88%86%E7%B1%BB/"><span class="tag">未分类</span><span class="tag">5</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E7%BB%84%E6%92%AD/"><span class="tag">组播</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E7%BC%96%E8%AF%91%E4%B8%8E%E9%93%BE%E6%8E%A5/"><span class="tag">编译与链接</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E7%BD%91%E7%BB%9C%E6%8A%93%E5%8C%85/"><span class="tag">网络抓包</span><span class="tag">1</span></a></div></div></div></div></div><div class="column-right-shadow is-hidden-widescreen"></div></div><div class="column column-right is-4-tablet is-4-desktop is-3-widescreen is-hidden-touch is-hidden-desktop-only order-3"><div class="card widget" data-type="recent-posts"><div class="card-content"><h3 class="menu-label">最新文章</h3><article class="media"><div class="media-content"><p class="date"><time dateTime="2025-05-10T14:57:58.000Z">2025-05-10</time></p><p class="title"><a href="/2025/05/10/AQS%E6%B5%85%E6%9E%90/">AQS浅析</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2025-05-10T14:37:35.000Z">2025-05-10</time></p><p class="title"><a href="/2025/05/10/CAS%E8%AF%A6%E8%A7%A3/">CAS详解</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2025-05-10T13:22:11.000Z">2025-05-10</time></p><p class="title"><a href="/2025/05/10/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E7%9A%84%E4%B8%89%E5%A4%A7%E7%89%B9%E6%80%A7%E4%B8%8E%E9%97%AE%E9%A2%98%E5%A4%8D%E7%8E%B0/">并发编程的三大特性与问题复现</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2025-05-06T12:59:39.000Z">2025-05-06</time></p><p class="title"><a href="/2025/05/06/Redis%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/">Redis分布式锁</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2025-05-06T07:20:40.000Z">2025-05-06</time></p><p class="title"><a href="/2025/05/06/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1-%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97-rabbitmq-rocketmq/">分布式事务--消息队列(rabbitmq\rocketmq)</a></p></div></article></div></div><div class="card widget" data-type="archives"><div class="card-content"><div class="menu"><h3 class="menu-label">归档</h3><ul class="menu-list"><li><a class="level is-mobile" href="/archives/2025/05/"><span class="level-start"><span class="level-item">五月 2025</span></span><span class="level-end"><span class="level-item tag">6</span></span></a></li><li><a class="level is-mobile" href="/archives/2025/04/"><span class="level-start"><span class="level-item">四月 2025</span></span><span class="level-end"><span class="level-item tag">21</span></span></a></li><li><a class="level is-mobile" href="/archives/2025/03/"><span class="level-start"><span class="level-item">三月 2025</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2024/05/"><span class="level-start"><span class="level-item">五月 2024</span></span><span class="level-end"><span class="level-item tag">4</span></span></a></li><li><a class="level is-mobile" href="/archives/2024/04/"><span class="level-start"><span class="level-item">四月 2024</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2023/12/"><span class="level-start"><span class="level-item">十二月 2023</span></span><span class="level-end"><span class="level-item tag">9</span></span></a></li><li><a class="level is-mobile" href="/archives/2023/11/"><span class="level-start"><span class="level-item">十一月 2023</span></span><span class="level-end"><span class="level-item tag">17</span></span></a></li><li><a class="level is-mobile" href="/archives/2021/09/"><span class="level-start"><span class="level-item">九月 2021</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2021/08/"><span class="level-start"><span class="level-item">八月 2021</span></span><span class="level-end"><span class="level-item tag">10</span></span></a></li><li><a class="level is-mobile" href="/archives/2020/12/"><span class="level-start"><span class="level-item">十二月 2020</span></span><span class="level-end"><span class="level-item tag">5</span></span></a></li><li><a class="level is-mobile" href="/archives/2020/11/"><span class="level-start"><span class="level-item">十一月 2020</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li></ul></div></div></div></div></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
             article: {
                 highlight: {
                     clipboard: true,

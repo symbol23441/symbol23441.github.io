@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>并发编程的三大特性与问题复现 - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="​      本文将讲解并发编程的三大特性：原子性、可见性、有序性。复现了其解决的问题，并且较少了Java的解决方法。         ​      JMM（Java memory model）定义了多线程环境下变量的访问规则，解决并发编程中“可见性”和“有序性”的问题，确保程序在不同平台上的行为一致性。 ​      由于CPU存在L1、L2、L3等缓存，因此各核心（或线程）在运行时变量常为主内"><meta property="og:type" content="blog"><meta property="og:title" content="并发编程的三大特性与问题复现"><meta property="og:url" content="http://symbol23441.top/2025/05/10/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E7%9A%84%E4%B8%89%E5%A4%A7%E7%89%B9%E6%80%A7%E4%B8%8E%E9%97%AE%E9%A2%98%E5%A4%8D%E7%8E%B0/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="​      本文将讲解并发编程的三大特性：原子性、可见性、有序性。复现了其解决的问题，并且较少了Java的解决方法。         ​      JMM（Java memory model）定义了多线程环境下变量的访问规则，解决并发编程中“可见性”和“有序性”的问题，确保程序在不同平台上的行为一致性。 ​      由于CPU存在L1、L2、L3等缓存，因此各核心（或线程）在运行时变量常为主内"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/img/og_image.png"><meta property="article:published_time" content="2025-05-10T13:22:11.000Z"><meta property="article:modified_time" content="2025-05-10T13:22:11.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="article:tag" content="Java"><meta property="article:tag" content="JUC"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/img/og_image.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2025/05/10/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E7%9A%84%E4%B8%89%E5%A4%A7%E7%89%B9%E6%80%A7%E4%B8%8E%E9%97%AE%E9%A2%98%E5%A4%8D%E7%8E%B0/"},"headline":"并发编程的三大特性与问题复现","image":["http://symbol23441.top/img/og_image.png"],"datePublished":"2025-05-10T13:22:11.000Z","dateModified":"2025-05-10T13:22:11.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"​      本文将讲解并发编程的三大特性：原子性、可见性、有序性。复现了其解决的问题，并且较少了Java的解决方法。         ​      JMM（Java memory model）定义了多线程环境下变量的访问规则，解决并发编程中“可见性”和“有序性”的问题，确保程序在不同平台上的行为一致性。 ​      由于CPU存在L1、L2、L3等缓存，因此各核心（或线程）在运行时变量常为主内"}</script><link rel="canonical" href="http://symbol23441.top/2025/05/10/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E7%9A%84%E4%B8%89%E5%A4%A7%E7%89%B9%E6%80%A7%E4%B8%8E%E9%97%AE%E9%A2%98%E5%A4%8D%E7%8E%B0/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2025-05-10T13:22:11.000Z" title="5/10/2025, 9:22:11 PM">2025-05-10</time>发表</span><span class="level-item"><time dateTime="2025-05-10T13:22:11.000Z" title="5/10/2025, 9:22:11 PM">2025-05-10</time>更新</span><span class="level-item">9 分钟读完 (大约1322个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">并发编程的三大特性与问题复现</h1><div class="content"><p>​      本文将讲解并发编程的三大特性：原子性、可见性、有序性。复现了其解决的问题，并且较少了Java的解决方法。        </p>
+<p>​      JMM（Java memory model）定义了多线程环境下变量的访问规则，解决并发编程中“可见性”和“有序性”的问题，确保程序在不同平台上的行为一致性。</p>
+<p>​      由于CPU存在L1、L2、L3等缓存，因此各核心（或线程）在运行时变量常为主内存的副本，写回时间不确定，因此存在着并发问题，例如“可见性问题”。另外，JIT编译优化、指令优化使得执行顺序并不唯一，会导致“有序性”的问题。详见<a href="/2025/04/24/JMM-Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/" title="JMM(Java内存模型)">JMM(Java内存模型)</a>。</p>
+<span id="more"></span>
+
+<h2 id="1-原子性"><a href="#1-原子性" class="headerlink" title="1. 原子性"></a>1. 原子性</h2><p>​        <strong>定义</strong>：指一个操作是不可分割的，不可中断的。一次操作或者多次操作，要么所有的操作全部都得到执行，要么都不执行。</p>
+<p>​        <strong>问题复现</strong>:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AtimoticTest</span> </span>&#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">int</span> count = <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">increaseCount</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException</span>&#123; <span class="comment">//不加synchronized</span></span><br><span class="line">        Thread.sleep(<span class="number">1</span>); <span class="comment">//仅为增加上下文切换频率</span></span><br><span class="line">        count++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span>  <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        Thread t1 = <span class="keyword">new</span> Thread(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">                increaseCount();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        Thread t2 = <span class="keyword">new</span> Thread(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">                increaseCount();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        t1.start();</span><br><span class="line">        t2.start();</span><br><span class="line">        t1.join();</span><br><span class="line">        t2.join();</span><br><span class="line">        System.out.println(count);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>例如i++操作属于非原子型(读数据、+1、写回)，两个线程同时操作一个静态变量会导致，写丢失。</p>
+<p><strong>解决方法</strong>：</p>
+<p>​        在 Java 中，可以借助<code>synchronized</code>、各种 <code>Lock</code> 以及各种原子类实现原子性。</p>
+<p><code>synchronized</code> 和各种 <code>Lock</code> 可以保证任一时刻只有一个线程访问该代码块，因此可以保障原子性。各种原子类是利用 CAS (compare and swap) 操作（可能也会用到 <code>volatile</code>或者<code>final</code>关键字）来保证原子操作。</p>
+<h2 id="2-可见性"><a href="#2-可见性" class="headerlink" title="2. 可见性"></a>2. 可见性</h2><p>​        由于线程使用工作内存缓存变量副本，因此主内存变量的改变，常对一些线程不可见，引发并发问题。为保证，一个线程对共享变量进行了修改，那么另外的线程都是立即可以看到修改后的最新值。</p>
+<p><strong>问题复现</strong>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">kejianxing</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> flag = <span class="keyword">true</span>;		<span class="comment">//未加volatile</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        Thread t1 = <span class="keyword">new</span> Thread(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">while</span> (flag) &#123;</span><br><span class="line">                <span class="comment">// xxx</span></span><br><span class="line">            &#125;</span><br><span class="line">            System.out.println(<span class="string">&quot;t1 finished&quot;</span>);</span><br><span class="line">        &#125;);</span><br><span class="line">        t1.start();</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">        flag = <span class="keyword">false</span>;</span><br><span class="line">        System.out.println(<span class="string">&quot;main set flag to false&quot;</span>);</span><br><span class="line">        t1.join();</span><br><span class="line">        System.out.println(<span class="string">&quot;main thread finished&quot;</span>);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>结果：主线程对flag赋值对t1不可见，t1线程一直不结束。</p>
+<p>解决方案：</p>
+<p>​        在 Java 中，可以借助<code>synchronized</code>、<code>volatile</code> 以及各种 <code>Lock</code> 实现可见性。我们将变量声明为 <code>volatile</code> ，这就指示 JVM，这个变量是共享且不稳定的，每次使用它都到主存中进行读取。</p>
+<h2 id="3-有序性"><a href="#3-有序性" class="headerlink" title="3. 有序性"></a>3. 有序性</h2><p>​        <strong>指令重排序可以保证串行语义一致（as-if-seria），但是没有义务保证多线程间的语义也一致</strong> ，所以在多线程下，指令重排序可能会导致一些问题。</p>
+<p>​        <strong>指令重排</strong>：Java 源代码会经历 <strong>编译器优化重排 —&gt; 指令并行重排 —&gt; 内存系统重排</strong> 的过程，最终才变成操作系统可执行的指令序列。在单线程情况可以执行加速，但是多线程情况产生并发错误。</p>
+<p>例如，在<strong>单例模式DCL问题</strong>下，指令重排导致的问题。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Singleton instance;  <span class="comment">// 不使用 volatile</span></span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;  <span class="comment">// 第一次检查（非同步）</span></span><br><span class="line">            <span class="keyword">synchronized</span> (Singleton.class) &#123;</span><br><span class="line">                <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;  <span class="comment">// 第二次检查（同步）</span></span><br><span class="line">                    instance = <span class="keyword">new</span> Singleton();  <span class="comment">// 可能发生指令重排！</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> instance;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>​        <code>instance = new Singleton()</code> 在字节码层面分为3步：① 分配内存空间  ② 初始化对象（调用构造方法）③ 将引用赋值给 <code>instance</code></p>
+<p>如果发生指令重排（②和③交换）：</p>
+<ul>
+<li>线程A 执行 <code>instance = new Singleton()</code>，但 <code>instance</code> 先被赋值（③），而对象未初始化（②未执行）。</li>
+<li>线程B 进入 <code>getInstance()</code>，发现 <code>instance != null</code>，直接返回一个<strong>未初始化完成的对象</strong>，导致程序错误。其他线程，便会使用这个未初始化的对象，</li>
+</ul>
+<p><strong>解决方案</strong></p>
+<p>在 Java 中，<code>volatile</code> 关键字可以禁止指令进行重排序优化。</p>
+<p><code>volatile</code>本质上利用了<code>JMM </code>提出了了 <strong>happens-before 原则</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>happens-before规则</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>程序顺序规则</strong></td>
+<td>单线程内，代码按顺序执行</td>
+</tr>
+<tr>
+<td><strong>锁规则</strong></td>
+<td>解锁先于加锁（释放锁前的修改，对后面拿锁可见）</td>
+</tr>
+<tr>
+<td><strong>volatile 规则</strong></td>
+<td>写 <code>volatile</code> 先于读</td>
+</tr>
+<tr>
+<td><strong>线程启动规则</strong></td>
+<td><code>start()</code> 先于子线程动作</td>
+</tr>
+<tr>
+<td><strong>线程终止规则</strong></td>
+<td><code>join()</code> 先于线程结果可见</td>
+</tr>
+<tr>
+<td><strong>传递性规则</strong></td>
+<td>A → B，B → C，则 A → C</td>
+</tr>
+</tbody></table>
+<p>📌 只要两个操作之间存在 happens-before，就保证：</p>
+<ul>
+<li><p><strong>前者的修改对后者是可见的</strong></p>
+</li>
+<li><p><strong>前者的执行顺序在后者之前</strong></p>
+</li>
+</ul>
+<p>​        </p>
+</div><div class="article-licensing box"><div class="licensing-title"><p>并发编程的三大特性与问题复现</p><p><a href="http://symbol23441.top/2025/05/10/并发编程的三大特性与问题复现/">http://symbol23441.top/2025/05/10/并发编程的三大特性与问题复现/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2025-05-10</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2025-05-10</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/Java/">Java</a><a class="link-muted mr-2" rel="tag" href="/tags/JUC/">JUC</a></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2025/05/10/CAS%E8%AF%A6%E8%A7%A3/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">CAS详解</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2025/05/06/Redis%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/"><span class="level-item">Redis分布式锁</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#1-原子性"><span class="level-left"><span class="level-item">1. 原子性</span></span></a></li><li><a class="level is-mobile" href="#2-可见性"><span class="level-left"><span class="level-item">2. 可见性</span></span></a></li><li><a class="level is-mobile" href="#3-有序性"><span class="level-left"><span class="level-item">3. 有序性</span></span></a></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/js/lightgallery.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script><script type="text/javascript" src="/js/imaegoo/universe.js"></script></body></html>
