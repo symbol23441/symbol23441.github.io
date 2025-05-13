@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>Mysql三大日志 - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="MySql InnoDB中有个三个重要日志：  Undo Log（回滚日志） Redo Log（重放日志） Bin Log（归档日志）  其中，Undo Log（回滚日志）主要作用：事务回滚用于撤销事务未提交前对数据的更改；MVCC 快照读：为其他事务提供“旧版本”数据，实现一致性读。 Redo Log（重做日志），崩溃恢复（Crash Recovery）：保证已提交的事务修改不丢失，即使系统宕机"><meta property="og:type" content="blog"><meta property="og:title" content="Mysql三大日志"><meta property="og:url" content="http://symbol23441.top/2025/05/13/Mysql%E4%B8%89%E5%A4%A7%E6%97%A5%E5%BF%97/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="MySql InnoDB中有个三个重要日志：  Undo Log（回滚日志） Redo Log（重放日志） Bin Log（归档日志）  其中，Undo Log（回滚日志）主要作用：事务回滚用于撤销事务未提交前对数据的更改；MVCC 快照读：为其他事务提供“旧版本”数据，实现一致性读。 Redo Log（重做日志），崩溃恢复（Crash Recovery）：保证已提交的事务修改不丢失，即使系统宕机"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/2025/05/13/Mysql%E4%B8%89%E5%A4%A7%E6%97%A5%E5%BF%97/image-20250513170116173.png"><meta property="og:image" content="http://symbol23441.top/2025/05/13/Mysql%E4%B8%89%E5%A4%A7%E6%97%A5%E5%BF%97/image-20250513171106234.png"><meta property="og:image" content="http://symbol23441.top/2025/05/13/Mysql%E4%B8%89%E5%A4%A7%E6%97%A5%E5%BF%97/image-20250513172221278.png"><meta property="og:image" content="http://symbol23441.top/2025/05/13/Mysql%E4%B8%89%E5%A4%A7%E6%97%A5%E5%BF%97/image-20250513174453661.png"><meta property="og:image" content="http://symbol23441.top/2025/05/13/Mysql%E4%B8%89%E5%A4%A7%E6%97%A5%E5%BF%97/image-20250513180403387.png"><meta property="og:image" content="http://symbol23441.top/2025/05/13/Mysql%E4%B8%89%E5%A4%A7%E6%97%A5%E5%BF%97/image-20250513180437754.png"><meta property="og:image" content="http://symbol23441.top/2025/05/13/Mysql%E4%B8%89%E5%A4%A7%E6%97%A5%E5%BF%97/image-20250513183548721.png"><meta property="article:published_time" content="2025-05-13T08:24:29.000Z"><meta property="article:modified_time" content="2025-05-13T08:24:29.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="article:tag" content="DB"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/2025/05/13/Mysql%E4%B8%89%E5%A4%A7%E6%97%A5%E5%BF%97/image-20250513170116173.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2025/05/13/Mysql%E4%B8%89%E5%A4%A7%E6%97%A5%E5%BF%97/"},"headline":"Mysql三大日志","image":["http://symbol23441.top/2025/05/13/Mysql%E4%B8%89%E5%A4%A7%E6%97%A5%E5%BF%97/image-20250513170116173.png","http://symbol23441.top/2025/05/13/Mysql%E4%B8%89%E5%A4%A7%E6%97%A5%E5%BF%97/image-20250513171106234.png","http://symbol23441.top/2025/05/13/Mysql%E4%B8%89%E5%A4%A7%E6%97%A5%E5%BF%97/image-20250513172221278.png","http://symbol23441.top/2025/05/13/Mysql%E4%B8%89%E5%A4%A7%E6%97%A5%E5%BF%97/image-20250513174453661.png","http://symbol23441.top/2025/05/13/Mysql%E4%B8%89%E5%A4%A7%E6%97%A5%E5%BF%97/image-20250513180403387.png","http://symbol23441.top/2025/05/13/Mysql%E4%B8%89%E5%A4%A7%E6%97%A5%E5%BF%97/image-20250513180437754.png","http://symbol23441.top/2025/05/13/Mysql%E4%B8%89%E5%A4%A7%E6%97%A5%E5%BF%97/image-20250513183548721.png"],"datePublished":"2025-05-13T08:24:29.000Z","dateModified":"2025-05-13T08:24:29.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"MySql InnoDB中有个三个重要日志：  Undo Log（回滚日志） Redo Log（重放日志） Bin Log（归档日志）  其中，Undo Log（回滚日志）主要作用：事务回滚用于撤销事务未提交前对数据的更改；MVCC 快照读：为其他事务提供“旧版本”数据，实现一致性读。 Redo Log（重做日志），崩溃恢复（Crash Recovery）：保证已提交的事务修改不丢失，即使系统宕机"}</script><link rel="canonical" href="http://symbol23441.top/2025/05/13/Mysql%E4%B8%89%E5%A4%A7%E6%97%A5%E5%BF%97/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2025-05-13T08:24:29.000Z" title="5/13/2025, 4:24:29 PM">2025-05-13</time>发表</span><span class="level-item"><time dateTime="2025-05-13T08:24:29.000Z" title="5/13/2025, 4:24:29 PM">2025-05-13</time>更新</span><span class="level-item">14 分钟读完 (大约2126个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">Mysql三大日志</h1><div class="content"><p>MySql InnoDB中有个三个重要日志：</p>
+<ul>
+<li>Undo Log（回滚日志）</li>
+<li>Redo Log（重放日志）</li>
+<li>Bin Log（归档日志）</li>
+</ul>
+<p>其中，Undo Log（回滚日志）主要作用：<strong>事务回滚</strong>用于撤销事务未提交前对数据的更改；<strong>MVCC 快照读</strong>：为其他事务提供“旧版本”数据，实现一致性读。</p>
+<p>Redo Log（重做日志），<strong>崩溃恢复（Crash Recovery）</strong>：保证已提交的事务修改不丢失，即使系统宕机；<strong>WAL（Write-Ahead Logging）机制</strong>：修改先写日志，后写磁盘，提高性能和可靠性。</p>
+<p>Binlog（归档日志 / 二进制日志），<strong>数据恢复（PITR）</strong>：结合全备 + binlog，可做时间点恢复，记录数据库变更历史。程序员业务上根据此进行数据库备份、回溯。<strong>主从复制</strong>：从库根据主库的 binlog 重放 SQL 操作；</p>
+<h2 id="1、Mysql-执行原理"><a href="#1、Mysql-执行原理" class="headerlink" title="1、Mysql 执行原理"></a>1、Mysql 执行原理</h2><p><img src="/2025/05/13/Mysql%E4%B8%89%E5%A4%A7%E6%97%A5%E5%BF%97/image-20250513170116173.png" alt="sql执行原理过程与日志流程"></p>
+<span id="more"></span>
+
+<h3 id="1-1-sql-Server层"><a href="#1-1-sql-Server层" class="headerlink" title="1.1 sql Server层"></a>1.1 sql Server层</h3><p><img src="/2025/05/13/Mysql%E4%B8%89%E5%A4%A7%E6%97%A5%E5%BF%97/image-20250513171106234.png" alt="image-20250513171106234"></p>
+<p>客户端通过连接驱动（如 JDBC）发起 SQL 请求，进入 <strong>连接池</strong>。MySQL Server 层的缓存机制默认是<strong>关闭</strong>的，至在 MySQL 8.0 中已被彻底移除，主要原因是：并发性能差、命中率低、缓存管理开销大。入不敷出。</p>
+<p><strong>（1） SQL 解析器（Parser）——“看懂你写了啥”</strong></p>
+<p>主要作用：检查SQL 文本语句的语法，并解析成数据库内部能理解的数据结构（<strong>语法树 AST</strong>）</p>
+<p><strong>（2）SQL预处理器（Preprocessor）——“语义检查官 + 安全管家”</strong></p>
+<p>主要作用：对解析器生成的语法树做进一步的<strong>语义检查和权限校验</strong></p>
+<p><strong>（3）SQL 优化器（Optimizer）——“帮你挑个最快的方案”</strong></p>
+<p>主要作用：根据语法树，生成多个<strong>执行计划</strong>，并选出<strong>代价最小的那一个</strong>来执行。</p>
+<p>如：选择合适的<strong>索引</strong>，决定表连接的顺序（如多表 JOIN），子查询是否改写为 JOIN，是否使用排序优化、<strong>索引下推</strong>、<strong>覆盖索引</strong>等。</p>
+<p><strong>（4）执行器（Executor）——“执行部队”</strong></p>
+<p>主要作用：按优化器生成的执行计划，<strong>调用存储引擎接口（如 InnoDB）一行行地执行 SQL</strong></p>
+<p>工作内容：遍历执行计划节点（如 Table Scan、Index Lookup、Join）、调用存储引擎的 <code>handler</code> 接口（例如：读一行、写一行）、处理结果、聚合、排序、分页等、结果返回给客户端。</p>
+<h3 id="1-2-存储层（InnoDB）中的日志流程"><a href="#1-2-存储层（InnoDB）中的日志流程" class="headerlink" title="1.2 存储层（InnoDB）中的日志流程"></a>1.2 存储层（InnoDB）中的日志流程</h3><p><img src="/2025/05/13/Mysql%E4%B8%89%E5%A4%A7%E6%97%A5%E5%BF%97/image-20250513172221278.png" alt="image-20250513172221278"></p>
+<p>首先声明InnoDB是<strong>事务型存储</strong>引擎，哪怕你没有写 <code>BEGIN</code>，它也会隐式地为每条 DML 语句开启一个“短事务”。</p>
+<p><strong>三大日志处理流程</strong>具体如下：</p>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>操作</th>
+<th>日志/组件</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>写 Undo Log</td>
+<td>Undo Log（内存）</td>
+<td>回滚和 MVCC 快照</td>
+</tr>
+<tr>
+<td>2</td>
+<td>写 Buffer Pool</td>
+<td>Buffer Pool（内存）</td>
+<td>修改数据页</td>
+</tr>
+<tr>
+<td>3</td>
+<td>写 Redo Log（prepare）</td>
+<td>Redo Log（内存）</td>
+<td>崩溃恢复（先写日志）</td>
+</tr>
+<tr>
+<td>4</td>
+<td>刷 Binlog</td>
+<td>Binlog + fsync</td>
+<td>主从复制/归档</td>
+</tr>
+<tr>
+<td>5</td>
+<td>redo commit + 异步刷盘</td>
+<td>磁盘 + dump/IO 线程</td>
+<td>正式提交、异步持久化</td>
+</tr>
+</tbody></table>
+<h3 id="1-3-事务提交（2PC两阶段提交流程）："><a href="#1-3-事务提交（2PC两阶段提交流程）：" class="headerlink" title="1.3 事务提交（2PC两阶段提交流程）："></a>1.3 <strong>事务提交</strong>（2PC两阶段提交流程）：</h3><p>当使用 InnoDB + Binlog 时，MySQL 采用 <strong>两阶段提交（2PC）</strong> 保证 redo log 与 binlog 的一致性。</p>
+<p>步骤如下：</p>
+<ol>
+<li><strong>事务执行阶段</strong><ul>
+<li>生成 undo log、修改 Buffer Pool、生成 redo log</li>
+</ul>
+</li>
+<li><strong>准备提交（Prepare 阶段）</strong><ul>
+<li>把 redo log 写入磁盘并标记为 <code>&quot;prepare&quot;</code>。<code>flush redo log</code>将redo log 载入磁盘。</li>
+</ul>
+</li>
+<li><strong>写 binlog + fsync</strong><ul>
+<li>把 binlog 写入磁盘（如果启用了 binlog）</li>
+</ul>
+</li>
+<li><strong>提交 redo log（写 COMMIT 标记）</strong><ul>
+<li>redo log 写入 <code>&quot;commit&quot;</code> 标记。</li>
+</ul>
+</li>
+</ol>
+<blockquote>
+<p>真正的提交点为：redo log 已刷盘 + binlog 已刷盘 + redo log 标记为 COMMIT</p>
+</blockquote>
+<h2 id="2、三大日志详细"><a href="#2、三大日志详细" class="headerlink" title="2、三大日志详细"></a>2、三大日志详细</h2><h3 id="2-1-Undo-Log"><a href="#2-1-Undo-Log" class="headerlink" title="2.1 Undo Log"></a>2.1 Undo Log</h3><p>Undo Log记录项的<strong>主要内容</strong>：</p>
+<ul>
+<li><p>当前事务 ID（trx_id）：</p>
+</li>
+<li><p>修改前的旧值</p>
+</li>
+<li><p>指向前一个版本的指针（roll_pointer）：形成<strong>版本链</strong>，支持多版本读取（MVCC）。MVCC 内容详见<a href="/2025/04/09/%E7%90%86%E8%A7%A3%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1/" title="理解数据库事务">理解数据库事务</a>  MVCC内容。</p>
+</li>
+</ul>
+<p><img src="/2025/05/13/Mysql%E4%B8%89%E5%A4%A7%E6%97%A5%E5%BF%97/image-20250513174453661.png" alt="MVCC 版本链中Undo 项"></p>
+<p>不同操作记录的 Undo 内容略有不同：</p>
+<ul>
+<li><code>UPDATE</code> 操作：更新前的字段值。</li>
+<li><code>DELETE</code> 操作：整行数据（被删前的）</li>
+<li><code>INSERT</code> 操作：记录：<strong>删除标记</strong>（即标记“这行是我插入的”，回滚时应删除）</li>
+</ul>
+<p><strong>回滚rollback逻辑</strong>：从事务尾部往前读取 Undo Log，按记录的原值逐条“撤销”数据修改。</p>
+<h3 id="2-2-Redo-Log"><a href="#2-2-Redo-Log" class="headerlink" title="2.2 Redo Log"></a>2.2 Redo Log</h3><blockquote>
+<p><strong>Redo Log（重做日志）</strong> 是 InnoDB 存储引擎使用的一种 <strong>物理日志</strong>，用于<strong>崩溃恢复</strong>，确保已提交事务的修改<strong>不会因为宕机而丢失</strong>。</p>
+</blockquote>
+<p><strong>数据页直接刷盘不就好了，还有 redo log 什么事？</strong></p>
+<ul>
+<li>修改的数据页每个可能仅改了几个字节，大量的页写入耗时。而RedoLog只要写几Byte即可。</li>
+<li>数据页的修改大概率需要分散的随机访问，性能差。而redolog顺序写更快。</li>
+</ul>
+<h4 id="2-2-1-存储结构"><a href="#2-2-1-存储结构" class="headerlink" title="2.2.1 存储结构"></a>2.2.1 存储结构</h4><p>Redo Log数据由<strong>两部分</strong>组成：</p>
+<ul>
+<li>Log Buffer：内存中的 redo 日志缓冲区</li>
+<li>Log File：磁盘上的 redo log 文件（ib_logfile0、ib_logfile1 …）。</li>
+</ul>
+<p><img src="/2025/05/13/Mysql%E4%B8%89%E5%A4%A7%E6%97%A5%E5%BF%97/image-20250513180403387.png" alt="RedoLog 循环文件"></p>
+<p>RedoLog File采用循环文件的方式。该循环文件类似于循环队列，<code>write pos</code>、<code>checkpoint</code>分别为<code>当前记录的位置</code>、<code>前已落盘位置（可覆盖）</code>。相关操作如下:</p>
+<ul>
+<li><strong>写操作</strong>，write pos边写边后移动。</li>
+<li><strong>循环文件满</strong>时（write pos追上checkpoint），InnoDB 会阻塞新事务，等待 flush 脏页，推进 checkpoint</li>
+</ul>
+<img src="/2025/05/13/Mysql%E4%B8%89%E5%A4%A7%E6%97%A5%E5%BF%97/image-20250513180437754.png" alt="循环写逻辑" style="zoom:25%;">
+
+<h4 id="2-2-2-刷盘时机"><a href="#2-2-2-刷盘时机" class="headerlink" title="2.2.2 刷盘时机"></a>2.2.2 刷盘时机</h4><blockquote>
+<p>Redo Log 的主要目的是为了<strong>保证BufferPool未刷入磁盘数据</strong>不丢失（如崩溃等因素）。</p>
+</blockquote>
+<p><strong>Redo Log 默认会在事务“提交前”（preCommit）刷新到磁盘</strong>，确保事务提交后即使宕机也不丢数据。</p>
+<p>Redo在很多种情况下都会刷盘：</p>
+<ul>
+<li><strong>事务提交</strong></li>
+<li>redolog buffer空间不足</li>
+<li>事务日志缓冲区满</li>
+<li>Checkpoint（检查点）：InnoDB 定期会执行检查点操作。</li>
+<li>关闭服务器</li>
+</ul>
+<p>其中，在提交事务时候，可设置<code>innodb_flush_log_at_trx_commit</code>进行刷盘策略：</p>
+<table>
+<thead>
+<tr>
+<th>值</th>
+<th>含义</th>
+<th>刷盘时机</th>
+<th>持久性</th>
+<th>性能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>0</code></td>
+<td>提交时不写磁盘，只写 redo log buffer</td>
+<td>每秒由后台线程 flush 一次</td>
+<td>差</td>
+<td>高</td>
+</tr>
+<tr>
+<td><code>1</code></td>
+<td>每次事务提交都写 redo log buffer 并 flush 到磁盘</td>
+<td>提交时立即刷盘</td>
+<td>强（推荐）</td>
+<td>低</td>
+</tr>
+<tr>
+<td><code>2</code></td>
+<td>提交时写 redo log buffer，但不 flush 到磁盘</td>
+<td>每秒刷盘一次</td>
+<td>较强（仍可能丢失1秒内数据）</td>
+<td>较高</td>
+</tr>
+</tbody></table>
+<h3 id="2-3-Bin-Log"><a href="#2-3-Bin-Log" class="headerlink" title="2.3 Bin Log"></a>2.3 Bin Log</h3><p><strong>Binlog 是 MySQL 的 Server 层日志</strong>，用于记录所有<strong>更改了数据库数据的操作</strong>（即 DML、DDL 语句），不包括查询语句（SELECT）。</p>
+<ul>
+<li>文件名：通常是 <code>mysql-bin.000001</code> 这样命名。</li>
+<li>位置：由 <code>log_bin</code> 参数控制，存放在数据目录下。</li>
+<li>类型：是<strong>追加写入</strong>的二进制文件。</li>
+</ul>
+<p><strong>BinLog的作用:</strong></p>
+<p>(1)  主从复制（MySQL Replication）</p>
+<p>主从复制就是靠 binlog 实现的。主库写 binlog，从库读取并执行，保持数据一致。从数据库连接到dump线程后，合适的实际会将BinLog发送到从数据库，只需将BinLog记录到从库端的Relay Log，即同步成功。后续从库会在合适的时间根据relay log 更新数据库。</p>
+<p><img src="/2025/05/13/Mysql%E4%B8%89%E5%A4%A7%E6%97%A5%E5%BF%97/image-20250513183548721.png" alt="BinLog实现主从复制"></p>
+<p>（2）数据恢复</p>
+<p>可以配合全量备份（如 <code>mysqldump</code>）进行增量恢复，恢复到任意时间点（类似时间机器）。业务上，回溯数据库就是借此实现。</p>
+</div><div class="article-licensing box"><div class="licensing-title"><p>Mysql三大日志</p><p><a href="http://symbol23441.top/2025/05/13/Mysql三大日志/">http://symbol23441.top/2025/05/13/Mysql三大日志/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2025-05-13</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2025-05-13</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/DB/">DB</a></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2025/05/10/AQS%E6%B5%85%E6%9E%90/"><span class="level-item">AQS浅析</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#1、Mysql-执行原理"><span class="level-left"><span class="level-item">1、Mysql 执行原理</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#1-1-sql-Server层"><span class="level-left"><span class="level-item">1.1 sql Server层</span></span></a></li><li><a class="level is-mobile" href="#1-2-存储层（InnoDB）中的日志流程"><span class="level-left"><span class="level-item">1.2 存储层（InnoDB）中的日志流程</span></span></a></li><li><a class="level is-mobile" href="#1-3-事务提交（2PC两阶段提交流程）："><span class="level-left"><span class="level-item">1.3 事务提交（2PC两阶段提交流程）：</span></span></a></li></ul></li><li><a class="level is-mobile" href="#2、三大日志详细"><span class="level-left"><span class="level-item">2、三大日志详细</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#2-1-Undo-Log"><span class="level-left"><span class="level-item">2.1 Undo Log</span></span></a></li><li><a class="level is-mobile" href="#2-2-Redo-Log"><span class="level-left"><span class="level-item">2.2 Redo Log</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#2-2-1-存储结构"><span class="level-left"><span class="level-item">2.2.1 存储结构</span></span></a></li><li><a class="level is-mobile" href="#2-2-2-刷盘时机"><span class="level-left"><span class="level-item">2.2.2 刷盘时机</span></span></a></li></ul></li><li><a class="level is-mobile" href="#2-3-Bin-Log"><span class="level-left"><span class="level-item">2.3 Bin Log</span></span></a></li></ul></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/js/lightgallery.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script><script type="text/javascript" src="/js/imaegoo/universe.js"></script></body></html>
