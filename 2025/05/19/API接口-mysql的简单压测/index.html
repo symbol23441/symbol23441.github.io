@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>API接口&amp;mysql的简单压测 - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="1、JMeter（API压测）并发接口压测 官网下载：https:&amp;#x2F;&amp;#x2F;jmeter.apache.org&amp;#x2F;download_jmeter.cgi。JMeter用 JAVA实现，进入bin目录解压运行java -jar ApacheJMeter.jar，即可。  右键添加线程组（测试计划中） 右键，添加采样器 – HTTP。 添加配置原件，CSV数据。（可用于请求参数的列举，线程组中会分配好，每条最"><meta property="og:type" content="blog"><meta property="og:title" content="API接口&amp;mysql的简单压测"><meta property="og:url" content="http://symbol23441.top/2025/05/19/API%E6%8E%A5%E5%8F%A3-mysql%E7%9A%84%E7%AE%80%E5%8D%95%E5%8E%8B%E6%B5%8B/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="1、JMeter（API压测）并发接口压测 官网下载：https:&amp;#x2F;&amp;#x2F;jmeter.apache.org&amp;#x2F;download_jmeter.cgi。JMeter用 JAVA实现，进入bin目录解压运行java -jar ApacheJMeter.jar，即可。  右键添加线程组（测试计划中） 右键，添加采样器 – HTTP。 添加配置原件，CSV数据。（可用于请求参数的列举，线程组中会分配好，每条最"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/img/og_image.png"><meta property="article:published_time" content="2025-05-19T13:22:15.000Z"><meta property="article:modified_time" content="2025-05-19T13:22:15.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="article:tag" content="Java"><meta property="article:tag" content="DB"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/img/og_image.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2025/05/19/API%E6%8E%A5%E5%8F%A3-mysql%E7%9A%84%E7%AE%80%E5%8D%95%E5%8E%8B%E6%B5%8B/"},"headline":"API接口&mysql的简单压测","image":["http://symbol23441.top/img/og_image.png"],"datePublished":"2025-05-19T13:22:15.000Z","dateModified":"2025-05-19T13:22:15.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"1、JMeter（API压测）并发接口压测 官网下载：https:&#x2F;&#x2F;jmeter.apache.org&#x2F;download_jmeter.cgi。JMeter用 JAVA实现，进入bin目录解压运行java -jar ApacheJMeter.jar，即可。  右键添加线程组（测试计划中） 右键，添加采样器 – HTTP。 添加配置原件，CSV数据。（可用于请求参数的列举，线程组中会分配好，每条最"}</script><link rel="canonical" href="http://symbol23441.top/2025/05/19/API%E6%8E%A5%E5%8F%A3-mysql%E7%9A%84%E7%AE%80%E5%8D%95%E5%8E%8B%E6%B5%8B/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2025-05-19T13:22:15.000Z" title="5/19/2025, 9:22:15 PM">2025-05-19</time>发表</span><span class="level-item"><time dateTime="2025-05-19T13:22:15.000Z" title="5/19/2025, 9:22:15 PM">2025-05-19</time>更新</span><span class="level-item">2 分钟读完 (大约304个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">API接口&amp;mysql的简单压测</h1><div class="content"><h1 id="1、JMeter（API压测）"><a href="#1、JMeter（API压测）" class="headerlink" title="1、JMeter（API压测）"></a>1、JMeter（API压测）</h1><p>并发接口压测</p>
+<p>官网下载：<a target="_blank" rel="noopener" href="https://jmeter.apache.org/download_jmeter.cgi%E3%80%82JMeter%E7%94%A8">https://jmeter.apache.org/download_jmeter.cgi。JMeter用</a> JAVA实现，进入bin目录解压运行<code>java -jar ApacheJMeter.jar</code>，即可。</p>
+<ol>
+<li>右键添加线程组（测试计划中）</li>
+<li>右键，添加采样器 – HTTP。</li>
+<li>添加配置原件，CSV数据。（可用于请求参数的列举，线程组中会分配好，每条最多执行一次）（CSV设置文件中设置分隔符、变量名，参数说明在http页面添加属性中<code>$&#123;xxx&#125;</code>使）</li>
+<li>右键，添加监听器 – 查看结构树</li>
+<li>右键，添加监听器 – 汇总报告</li>
+</ol>
+<p>参考：<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1Mm411o7Yo/?spm_id_from=333.1391.0.0&amp;vd_source=0ff05116367aae8f8480fddf5a565ea6">https://www.bilibili.com/video/BV1Mm411o7Yo/?spm_id_from=333.1391.0.0&amp;vd_source=0ff05116367aae8f8480fddf5a565ea6</a></p>
+<h1 id="2、mysqlslap-测QPS、TPS"><a href="#2、mysqlslap-测QPS、TPS" class="headerlink" title="2、mysqlslap 测QPS、TPS"></a>2、mysqlslap 测QPS、TPS</h1><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">mysqlslap --user=root --password=<span class="number">1122</span> \</span><br><span class="line">  --concurrency=<span class="number">1</span> \                 # 并发线程数为 <span class="number">1</span>，模拟单线程访问数据库</span><br><span class="line">  --iterations=<span class="number">1</span> \                 # 只运行一次测试（即测试轮数为 <span class="number">1</span>）</span><br><span class="line">  --number-of-queries=<span class="number">100000</span> \     # 总共执行 <span class="number">100</span>,<span class="number">000</span> 次查询（不是每轮每线程，是整轮总数）</span><br><span class="line">  --query=&quot;SELECT * FROM order_info WHERE id = <span class="number">1547</span>;&quot; \  # 要执行的 SQL 查询语句（模拟业务场景）</span><br><span class="line">  --create-schema=miaosha          # 使用名为 &quot;miaosha&quot; 的数据库（schema）</span><br></pre></td></tr></table></figure>
+
+</div><div class="article-licensing box"><div class="licensing-title"><p>API接口&amp;mysql的简单压测</p><p><a href="http://symbol23441.top/2025/05/19/API接口-mysql的简单压测/">http://symbol23441.top/2025/05/19/API接口-mysql的简单压测/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2025-05-19</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2025-05-19</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/Java/">Java</a><a class="link-muted mr-2" rel="tag" href="/tags/DB/">DB</a></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2025/05/21/Redis%E5%B8%B8%E8%A7%81%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E4%BD%BF%E7%94%A8/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">Redis常见数据结构与使用</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2025/05/13/Mysql%E4%B8%89%E5%A4%A7%E6%97%A5%E5%BF%97/"><span class="level-item">Mysql三大日志</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#1、JMeter（API压测）"><span class="level-left"><span class="level-item">1、JMeter（API压测）</span></span></a></li><li><a class="level is-mobile" href="#2、mysqlslap-测QPS、TPS"><span class="level-left"><span class="level-item">2、mysqlslap 测QPS、TPS</span></span></a></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/js/lightgallery.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script><script type="text/javascript" src="/js/imaegoo/universe.js"></script></body></html>
