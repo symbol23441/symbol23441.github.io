@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>RSA非对称加密算法 - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="本文将详细讲解RSA算法、所涉及的算法原理，以及相关的所有数学推导。 本章概要如下：  大整数分解困难 ($n &amp;#x3D; p \cdot q$)  &amp;#x3D;&amp;#x3D;》 非对称加密的安全性 p、q难破解   &amp;#x3D;&amp;#x3D;》  欧拉函数 $\varphi(n)$安全 $e \cdot d \equiv 1 \mod \varphi(n)$  选取e做公钥质数，可求私钥指数d。$\varphi(n)$安全保证d安全。 M为原文，"><meta property="og:type" content="blog"><meta property="og:title" content="RSA非对称加密算法"><meta property="og:url" content="http://symbol23441.top/2025/07/05/RSA%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="本文将详细讲解RSA算法、所涉及的算法原理，以及相关的所有数学推导。 本章概要如下：  大整数分解困难 ($n &amp;#x3D; p \cdot q$)  &amp;#x3D;&amp;#x3D;》 非对称加密的安全性 p、q难破解   &amp;#x3D;&amp;#x3D;》  欧拉函数 $\varphi(n)$安全 $e \cdot d \equiv 1 \mod \varphi(n)$  选取e做公钥质数，可求私钥指数d。$\varphi(n)$安全保证d安全。 M为原文，"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/img/og_image.png"><meta property="article:published_time" content="2025-07-04T18:30:21.000Z"><meta property="article:modified_time" content="2025-07-04T18:30:21.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="article:tag" content="加密算法"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/img/og_image.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2025/07/05/RSA%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95/"},"headline":"RSA非对称加密算法","image":["http://symbol23441.top/img/og_image.png"],"datePublished":"2025-07-04T18:30:21.000Z","dateModified":"2025-07-04T18:30:21.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"本文将详细讲解RSA算法、所涉及的算法原理，以及相关的所有数学推导。 本章概要如下：  大整数分解困难 ($n &#x3D; p \\cdot q$)  &#x3D;&#x3D;》 非对称加密的安全性 p、q难破解   &#x3D;&#x3D;》  欧拉函数 $\\varphi(n)$安全 $e \\cdot d \\equiv 1 \\mod \\varphi(n)$  选取e做公钥质数，可求私钥指数d。$\\varphi(n)$安全保证d安全。 M为原文，"}</script><link rel="canonical" href="http://symbol23441.top/2025/07/05/RSA%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2025-07-04T18:30:21.000Z" title="7/5/2025, 2:30:21 AM">2025-07-05</time>发表</span><span class="level-item"><time dateTime="2025-07-04T18:30:21.000Z" title="7/5/2025, 2:30:21 AM">2025-07-05</time>更新</span><span class="level-item">16 分钟读完 (大约2327个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">RSA非对称加密算法</h1><div class="content"><p>本文将详细讲解RSA算法、所涉及的算法原理，以及相关的所有数学推导。</p>
+<p>本章概要如下：</p>
+<ul>
+<li><strong>大整数分解困难 ($n = p \cdot q$)</strong>  ==》 非对称加密的安全性</li>
+<li>p、q难破解   ==》  欧拉函数 $\varphi(n)$安全</li>
+<li>$e \cdot d \equiv 1 \mod \varphi(n)$  选取e做公钥质数，可求私钥指数d。$\varphi(n)$安全保证d安全。</li>
+<li>M为原文，公钥加密  $C \equiv M^e \mod n$，私钥解密$M^{ed} \mod n = M$</li>
+<li>[见附页]私钥d存在性证明，<ul>
+<li>证明链：欧几里得算法=》扩展欧几里得（回代）=》贝祖定理=》M、n大概率互质=》存在d（e的模反元素）</li>
+</ul>
+</li>
+<li>[见2.7正确性保证+附页]  $M^{ed} mod n = M$回环的关键 $M^{\varphi(n)} \equiv 1$<ul>
+<li>证明链： 模乘群 =》 欧拉定理 =》 $M^{\varphi(n)} \equiv 1$</li>
+</ul>
+</li>
+</ul>
+<h2 id="1-为什么叫“非对称加密”？"><a href="#1-为什么叫“非对称加密”？" class="headerlink" title="1.为什么叫“非对称加密”？"></a>1.为什么叫“非对称加密”？</h2><p>因为它使用 <strong>一对钥匙</strong>：</p>
+<ul>
+<li>公钥：给别人用;  私钥：你自己保留</li>
+</ul>
+<ul>
+<li>私钥加密能用公钥解开，公钥加密也能用私钥解开。</li>
+<li>但对于公众中一个公钥加密，仅私钥可见；同时私钥加密发布，可大幅降低信息伪造。</li>
+<li>但是，该算法性能远不及对称算法AES，因此，仅用于少量数据传输，以及验签（防伪）。</li>
+</ul>
+<h2 id="2-RSA-算法原理"><a href="#2-RSA-算法原理" class="headerlink" title="2. RSA 算法原理"></a>2. RSA 算法原理</h2><span id="more"></span>
+
+<p>RSA 是一种经典的<strong>非对称加密算法</strong>，由公钥加密、私钥解密构成。它的安全性依赖于一个数学难题：**大整数分解 ($n = p \cdot q$)**。</p>
+<p>核心思想：</p>
+<blockquote>
+<p><strong>使用两个大质数 $p, q$，构造一个模数 $n = p \cdot q$，在模 $n$ 意义下的指数运算具有“不可逆性”，从而实现安全加密。</strong></p>
+</blockquote>
+<p>算法的步骤如下：</p>
+<h3 id="2-1-选取两个大质数-p-q"><a href="#2-1-选取两个大质数-p-q" class="headerlink" title="2.1 选取两个大质数 $p$, $q$"></a>2.1 选取两个大质数 $p$, $q$</h3><p>这是整个系统的基础。<br>它们必须是<strong>随机且保密的质数</strong>。</p>
+<hr>
+<h3 id="2-2-计算模数-n-和-欧拉函数-varphi-n"><a href="#2-2-计算模数-n-和-欧拉函数-varphi-n" class="headerlink" title="2.2 计算模数 $n$ 和 欧拉函数 $\varphi(n)$"></a>2.2 计算模数 $n$ 和 欧拉函数 $\varphi(n)$</h3><p>$$<br>n = p \cdot q<br>$$</p>
+<p>$$<br>\varphi(n) = (p - 1)(q - 1)<br>$$</p>
+<ul>
+<li>$n$ 是公开的，用于后续的模运算。</li>
+<li>$\varphi(n)$ 是私密的，不能泄露。由于n分解困难，p、q难以获得，这保证了$\varphi(n)$ 的安全性。</li>
+<li>$\varphi(n)$ 本质上“模 $n$” 下可逆元素的数量，详见附页。</li>
+</ul>
+<hr>
+<h3 id="2-3-选择公钥指数-e-，计算私钥指数-d"><a href="#2-3-选择公钥指数-e-，计算私钥指数-d" class="headerlink" title="2.3 选择公钥指数 $e$，计算私钥指数 $d$"></a>2.3 选择公钥指数 $e$，计算私钥指数 $d$</h3><p>**选择公钥指数 $e$**：<br>$$<br>1 &lt; e &lt; \varphi(n), \quad \gcd(e, \varphi(n)) = 1<br>$$</p>
+<ul>
+<li>$e$ 自选，与 $\varphi(n)$ 互质，通常为65537(即$2^{16} + 1$)。</li>
+<li>$e$ 是公开的，代表加密指数。</li>
+</ul>
+<p><strong>计算私钥指数 $d$：</strong><br>$$<br>e \cdot d \equiv 1 \mod \varphi(n)<br>$$</p>
+<ul>
+<li>$d$ 是 $e$ 在模 $\varphi(n)$ 下的乘法逆元。快速模幂法可高效求得。</li>
+<li>$d$ 是私密的，是解密用的指数。</li>
+</ul>
+<p><strong>因此，公钥和私钥如下定义：</strong></p>
+<ul>
+<li>公钥：$(n, e)$</li>
+<li>私钥：$(n, d)$</li>
+</ul>
+<p>注意：两者都包含 $n$，但只有 $d$ 是私密的。</p>
+<hr>
+<h3 id="2-5-加密过程（使用公钥）："><a href="#2-5-加密过程（使用公钥）：" class="headerlink" title="2.5 加密过程（使用公钥）："></a>2.5 加密过程（使用公钥）：</h3><p>设明文为 $M$，满足：</p>
+<p>$$<br>0 &lt; M &lt; n \quad \text{且} \quad \gcd(M, n) = 1<br>$$</p>
+<p>因为n远大于M，且n仅有p、q两个大质数，M为p、q倍数的概率极低，因此数据M与n大概率互质。</p>
+<p>加密公式：<br>$$<br>C \equiv M^e \mod n<br>$$</p>
+<ul>
+<li>$C$ 是密文。</li>
+<li>任何人有公钥 $(n, e)$ 都可以加密。</li>
+</ul>
+<hr>
+<h3 id="2-6-解密过程（使用私钥）："><a href="#2-6-解密过程（使用私钥）：" class="headerlink" title="2.6 解密过程（使用私钥）："></a>2.6 解密过程（使用私钥）：</h3><p>收到密文 $C$，用私钥指数 $d$ 还原明文：</p>
+<p>$$<br>M \equiv C^d \mod n = (M^e)^d \mod n = M^{ed} \mod n<br>$$</p>
+<hr>
+<h3 id="正确性保证：欧拉定理-构造关系"><a href="#正确性保证：欧拉定理-构造关系" class="headerlink" title="*正确性保证：欧拉定理 + 构造关系"></a>*正确性保证：欧拉定理 + 构造关系</h3><p>因为：</p>
+<p>$$<br>ed \equiv 1 \mod \varphi(n)<br>\quad \Rightarrow \quad ed = 1 + k \cdot \varphi(n)<br>$$</p>
+<p>代入明文还原过程：</p>
+<p>$$<br>M^{ed} = M^{1 + k\varphi(n)} = M \cdot (M^{\varphi(n)})^k<br>$$</p>
+<p>根据欧拉定理(详见附页，证明)：</p>
+<p>$$<br>M^{\varphi(n)} \equiv 1 \mod n \quad (\text{若 } \gcd(M, n) = 1)<br>$$</p>
+<p>所以：</p>
+<p>$$<br>M^{ed} \equiv M \cdot 1^k \equiv M \mod n<br>$$</p>
+<p>🔁 成功还原明文！私钥加密公钥解密，同理。</p>
+<h2 id="3、附页：补充相关知识"><a href="#3、附页：补充相关知识" class="headerlink" title="3、附页：补充相关知识"></a>3、附页：补充相关知识</h2><h3 id="3-1-模-m"><a href="#3-1-模-m" class="headerlink" title="3.1 模$m$"></a>3.1 模$m$</h3><p>理解模运算的核心——即模 $m$ 下，<strong>两个数如果相差 $m$ 的倍数，它们就“同余”</strong>。<br>$$<br>1 \equiv a = 1 + k \cdot m \mod m \quad<br>$$</p>
+<p>意为：存在一个整数k，使得$1 + k \cdot m = a$，即与1相差k倍m。即与1同余数，也即在mod m 的视角下1与a相等。</p>
+<p>模m恒等式，<strong>加法、乘法、幂</strong>均适用，证明如下：</p>
+<p><strong>加法</strong>：<br>$$<br>a \equiv x \mod m,\quad b \equiv y \mod m \quad \Rightarrow \quad a = x + k_1 \cdot m,\quad b = y + k_2 \cdot m<br>$$</p>
+<p>$$<br>a + b = (x + y) + (k_1 + k_2) \cdot m \quad \Rightarrow \quad a + b \equiv x + y \mod m<br>$$</p>
+<p> <strong>乘法</strong>：<br>$$<br>a \equiv x \mod m,\quad b \equiv y \mod m \quad \Rightarrow \quad a = x + k_1 \cdot m,\quad b = y + k_2 \cdot m<br>$$</p>
+<p>$$<br>ab = xy + m(xk_2 + yk_1 + k_1k_2m) \quad \Rightarrow \quad ab \equiv xy \mod m<br>$$</p>
+<p><strong>幂运算</strong>：<br>$$<br>a \equiv x \mod m \quad \Rightarrow \quad a = x + k \cdot m<br>$$</p>
+<p>$$<br>a^n = x^n + m \cdot (\text{其他项}) \quad \Rightarrow \quad a^n \equiv x^n \mod m<br>$$</p>
+<hr>
+<h3 id="3-2-快速模幂算法"><a href="#3-2-快速模幂算法" class="headerlink" title="3.2  快速模幂算法"></a>3.2  快速模幂算法</h3><p><strong>目标：</strong></p>
+<p>计算：</p>
+<p>$$<br>a^b \mod m<br>$$</p>
+<p>当 $b$ 很大时，直接算 $a^b$ 会非常慢，甚至数太大算不过来。<br><strong>快速模幂算法</strong>能把计算时间从 $O(b)$ 降到 $O(\log b)$。</p>
+<blockquote>
+<p>核心思想：<strong>把 b 拆成二进制</strong></p>
+</blockquote>
+<p>比如 $b = 13$，二进制是 $1101$</p>
+<p>$$<br>13 = 1 \cdot 2^3 + 1 \cdot 2^2 + 0 \cdot 2^1 + 1 \cdot 2^0<br>$$</p>
+<p>所以：</p>
+<p>$$<br>a^{13} = a^{8} \cdot a^{4} \cdot a^{1}<br>$$</p>
+<p>只要把这些“有效幂”都乘起来就可以了，每一步都在模 $m$ 意义下处理。</p>
+<hr>
+<p><strong>算法流程（从右到左）</strong></p>
+<ol>
+<li><p>初始值：</p>
+<ul>
+<li><code>res = 1</code>（累积结果）</li>
+<li><code>base = a</code>（当前底数）</li>
+</ul>
+</li>
+<li><p>每次看 $b$ 的最低位：</p>
+<ul>
+<li>如果当前位是 1：<br>$res = (res \cdot base) \mod m$</li>
+<li>无论如何：<br>$base = (base \cdot base) \mod m$</li>
+<li>$b = \lfloor b / 2 \rfloor$（右移）</li>
+</ul>
+</li>
+<li><p>重复直到 $b = 0$</p>
+</li>
+</ol>
+<hr>
+<p> 示例：计算  $3^{13} \mod 17$ </p>
+<ul>
+<li>二进制：$13 = 1101_2$</li>
+<li>初始：res = 1, base = 3</li>
+<li>步骤：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>位</th>
+<th>操作</th>
+<th>res</th>
+<th>base</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>$res = res \cdot base \mod 17$</td>
+<td>3</td>
+<td>3</td>
+</tr>
+<tr>
+<td>0</td>
+<td>跳过乘法</td>
+<td>3</td>
+<td>9</td>
+</tr>
+<tr>
+<td>1</td>
+<td>$res = 3 \cdot 9 \mod 17 = 10$</td>
+<td>10</td>
+<td>13</td>
+</tr>
+<tr>
+<td>1</td>
+<td>$res = 10 \cdot 13 \mod 17 = 11$</td>
+<td>11</td>
+<td>16</td>
+</tr>
+</tbody></table>
+<ul>
+<li>最终答案：<strong>11</strong></li>
+</ul>
+<p>python算法：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fast_mod_exp</span>(<span class="params">a, b, m</span>):</span></span><br><span class="line">    result = <span class="number">1</span></span><br><span class="line">    base = a % m</span><br><span class="line">    <span class="keyword">while</span> b &gt; <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">if</span> b % <span class="number">2</span> == <span class="number">1</span>:</span><br><span class="line">            result = (result * base) % m</span><br><span class="line">        base = (base * base) % m</span><br><span class="line">        b //= <span class="number">2</span></span><br><span class="line">    <span class="keyword">return</span> result</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-互质和模反的关系"><a href="#3-3-互质和模反的关系" class="headerlink" title="3.3 互质和模反的关系"></a>3.3 互质和模反的关系</h3><p><strong>互质</strong>：两个整数 $a$ 和 $b$，如果它们的最大公约数为 1，则称它们互质。</p>
+<p>公约数为1，可记为$\gcd(a, b) = 1$</p>
+<h3 id="3-4-模反存在条件"><a href="#3-4-模反存在条件" class="headerlink" title="3.4 模反存在条件"></a>3.4 模反存在条件</h3><blockquote>
+<p>本质  模反元素的存在，本质依赖于 $\gcd(a, m) = 1$，这正是贝祖定理的条件</p>
+</blockquote>
+<p><strong>贝祖定理（Bézout’s Identity）</strong>表明了模反元素存在的条件,即私钥d的存在性保证。</p>
+<p>表述如下：</p>
+<blockquote>
+<p>对任意整数 $a, m$，存在整数 $x, y$，使得：</p>
+<p>$$<br>a \cdot x + m \cdot y = \gcd(a, m)<br>$$</p>
+</blockquote>
+<p>特别地：</p>
+<ul>
+<li><p>如果 $\gcd(a, m) = 1$，即 $a$ 和 $m$ 互质，</p>
+</li>
+<li><p>那么就存在整数 $x$ 使得：</p>
+<p>$$<br>a \cdot x \equiv 1 \pmod{m}<br>$$</p>
+</li>
+<li><p>此时 $x$ 就是 $a$ 在模 $m$ 下的<strong>模反元素（modular inverse）</strong></p>
+</li>
+</ul>
+<hr>
+<h4 id="贝祖定理证明-欧几里得算法"><a href="#贝祖定理证明-欧几里得算法" class="headerlink" title="贝祖定理证明(欧几里得算法)"></a>贝祖定理证明(欧几里得算法)</h4><p>第一步：欧几里得算法（Euclidean Algorithm）</p>
+<p>欧几里得算法是一个用于求最大公约数（gcd）的经典方法：</p>
+<p>$$<br>\gcd(a, b) = \gcd(b, a \mod b)<br>$$</p>
+<p>不断替换，直到余数为 0，此时另一个数就是 gcd。</p>
+<p>示例:<br>$$<br>\begin{align*}<br>30 &amp;= 2 \cdot 12 + 6 \<br>12 &amp;= 2 \cdot 6 + 0 \<br>\Rightarrow \gcd(30, 12) = 6<br>\end{align*}<br>$$</p>
+<p>第二步：扩展欧几里得算法（Extended Euclidean Algorithm）</p>
+<p><strong>扩展版</strong>不仅求出 $\gcd(a, m)$，还能求出满足：</p>
+<p>$$<br>a \cdot x + m \cdot y = \gcd(a, m)<br>$$</p>
+<p>的整数 $x, y$。这个过程叫做“<strong>回带</strong>”或“向上代入”。</p>
+<p>贝祖定理得证！</p>
+<hr>
+<p><strong>示例：</strong></p>
+<p>我们想证明：</p>
+<blockquote>
+<p>存在整数 $x, y$，使 $3x + 7y = 1$</p>
+</blockquote>
+<p>Step 1: 欧几里得过程<br>$$<br>\begin{align*}<br>7 &amp;= 2 \cdot 3 + 1 \<br>3 &amp;= 3 \cdot 1 + 0 \Rightarrow \gcd(3, 7) = 1<br>\end{align*}<br>$$</p>
+<p>Step 2: 回带（从最后一行往上）<br>$$<br>1 = 7 - 2 \cdot 3<br>\Rightarrow 1 = (-2) \cdot 3 + 1 \cdot 7<br>$$</p>
+<p>这就找到了：</p>
+<p>$$<br>x = -2, \quad y = 1<br>\Rightarrow 3 \cdot (-2) + 7 \cdot 1 = 1<br>$$</p>
+<p>✅ </p>
+<h3 id="3-5-欧拉函数、欧拉定理、欧拉定理证明"><a href="#3-5-欧拉函数、欧拉定理、欧拉定理证明" class="headerlink" title="3.5 欧拉函数、欧拉定理、欧拉定理证明"></a>3.5 欧拉函数、欧拉定理、欧拉定理证明</h3><p><strong>（1）欧拉函数</strong></p>
+<p>定义：<strong>小于等于 $n$</strong> 且与 $n$ <strong>互质</strong> 的正整数个数。</p>
+<p>本质衡量的是“模 $n$” 下可逆元素的数量，即：<br>$$<br>\varphi(n) = \left| { a \in \mathbb{Z} \mid 1 \le a \le n, \gcd(a, n) = 1 } \right|<br>$$</p>
+<p> 重要性质：</p>
+<ul>
+<li>若 $p$ 是质数：            $\varphi(p) = p - 1$</li>
+<li>若 $n = p \cdot q$ 且 $p, q$ 为不同质数：     $\varphi(n) = (p - 1)(q - 1)$</li>
+</ul>
+<p><strong>（2）欧拉定理</strong></p>
+<p>若整数 $M$ 与 $n$ 互质（即 $\gcd(M, n) = 1$），则：</p>
+<p>$$<br>M^{\varphi(n)} \equiv 1 \mod n<br>$$</p>
+<hr>
+<p><strong>（3） 欧拉定理证明（模乘群）</strong></p>
+<p>欧拉定理是数论中 <strong>模乘群</strong> 的一个基本结论。关键思想如下：</p>
+<ol>
+<li>构造一组与 $n$ 互质的数集：</li>
+</ol>
+<p>$$<br>{ a_1, a_2, \dots, a_{\varphi(n)} }<br>$$</p>
+<p>这组数模 $n$ 乘起来会有某种结构性。</p>
+<ol start="2">
+<li>把这组数都乘以 $M$，再取模 $n$</li>
+</ol>
+<p>$$<br>{ Ma_1, Ma_2, \dots, Ma_{\varphi(n)} } \mod n<br>$$</p>
+<p>因为 $\gcd(M, n) = 1$，乘上 $M$ 不会重复、不会变 0（即是个 <strong>可逆映射</strong>）</p>
+<p>这两个集合乘起来的积模 $n$ 相等：</p>
+<p>$$<br>(Ma_1)(Ma_2)\dots(Ma_{\varphi(n)}) \equiv a_1 a_2 \dots a_{\varphi(n)} \mod n<br>$$</p>
+<p>两边消掉 $a_1 \dots a_{\varphi(n)}$ 后，得到：</p>
+<p>$$<br>M^{\varphi(n)} \equiv 1 \mod n<br>$$</p>
+<p>这就是欧拉定理的结论！</p>
+</div><div class="article-licensing box"><div class="licensing-title"><p>RSA非对称加密算法</p><p><a href="http://symbol23441.top/2025/07/05/RSA非对称加密算法/">http://symbol23441.top/2025/07/05/RSA非对称加密算法/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2025-07-05</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2025-07-05</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95/">加密算法</a></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2025/07/02/XML%E8%A7%A3%E6%9E%90%E5%B7%A5%E5%85%B7-Java/"><span class="level-item">XML解析工具(Java)</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#1-为什么叫“非对称加密”？"><span class="level-left"><span class="level-item">1.为什么叫“非对称加密”？</span></span></a></li><li><a class="level is-mobile" href="#2-RSA-算法原理"><span class="level-left"><span class="level-item">2. RSA 算法原理</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#2-1-选取两个大质数-p-q"><span class="level-left"><span class="level-item">2.1 选取两个大质数 $p$, $q$</span></span></a></li><li><a class="level is-mobile" href="#2-2-计算模数-n-和-欧拉函数-varphi-n"><span class="level-left"><span class="level-item">2.2 计算模数 $n$ 和 欧拉函数 $\varphi(n)$</span></span></a></li><li><a class="level is-mobile" href="#2-3-选择公钥指数-e-，计算私钥指数-d"><span class="level-left"><span class="level-item">2.3 选择公钥指数 $e$，计算私钥指数 $d$</span></span></a></li><li><a class="level is-mobile" href="#2-5-加密过程（使用公钥）："><span class="level-left"><span class="level-item">2.5 加密过程（使用公钥）：</span></span></a></li><li><a class="level is-mobile" href="#2-6-解密过程（使用私钥）："><span class="level-left"><span class="level-item">2.6 解密过程（使用私钥）：</span></span></a></li><li><a class="level is-mobile" href="#正确性保证：欧拉定理-构造关系"><span class="level-left"><span class="level-item">*正确性保证：欧拉定理 + 构造关系</span></span></a></li></ul></li><li><a class="level is-mobile" href="#3、附页：补充相关知识"><span class="level-left"><span class="level-item">3、附页：补充相关知识</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#3-1-模-m"><span class="level-left"><span class="level-item">3.1 模$m$</span></span></a></li><li><a class="level is-mobile" href="#3-2-快速模幂算法"><span class="level-left"><span class="level-item">3.2  快速模幂算法</span></span></a></li><li><a class="level is-mobile" href="#3-3-互质和模反的关系"><span class="level-left"><span class="level-item">3.3 互质和模反的关系</span></span></a></li><li><a class="level is-mobile" href="#3-4-模反存在条件"><span class="level-left"><span class="level-item">3.4 模反存在条件</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#贝祖定理证明-欧几里得算法"><span class="level-left"><span class="level-item">贝祖定理证明(欧几里得算法)</span></span></a></li></ul></li><li><a class="level is-mobile" href="#3-5-欧拉函数、欧拉定理、欧拉定理证明"><span class="level-left"><span class="level-item">3.5 欧拉函数、欧拉定理、欧拉定理证明</span></span></a></li></ul></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/js/lightgallery.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script><script type="text/javascript" src="/js/imaegoo/universe.js"></script></body></html>
