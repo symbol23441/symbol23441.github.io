@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>消息摘要算法 - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="摘要：  消息摘要算法是密码学中的基础模块，用于生成安全、唯一的数据摘要。 它基于复杂的分块计算和状态压缩，确保数据的完整性验证。 SHA-256 是当前主流且安全的选项；MD5、SHA-1 已不再安全。 摘要算法实际就是一种高安全级别的哈希算法。"><meta property="og:type" content="blog"><meta property="og:title" content="消息摘要算法"><meta property="og:url" content="http://symbol23441.top/2021/08/19/%E6%B6%88%E6%81%AF%E6%91%98%E8%A6%81%E7%AE%97%E6%B3%95/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="摘要：  消息摘要算法是密码学中的基础模块，用于生成安全、唯一的数据摘要。 它基于复杂的分块计算和状态压缩，确保数据的完整性验证。 SHA-256 是当前主流且安全的选项；MD5、SHA-1 已不再安全。 摘要算法实际就是一种高安全级别的哈希算法。"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/gallery/covers/cryptography.png"><meta property="article:published_time" content="2021-08-19T10:12:00.000Z"><meta property="article:modified_time" content="2021-08-19T10:12:00.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="article:tag" content="消息摘要算法"><meta property="article:tag" content="SHA"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/gallery/covers/cryptography.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2021/08/19/%E6%B6%88%E6%81%AF%E6%91%98%E8%A6%81%E7%AE%97%E6%B3%95/"},"headline":"消息摘要算法","image":["http://symbol23441.top/gallery/covers/cryptography.png"],"datePublished":"2021-08-19T10:12:00.000Z","dateModified":"2021-08-19T10:12:00.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"摘要：  消息摘要算法是密码学中的基础模块，用于生成安全、唯一的数据摘要。 它基于复杂的分块计算和状态压缩，确保数据的完整性验证。 SHA-256 是当前主流且安全的选项；MD5、SHA-1 已不再安全。 摘要算法实际就是一种高安全级别的哈希算法。"}</script><link rel="canonical" href="http://symbol23441.top/2021/08/19/%E6%B6%88%E6%81%AF%E6%91%98%E8%A6%81%E7%AE%97%E6%B3%95/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><div class="card-image"><span class="image is-7by3"><img class="fill" src="/gallery/covers/cryptography.png" alt="消息摘要算法"></span></div><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2021-08-19T10:12:00.000Z" title="8/19/2021, 6:12:00 PM">2021-08-19</time>发表</span><span class="level-item"><time dateTime="2021-08-19T10:12:00.000Z" title="8/19/2021, 6:12:00 PM">2021-08-19</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/%E5%AE%89%E5%85%A8%E7%AE%97%E6%B3%95/">安全算法</a></span><span class="level-item">7 分钟读完 (大约1091个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">消息摘要算法</h1><div class="content"><p>摘要：</p>
+<ul>
+<li>消息摘要算法是密码学中的基础模块，用于生成安全、唯一的数据摘要。</li>
+<li>它基于复杂的分块计算和状态压缩，确保数据的完整性验证。</li>
+<li>SHA-256 是当前主流且安全的选项；MD5、SHA-1 已不再安全。</li>
+<li>摘要算法实际就是一种高安全级别的哈希算法。</li>
+</ul>
+<span id="more"></span>
+
+<h2 id="1-什么是消息摘要算法？"><a href="#1-什么是消息摘要算法？" class="headerlink" title="1. 什么是消息摘要算法？"></a>1. 什么是消息摘要算法？</h2><p>消息摘要算法（Message Digest Algorithm）是一类<strong>将任意长度输入压缩为固定长度摘要</strong>的函数。它广泛用于验证数据完整性、数字签名、密码存储、区块链等安全场景。</p>
+<p>其目标是生成一个唯一的“数据指纹”，具有如下特点：</p>
+<ul>
+<li>输出长度固定（例如 SHA-256 输出 256 位）</li>
+<li>原文不可逆推出（单向性）</li>
+<li>两个不同输入几乎不可能得出相同输出（抗碰撞）</li>
+<li>输入微小变化会造成输出完全不同（雪崩效应）</li>
+</ul>
+<hr>
+<h2 id="2-消息摘要-≈-哈希算法？"><a href="#2-消息摘要-≈-哈希算法？" class="headerlink" title="2. 消息摘要 ≈ 哈希算法？"></a>2. 消息摘要 ≈ 哈希算法？</h2><p>消息摘要算法本质上是<strong>密码学意义上的哈希函数</strong>，但比普通哈希函数具有更严格的安全标准。</p>
+<h3 id="哈希函数的基本特性："><a href="#哈希函数的基本特性：" class="headerlink" title="哈希函数的基本特性："></a>哈希函数的基本特性：</h3><ol>
+<li><strong>确定性</strong>：相同输入一定产生相同输出。</li>
+<li><strong>输出固定长度</strong>：不论输入多长，输出长度相同。</li>
+<li><strong>快速计算</strong>：能够高效计算出结果。</li>
+<li><strong>抗碰撞</strong>：几乎不可能找到两个不同输入对应相同输出。</li>
+<li><strong>抗原像攻击</strong>：无法从摘要反推出原始输入。</li>
+<li><strong>抗二次原像攻击</strong>：无法从一个输入找到另一个具有相同摘要的输入。</li>
+</ol>
+<h3 id="关系说明："><a href="#关系说明：" class="headerlink" title="关系说明："></a>关系说明：</h3><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>哈希函数（广义）</th>
+<th>消息摘要算法（密码学）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>用途</td>
+<td>哈希表、负载均衡、分布式索引等</td>
+<td>数字签名、校验、身份验证等</td>
+</tr>
+<tr>
+<td>安全要求</td>
+<td>低</td>
+<td>高</td>
+</tr>
+<tr>
+<td>示例</td>
+<td>Java hashCode、MurmurHash</td>
+<td>SHA-256、SHA-3、BLAKE3</td>
+</tr>
+</tbody></table>
+<p>消息摘要算法是哈希函数的一个“安全增强版本”。</p>
+<hr>
+<h2 id="3-摘要算法工作原理（以-SHA-256-为例）"><a href="#3-摘要算法工作原理（以-SHA-256-为例）" class="headerlink" title="3. 摘要算法工作原理（以 SHA-256 为例）"></a>3. 摘要算法工作原理（以 SHA-256 为例）</h2><h3 id="流程概述："><a href="#流程概述：" class="headerlink" title="流程概述："></a>流程概述：</h3><ol>
+<li><strong>填充（Padding）</strong><br> 将原始数据填充为 512 位的整数倍。规则是：<ul>
+<li>末尾添加 <code>1</code></li>
+<li>添加足够多的 <code>0</code></li>
+<li>追加原始长度的二进制表示</li>
+</ul>
+</li>
+<li><strong>分块处理</strong><br> 每块大小为 512 位，逐块进行计算。</li>
+<li><strong>初始化状态（IV）</strong><br> 使用一组固定的初始值作为起点，例如 8 个 32 位常量。</li>
+<li><strong>主循环（压缩函数）</strong><br> 每一块数据将与当前状态混合，经过位运算（如与、或、异或、移位）、常数操作等计算出新状态。</li>
+<li><strong>输出摘要</strong><br> 所有块处理完毕后，拼接状态变量形成最终的摘要输出（如 SHA-256 得到 256 位摘要）。</li>
+</ol>
+<hr>
+<h2 id="4-常用消息摘要算法对比"><a href="#4-常用消息摘要算法对比" class="headerlink" title="4. 常用消息摘要算法对比"></a>4. 常用消息摘要算法对比</h2><table>
+<thead>
+<tr>
+<th>算法</th>
+<th>输出长度</th>
+<th>状态</th>
+<th>应用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SHA-256</td>
+<td>256 bit</td>
+<td>推荐</td>
+<td>Web 安全、数字签名、区块链</td>
+</tr>
+<tr>
+<td>SHA-512</td>
+<td>512 bit</td>
+<td>推荐</td>
+<td>高安全场景，如身份认证</td>
+</tr>
+<tr>
+<td>SHA-3</td>
+<td>可变长度</td>
+<td>推荐</td>
+<td>替代 SHA-2，设计更安全</td>
+</tr>
+<tr>
+<td>BLAKE3</td>
+<td>256 bit</td>
+<td>新兴算法</td>
+<td>快速、并行、移动端友好</td>
+</tr>
+<tr>
+<td>MD5</td>
+<td>128 bit</td>
+<td>不安全</td>
+<td>只用于非安全场景（如文件去重）</td>
+</tr>
+<tr>
+<td>SHA-1</td>
+<td>160 bit</td>
+<td>不安全</td>
+<td>已遭碰撞攻击，建议停用</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="5-Java-实现示例（SHA-256）"><a href="#5-Java-实现示例（SHA-256）" class="headerlink" title="5. Java 实现示例（SHA-256）"></a>5. Java 实现示例（SHA-256）</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">MessageDigest md = MessageDigest.getInstance(<span class="string">&quot;SHA-256&quot;</span>);</span><br><span class="line"><span class="keyword">byte</span>[] digest = md.digest(<span class="string">&quot;hello&quot;</span>.getBytes(StandardCharsets.UTF_8));</span><br><span class="line"></span><br><span class="line"><span class="comment">// 转为十六进制表示</span></span><br><span class="line">StringBuilder hexString = <span class="keyword">new</span> StringBuilder();</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">byte</span> b : digest) &#123;</span><br><span class="line">    String hex = Integer.toHexString(<span class="number">0xff</span> &amp; b);</span><br><span class="line">    <span class="keyword">if</span> (hex.length() == <span class="number">1</span>) hexString.append(<span class="string">&#x27;0&#x27;</span>);</span><br><span class="line">    hexString.append(hex);</span><br><span class="line">&#125;</span><br><span class="line">System.out.println(hexString.toString());</span><br></pre></td></tr></table></figure>
+
+<p>输出示例（64个字符的十六进制串）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="6-安全性从何而来？"><a href="#6-安全性从何而来？" class="headerlink" title="6. 安全性从何而来？"></a>6. 安全性从何而来？</h2><table>
+<thead>
+<tr>
+<th>安全特性</th>
+<th>设计依据</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>抗碰撞</td>
+<td>多轮压缩函数设计与状态扰动机制</td>
+</tr>
+<tr>
+<td>雪崩效应</td>
+<td>非线性布尔函数与状态混合策略</td>
+</tr>
+<tr>
+<td>不可逆</td>
+<td>不保留中间状态，无法逆推出原文</td>
+</tr>
+<tr>
+<td>恒定长度输出</td>
+<td>状态变量组合映射输出</td>
+</tr>
+</tbody></table>
+<p>摘要算法的核心安全性来自其“无法逆推 + 无法伪造 + 不易冲突”的特性。</p>
+</div><div class="article-licensing box"><div class="licensing-title"><p>消息摘要算法</p><p><a href="http://symbol23441.top/2021/08/19/消息摘要算法/">http://symbol23441.top/2021/08/19/消息摘要算法/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2021-08-19</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2021-08-19</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/%E6%B6%88%E6%81%AF%E6%91%98%E8%A6%81%E7%AE%97%E6%B3%95/">消息摘要算法</a><a class="link-muted mr-2" rel="tag" href="/tags/SHA/">SHA</a></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2021/09/07/yaml%E8%AF%AD%E6%B3%95/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">yaml语法</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2021/08/19/icarus%E7%9B%B8%E5%85%B3%E6%94%B9%E5%8A%A8/"><span class="level-item">icarus相关改动</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#1-什么是消息摘要算法？"><span class="level-left"><span class="level-item">1. 什么是消息摘要算法？</span></span></a></li><li><a class="level is-mobile" href="#2-消息摘要-≈-哈希算法？"><span class="level-left"><span class="level-item">2. 消息摘要 ≈ 哈希算法？</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#哈希函数的基本特性："><span class="level-left"><span class="level-item">哈希函数的基本特性：</span></span></a></li><li><a class="level is-mobile" href="#关系说明："><span class="level-left"><span class="level-item">关系说明：</span></span></a></li></ul></li><li><a class="level is-mobile" href="#3-摘要算法工作原理（以-SHA-256-为例）"><span class="level-left"><span class="level-item">3. 摘要算法工作原理（以 SHA-256 为例）</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#流程概述："><span class="level-left"><span class="level-item">流程概述：</span></span></a></li></ul></li><li><a class="level is-mobile" href="#4-常用消息摘要算法对比"><span class="level-left"><span class="level-item">4. 常用消息摘要算法对比</span></span></a></li><li><a class="level is-mobile" href="#5-Java-实现示例（SHA-256）"><span class="level-left"><span class="level-item">5. Java 实现示例（SHA-256）</span></span></a></li><li><a class="level is-mobile" href="#6-安全性从何而来？"><span class="level-left"><span class="level-item">6. 安全性从何而来？</span></span></a></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/js/lightgallery.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script><script type="text/javascript" src="/js/imaegoo/universe.js"></script></body></html>
