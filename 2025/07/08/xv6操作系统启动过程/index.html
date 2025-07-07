@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>xv6操作系统启动过程 - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="本文深入讲解了 xv6 操作系统在 RISC-V 架构下通过 QEMU 裸机启动的全过程。内容包括从 QEMU 加载内核映像开始，到 _entry 汇编入口设置早期栈，再到 start() 中完成特权级切换，以及 main() 函数中内核各模块的初始化，直至第一个用户进程的运行、&amp;#x2F;init 与 shell 的启动。"><meta property="og:type" content="blog"><meta property="og:title" content="xv6操作系统启动过程"><meta property="og:url" content="http://symbol23441.top/2025/07/08/xv6%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E8%BF%87%E7%A8%8B/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="本文深入讲解了 xv6 操作系统在 RISC-V 架构下通过 QEMU 裸机启动的全过程。内容包括从 QEMU 加载内核映像开始，到 _entry 汇编入口设置早期栈，再到 start() 中完成特权级切换，以及 main() 函数中内核各模块的初始化，直至第一个用户进程的运行、&amp;#x2F;init 与 shell 的启动。"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/2025/07/08/xv6%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E8%BF%87%E7%A8%8B/xv6.drawio.png"><meta property="article:published_time" content="2025-07-07T16:57:02.000Z"><meta property="article:modified_time" content="2025-07-07T16:57:02.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="article:tag" content="xv6"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/2025/07/08/xv6%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E8%BF%87%E7%A8%8B/xv6.drawio.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2025/07/08/xv6%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E8%BF%87%E7%A8%8B/"},"headline":"xv6操作系统启动过程","image":["http://symbol23441.top/2025/07/08/xv6%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E8%BF%87%E7%A8%8B/xv6.drawio.png"],"datePublished":"2025-07-07T16:57:02.000Z","dateModified":"2025-07-07T16:57:02.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"本文深入讲解了 xv6 操作系统在 RISC-V 架构下通过 QEMU 裸机启动的全过程。内容包括从 QEMU 加载内核映像开始，到 _entry 汇编入口设置早期栈，再到 start() 中完成特权级切换，以及 main() 函数中内核各模块的初始化，直至第一个用户进程的运行、&#x2F;init 与 shell 的启动。"}</script><link rel="canonical" href="http://symbol23441.top/2025/07/08/xv6%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E8%BF%87%E7%A8%8B/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2025-07-07T16:57:02.000Z" title="7/8/2025, 12:57:02 AM">2025-07-08</time>发表</span><span class="level-item"><time dateTime="2025-07-07T16:57:02.000Z" title="7/8/2025, 12:57:02 AM">2025-07-08</time>更新</span><span class="level-item">9 分钟读完 (大约1326个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">xv6操作系统启动过程</h1><div class="content"><p>本文深入讲解了 xv6 操作系统在 RISC-V 架构下通过 QEMU 裸机启动的全过程。内容包括从 QEMU 加载内核映像开始，到 <code>_entry</code> 汇编入口设置早期栈，再到 <code>start()</code> 中完成特权级切换，以及 <code>main()</code> 函数中内核各模块的初始化，直至第一个用户进程的运行、<code>/init</code> 与 shell 的启动。</p>
+<p><img src="/2025/07/08/xv6%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E8%BF%87%E7%A8%8B/xv6.drawio.png" alt="xv6启动流程图"></p>
+<span id="more"></span>
+
+<h2 id="QEMU虚拟机启动内核"><a href="#QEMU虚拟机启动内核" class="headerlink" title="QEMU虚拟机启动内核"></a>QEMU虚拟机启动内核</h2><h3 id="1-QEMU-裸机启动内核"><a href="#1-QEMU-裸机启动内核" class="headerlink" title="1. QEMU 裸机启动内核"></a>1. QEMU 裸机启动内核</h3><p>QEMU虚拟机以<strong>裸机方式</strong>运行 xv6，不使用 BIOS、bootloader 或 OpenSBI模拟：</p>
+<ul>
+<li>使用参数 <code>-bios none -kernel kernel</code></li>
+<li>QEMU 会将内核 ELF 映像加载到物理地址 <code>0x80000000</code>。</li>
+<li>由kernel.ld 明确设置程序段_entry放在0x80000000地址上，确保 QEMU 启动后能正确跳转。</li>
+<li>每个 CPU核心均从此开始执行。</li>
+</ul>
+<hr>
+<h3 id="2-entry：汇编入口（entry-S）"><a href="#2-entry：汇编入口（entry-S）" class="headerlink" title="2. _entry：汇编入口（entry.S）"></a>2. <code>_entry</code>：汇编入口（<code>entry.S</code>）</h3><p>_entry程序段(entry.S) 在内核启动早期，主要作用:初始化C语言所需栈环境。</p>
+<p>因为C语言运行必须依赖栈，如函数调用、局部变量、返回地址等都用到栈。</p>
+<p>在 <code>_entry</code> 中：</p>
+<ul>
+<li>为每个 CPU 分配一个临时栈 <code>stack0</code>（定义在 <code>start.c</code>静态代码段，.bss 位置固定，每个核一个 4KB栈）</li>
+<li>设置好栈后，通过 <code>call start</code> 进入内核的 C 启动逻辑</li>
+</ul>
+<blockquote>
+<p>OS初始化完毕后，后续的栈均通过页表机制来分配，内核栈和用户栈。</p>
+</blockquote>
+<hr>
+<h3 id="3-start-：M-mode-切换到-S-mode（start-c）"><a href="#3-start-：M-mode-切换到-S-mode（start-c）" class="headerlink" title="3. start()：M-mode 切换到 S-mode（start.c）"></a>3. <code>start()</code>：M-mode 切换到 S-mode（<code>start.c</code>）</h3><p><code>start()</code> 在 <strong>Machine 模式（M-mode）</strong> 下运行，主要作用是为 S-mode 准备运行环境与相关权限。</p>
+<p>通过设置mepc（机器模式异常程序寄存器）为main地址，通过mret（伪程序返回）跳转到main运行。这样跳转的原因涉及 RISC-V 的特权级机制。</p>
+<p>包括：</p>
+<ul>
+<li>设置 <code>mstatus.MPP = S-mode</code>，准备通过 <code>mret</code> 进入 S-mode</li>
+<li>设置 <code>mepc = main</code>，即跳转目标地址</li>
+<li>关闭页表（<code>satp = 0</code>）</li>
+<li>委托中断和异常给 S-mode（<code>medeleg</code> / <code>mideleg</code>）</li>
+<li>开放 PMP（物理内存访问权限）给 S-mode</li>
+<li>设置 <code>mtvec = timervec</code>，开启定时器中断（用于调度器）</li>
+<li>把当前 hart ID 写入 <code>tp</code> 寄存器，供后续 <code>cpuid()</code> 快速访问</li>
+</ul>
+<p>最后通过 <code>mret</code> 指令切换到 S-mode，开始执行 <code>main()</code> 函数。</p>
+<p>采用如下mret跳转，而不用call、ecall 的原因是什么?</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 为mret，设置特权模式为S-Mode</span></span><br><span class="line"><span class="keyword">unsigned</span> <span class="keyword">long</span> x = r_mstatus();</span><br><span class="line">x &amp;= ~MSTATUS_MPP_MASK;</span><br><span class="line">x |= MSTATUS_MPP_S;</span><br><span class="line">w_mstatus(x);</span><br><span class="line"><span class="comment">// 设置机器模式的异常程序计数器（mepc）为 main</span></span><br><span class="line">w_mepc((uint64)main);</span><br><span class="line"><span class="comment">// mret</span></span><br><span class="line"><span class="function"><span class="keyword">asm</span> <span class="title">volatile</span><span class="params">(<span class="string">&quot;mret&quot;</span>)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>✅ 这是 RISC-V 架构中 <strong>唯一安全、标准的方法</strong>，用于从 M-mode 切换到 S-mode。不能直接 <code>call main()</code>，否则操作系统将在错误特权级下运行，可能进行非法访问或导致系统异常。</p>
+</blockquote>
+<hr>
+<h3 id="4-main-：S-mode-内核初始化（main-c）"><a href="#4-main-：S-mode-内核初始化（main-c）" class="headerlink" title="4. main()：S-mode 内核初始化（main.c）"></a>4. <code>main()</code>：S-mode 内核初始化（<code>main.c</code>）</h3><p>在S-Mode下  ，内核在 hart 0（主核）完成所有模块初始化，包括相关数据结构、锁、寄存器：</p>
+<ul>
+<li><p>初始化控制台（UART0）和 printf</p>
+</li>
+<li><p>初始化物理页分配器、内核页表（并开启分页）、进程表、trap（中断/异常）向量、PLIC（中断控制器）</p>
+<p>、 buffer cache、inode 表、文件表、virtio 磁盘驱动</p>
+</li>
+<li><p>启动第一个用户进程：调用 <code>userinit()</code></p>
+</li>
+</ul>
+<p>其它 CPU核心等待hart 0初始化完成后，只进行本地硬件相关初始化，如寄存器。</p>
+<p>所有核心初始化完成后均进入调度器，进行进程调度。</p>
+<hr>
+<h3 id="5-userinit-：启动第一个用户进程"><a href="#5-userinit-：启动第一个用户进程" class="headerlink" title="5. userinit()：启动第一个用户进程"></a>5. <code>userinit()</code>：启动第一个用户进程</h3><ul>
+<li>创建一个内核进程结构（proc）</li>
+<li>将 <code>initcode</code> 二进制数组写入用户地址空间（准确说是一段指定程序启动进程）</li>
+<li>设置该进程为 <code>RUNNABLE</code></li>
+</ul>
+<p>该进程启动后，调用 <code>exec(&quot;/init&quot;)</code> 加载文件系统中的 <code>/init</code> ELF 文件，进入真正的 init 用户程序。</p>
+<hr>
+<h3 id="6-init：引导-shell-与僵尸进程处理"><a href="#6-init：引导-shell-与僵尸进程处理" class="headerlink" title="6. /init：引导 shell 与僵尸进程处理"></a>6. <code>/init</code>：引导 shell 与僵尸进程处理</h3><ul>
+<li><code>/init</code> 是后台进程，它会 <code>fork()</code> 出一个子进程运行 <code>sh</code>（shell）</li>
+<li>自身则进入无限循环调用 <code>wait()</code>，用于清理孤儿进程（僵尸回收）</li>
+<li>如果 <code>sh</code> 退出，<code>init</code> 会重启它，保持系统有交互能力</li>
+</ul>
+<hr>
+<h3 id="7-shell：进入用户交互界面"><a href="#7-shell：进入用户交互界面" class="headerlink" title="7. shell：进入用户交互界面"></a>7. shell：进入用户交互界面</h3><ul>
+<li>用户通过 shell 交互执行命令（如 <code>ls</code>, <code>cat</code>, <code>echo</code>）。可创建新的用户进程，由内核调度和执行</li>
+</ul>
+<p>至此，xv6 内核已完成初始化。</p>
+<h2 id="附页："><a href="#附页：" class="headerlink" title="附页："></a>附页：</h2><p><strong>RISC-V特权级：</strong></p>
+<p>RISC-V 多种特权级用于保护系统不同层级的资源：</p>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>名称</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>M-mode</strong></td>
+<td>Machine 模式</td>
+<td>最底层，启动时默认在此模式，能访问所有 CSR 和硬件资源</td>
+</tr>
+<tr>
+<td><strong>S-mode</strong></td>
+<td>Supervisor 模式</td>
+<td>操作系统运行模式，访问受限，管理用户程序</td>
+</tr>
+<tr>
+<td><strong>U-mode</strong></td>
+<td>User 模式</td>
+<td>普通用户程序，权限最低</td>
+</tr>
+</tbody></table>
+</div><div class="article-licensing box"><div class="licensing-title"><p>xv6操作系统启动过程</p><p><a href="http://symbol23441.top/2025/07/08/xv6操作系统启动过程/">http://symbol23441.top/2025/07/08/xv6操作系统启动过程/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2025-07-08</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2025-07-08</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/xv6/">xv6</a></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2025/07/05/RSA%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95/"><span class="level-item">RSA非对称加密算法</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#QEMU虚拟机启动内核"><span class="level-left"><span class="level-item">QEMU虚拟机启动内核</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#1-QEMU-裸机启动内核"><span class="level-left"><span class="level-item">1. QEMU 裸机启动内核</span></span></a></li><li><a class="level is-mobile" href="#2-entry：汇编入口（entry-S）"><span class="level-left"><span class="level-item">2. _entry：汇编入口（entry.S）</span></span></a></li><li><a class="level is-mobile" href="#3-start-：M-mode-切换到-S-mode（start-c）"><span class="level-left"><span class="level-item">3. start()：M-mode 切换到 S-mode（start.c）</span></span></a></li><li><a class="level is-mobile" href="#4-main-：S-mode-内核初始化（main-c）"><span class="level-left"><span class="level-item">4. main()：S-mode 内核初始化（main.c）</span></span></a></li><li><a class="level is-mobile" href="#5-userinit-：启动第一个用户进程"><span class="level-left"><span class="level-item">5. userinit()：启动第一个用户进程</span></span></a></li><li><a class="level is-mobile" href="#6-init：引导-shell-与僵尸进程处理"><span class="level-left"><span class="level-item">6. /init：引导 shell 与僵尸进程处理</span></span></a></li><li><a class="level is-mobile" href="#7-shell：进入用户交互界面"><span class="level-left"><span class="level-item">7. shell：进入用户交互界面</span></span></a></li></ul></li><li><a class="level is-mobile" href="#附页："><span class="level-left"><span class="level-item">附页：</span></span></a></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/js/lightgallery.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script><script type="text/javascript" src="/js/imaegoo/universe.js"></script></body></html>
