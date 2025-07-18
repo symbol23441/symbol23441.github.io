@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>深入理解 ELF：主流可执行文件格式解析与 xv6 加载源码分析 - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="在不同的操作系统中，可执行文件的格式是不同的。它们都有相同的目标：让操作系统能够识别并加载程序到内存中运行。这些格式虽然不同，但都具备一定的通用结构特性，比如入口地址、程序段、符号信息等。 本文首先概览主流平台的可执行文件格式差异，重点分析 Linux 系统标准的 ELF 格式，详细解析其文件结构及类型，并结合工具演示如何查看 ELF 文件结构内容。最后，通过分析 xv6 操作系统中 ELF 加载"><meta property="og:type" content="blog"><meta property="og:title" content="深入理解 ELF：主流可执行文件格式解析与 xv6 加载源码分析"><meta property="og:url" content="http://symbol23441.top/2025/07/11/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3-ELF%EF%BC%9A%E4%B8%BB%E6%B5%81%E5%8F%AF%E6%89%A7%E8%A1%8C%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E8%A7%A3%E6%9E%90%E4%B8%8E-xv6-%E5%8A%A0%E8%BD%BD%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="在不同的操作系统中，可执行文件的格式是不同的。它们都有相同的目标：让操作系统能够识别并加载程序到内存中运行。这些格式虽然不同，但都具备一定的通用结构特性，比如入口地址、程序段、符号信息等。 本文首先概览主流平台的可执行文件格式差异，重点分析 Linux 系统标准的 ELF 格式，详细解析其文件结构及类型，并结合工具演示如何查看 ELF 文件结构内容。最后，通过分析 xv6 操作系统中 ELF 加载"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/gallery/covers/OS.png"><meta property="article:published_time" content="2025-07-11T08:13:19.000Z"><meta property="article:modified_time" content="2025-07-11T08:13:19.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="article:tag" content="xv6"><meta property="article:tag" content="ELF"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/gallery/covers/OS.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2025/07/11/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3-ELF%EF%BC%9A%E4%B8%BB%E6%B5%81%E5%8F%AF%E6%89%A7%E8%A1%8C%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E8%A7%A3%E6%9E%90%E4%B8%8E-xv6-%E5%8A%A0%E8%BD%BD%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"},"headline":"深入理解 ELF：主流可执行文件格式解析与 xv6 加载源码分析","image":["http://symbol23441.top/gallery/covers/OS.png"],"datePublished":"2025-07-11T08:13:19.000Z","dateModified":"2025-07-11T08:13:19.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"在不同的操作系统中，可执行文件的格式是不同的。它们都有相同的目标：让操作系统能够识别并加载程序到内存中运行。这些格式虽然不同，但都具备一定的通用结构特性，比如入口地址、程序段、符号信息等。 本文首先概览主流平台的可执行文件格式差异，重点分析 Linux 系统标准的 ELF 格式，详细解析其文件结构及类型，并结合工具演示如何查看 ELF 文件结构内容。最后，通过分析 xv6 操作系统中 ELF 加载"}</script><link rel="canonical" href="http://symbol23441.top/2025/07/11/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3-ELF%EF%BC%9A%E4%B8%BB%E6%B5%81%E5%8F%AF%E6%89%A7%E8%A1%8C%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F%E8%A7%A3%E6%9E%90%E4%B8%8E-xv6-%E5%8A%A0%E8%BD%BD%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><div class="card-image"><span class="image is-7by3"><img class="fill" src="/gallery/covers/OS.png" alt="深入理解 ELF：主流可执行文件格式解析与 xv6 加载源码分析"></span></div><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2025-07-11T08:13:19.000Z" title="7/11/2025, 4:13:19 PM">2025-07-11</time>发表</span><span class="level-item"><time dateTime="2025-07-11T08:13:19.000Z" title="7/11/2025, 4:13:19 PM">2025-07-11</time>更新</span><span class="level-item">23 分钟读完 (大约3444个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">深入理解 ELF：主流可执行文件格式解析与 xv6 加载源码分析</h1><div class="content"><p>在不同的操作系统中，可执行文件的格式是不同的。它们都有相同的目标：让操作系统<strong>能够识别并加载程序到内存中运行</strong>。这些格式虽然不同，但都具备一定的通用结构特性，比如入口地址、程序段、符号信息等。</p>
+<p>本文首先概览主流平台的可执行文件格式差异，重点分析 Linux 系统标准的 <strong>ELF 格式</strong>，详细解析其文件结构及类型，并结合工具演示如何查看 ELF 文件结构内容。最后，通过分析 <strong>xv6 操作系统中 ELF 加载的核心源码</strong>，深入理解操作系统如何将 ELF 程序从磁盘加载到内存并准备执行，揭示加载器的工作原理。</p>
+<span id="more"></span>
+
+<hr>
+<h1 id="1、主流可执行文件格式概览"><a href="#1、主流可执行文件格式概览" class="headerlink" title="1、主流可执行文件格式概览"></a>1、主流可执行文件格式概览</h1><table>
+<thead>
+<tr>
+<th>文件格式</th>
+<th>所在平台</th>
+<th>是否主流</th>
+<th>文件扩展名示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>ELF</strong></td>
+<td>Linux、Android</td>
+<td>✅</td>
+<td>无、<code>.so</code>、<code>.o</code></td>
+</tr>
+<tr>
+<td><strong>PE</strong></td>
+<td>Windows</td>
+<td>✅</td>
+<td><code>.exe</code>、<code>.dll</code></td>
+</tr>
+<tr>
+<td><strong>Mach-O</strong></td>
+<td>macOS、iOS</td>
+<td>✅</td>
+<td><code>.app</code>、<code>.dylib</code></td>
+</tr>
+<tr>
+<td><code>a.out</code></td>
+<td>早期 Unix</td>
+<td>❌ 已废弃</td>
+<td><code>a.out</code></td>
+</tr>
+</tbody></table>
+<p>其中，<strong>ELF</strong> 是 Linux 和许多类 Unix 系统（包括 Android、xv6）的标准可执行文件格式，它也被用来表示目标文件（<code>.o</code>）、共享库（<code>.so</code>）和 core dump。</p>
+<h1 id="2、ELF文件结构"><a href="#2、ELF文件结构" class="headerlink" title="2、ELF文件结构"></a>2、ELF文件结构</h1><table>
+<thead>
+<tr>
+<th>部分</th>
+<th>谁使用？</th>
+<th>作用简述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ELF Header</td>
+<td>所有程序/工具</td>
+<td>描述文件整体布局</td>
+</tr>
+<tr>
+<td>Program Header Table</td>
+<td>加载器（操作系统）</td>
+<td>指导操作系统如何加载程序段</td>
+</tr>
+<tr>
+<td>Section Header Table</td>
+<td>链接器、调试器</td>
+<td>描述节的属性和位置，供静态分析使用</td>
+</tr>
+<tr>
+<td>Segments</td>
+<td>加载器</td>
+<td>真正加载到内存的部分</td>
+</tr>
+<tr>
+<td>Sections</td>
+<td>链接器、调试器</td>
+<td>编译/链接过程中的逻辑单位</td>
+</tr>
+<tr>
+<td>符号表 / 字符串表等</td>
+<td>链接器、调试器</td>
+<td>提供符号名与地址的映射关系等信息</td>
+</tr>
+</tbody></table>
+<h2 id="ELF-Header（文件头）"><a href="#ELF-Header（文件头）" class="headerlink" title="ELF Header（文件头）"></a>ELF Header（文件头）</h2><p>ELF Header（文件头）<strong>位置大小固定</strong>，位于文件的<strong>起始地址</strong>。它包含：</p>
+<ul>
+<li>魔数：用于确认这是一个 ELF 文件（特征字节为 0x7F ‘E’ ‘L’ ‘F’）</li>
+<li>文件类型：如可执行文件、目标文件、共享对象等</li>
+<li>架构类型：例如 x86、ARM、RISC-V 等</li>
+<li>程序入口地址：程序开始运行的地址</li>
+<li>程序头表偏移：指向 Program Header Table 的位置</li>
+<li>节头表偏移：指向 Section Header Table 的位置（可选）</li>
+<li>各种表的数量与尺寸信息</li>
+</ul>
+<p>作用是：<strong>指明整个文件的“总纲”，告诉系统或工具如何解释剩余部分</strong>。</p>
+<h2 id="Program-Header-Table（程序头表）"><a href="#Program-Header-Table（程序头表）" class="headerlink" title="Program Header Table（程序头表）"></a>Program Header Table（程序头表）</h2><p>这个表包含多个“程序头”条目，每个条目对应一个<strong>段（Segment）</strong>，这些段是操作系统加载时关注的实体。</p>
+<p>每个程序头描述：</p>
+<ul>
+<li>一个段在文件中的偏移位置</li>
+<li>它应加载到内存的哪个虚拟地址</li>
+<li>它在文件中的大小和在内存中的大小</li>
+<li>段的类型（是否需要加载、是否可执行等）</li>
+<li>访问权限（可读、可写、可执行）</li>
+</ul>
+<p>作用是：<strong>引导操作系统将程序所需的数据正确加载到内存中</strong>。</p>
+<h2 id="Section-Header-Table（节头表）"><a href="#Section-Header-Table（节头表）" class="headerlink" title="Section Header Table（节头表）"></a>Section Header Table（节头表）</h2><p>这个表包含多个“节头”，每个节头描述一个<strong>节（Section）</strong>。节是链接器和调试器使用的逻辑单位，比如：</p>
+<ul>
+<li><code>.text</code>：代码段</li>
+<li><code>.data</code>：已初始化数据段</li>
+<li><code>.bss</code>：未初始化数据段</li>
+<li><code>.symtab</code>：符号表</li>
+<li><code>.strtab</code>：字符串表</li>
+<li><code>.debug_info</code>：调试信息</li>
+</ul>
+<p>每个节头描述：</p>
+<ul>
+<li>节的名称（通过字符串表索引）</li>
+<li>节在文件中的偏移和大小</li>
+<li>节的类型和属性（只读、可执行、对齐等）</li>
+</ul>
+<p>作用是：<strong>供链接器、调试器、分析工具使用，不直接影响运行时加载</strong>。</p>
+<h2 id="其余数据区"><a href="#其余数据区" class="headerlink" title="其余数据区"></a>其余数据区</h2><p>Segments（程序段）是<strong>程序加载器关心</strong>的内容，它们由程序头表描述。在实际运行中，操作系统根据段信息将文件中的内容加载到内存的对应位置。如：代码段（可执行）、数据段（可读可写）、堆栈段、共享库段等（动态链接时）。</p>
+<p>Sections（节）是编译和链接过程中的组织单位，常见节有：.text（代码段）、.data（保存已初始化的全局/静态变量）、.bss（未初始化变量（文件中不占空间，运行时补零）、.symtab / .strtab（符号表和字符串表）、.rel.text（重定位信息）。</p>
+<p>节名称字符串表、符号表、重定位表等，这些是节的一部分或通过节头表引用的数据结构，主要用于：</p>
+<ul>
+<li><strong>节名称字符串表</strong>：存储所有节名的字符串（节头中的名字是偏移量）</li>
+<li><strong>符号表</strong>：保存函数、变量的名称、地址、类型、作用域等信息</li>
+<li><strong>重定位表</strong>：链接时使用，描述符号位置的调整方式</li>
+</ul>
+<p>这些结构不用于程序运行，但对链接、调试、反汇编等至关重要。</p>
+<h1 id="3、C程序各编译阶段对应文件与-ELF-类型"><a href="#3、C程序各编译阶段对应文件与-ELF-类型" class="headerlink" title="3、C程序各编译阶段对应文件与 ELF 类型"></a>3、C程序各编译阶段对应文件与 ELF 类型</h1><p>当我们用 <code>gcc</code> 编译一个 C 程序时，通常只看到最终的可执行文件，其实编译过程分为多个阶段，每个阶段可能生成一个中间文件。</p>
+<p><strong>各编译阶段对应文件与 ELF 类型</strong>如下：</p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>文件扩展名</th>
+<th>是否是 ELF</th>
+<th>ELF 类型说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>预处理</td>
+<td><code>.i</code></td>
+<td>❌ 否</td>
+<td>普通文本文件，展开宏和头文件后的 C 源码</td>
+</tr>
+<tr>
+<td>编译</td>
+<td><code>.s</code></td>
+<td>❌ 否</td>
+<td>汇编源代码文件（人类可读的汇编指令）</td>
+</tr>
+<tr>
+<td>汇编</td>
+<td><code>.o</code></td>
+<td>✅ 是</td>
+<td><strong>ELF Relocatable（可重定位目标文件）</strong>，等待链接</td>
+</tr>
+<tr>
+<td>链接</td>
+<td><code>.out</code> 或自定义名</td>
+<td>✅ 是（默认）</td>
+<td><strong>ELF Executable（可执行文件）</strong>，类型为 <code>ET_EXEC</code> 或 <code>ET_DYN</code></td>
+</tr>
+</tbody></table>
+<p>从汇编阶段开始，生成的 <code>.o</code> 文件即是标准的 ELF 文件，类型为 <code>ET_REL</code>（可重定位文件）。链接之后的可执行文件（如默认的 <code>a.out</code> 或指定的 <code>main</code>）也是 ELF 文件，类型为 <code>ET_EXEC</code> 或现代系统中的 <code>ET_DYN</code>（PIE 方式）。</p>
+<p>我们可以通过<code>gcc -save-temps 1.c -o hello</code>保留中间文件，生成文件如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1.c  hello  hello-1.i  hello-1.o  hello-1.s</span><br></pre></td></tr></table></figure>
+
+<h1 id="4、ELF文件查看工具"><a href="#4、ELF文件查看工具" class="headerlink" title="4、ELF文件查看工具"></a>4、ELF文件查看工具</h1><h2 id="（1）file-查看简要信息"><a href="#（1）file-查看简要信息" class="headerlink" title="（1）file 查看简要信息"></a>（1）<code>file </code>查看简要信息</h2><p>你可以使用以下命令验证一个中间文件是否为 ELF 格式，以及它的类型：</p>
+<p>例如，命令行<code>file hello-1.o</code> ，返回：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hello.o: ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped</span><br></pre></td></tr></table></figure>
+
+<p>这表示 <code>hello.o</code> 是一个 64 位 ELF 文件，类型为 <strong>可重定位目标文件（Relocatable）</strong>。</p>
+<p>命令行<code>file hello</code>，返回：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hello: ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=d5e4f8e1a6bfedffa4006793f223df7ddf0583da, for GNU/Linux 3.2.0, not stripped</span><br></pre></td></tr></table></figure>
+
+<p>这表明是一个面向 x86-64 架构的 64 位 ELF 可执行文件，启用了位置无关执行（PIE）和动态链接，适用于 Linux 系统，包含调试信息。</p>
+<blockquote>
+<p>在 ELF 文件的结构中，有一个字段叫 <code>e_type</code>，用于标识文件的具体类型。常见类型如下：</p>
+<table>
+<thead>
+<tr>
+<th>类型代号</th>
+<th>类型名称</th>
+<th>用途说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ET_REL</code></td>
+<td>Relocatable</td>
+<td><code>.o</code> 文件，尚未链接，等待组合成可执行文件</td>
+</tr>
+<tr>
+<td><code>ET_EXEC</code></td>
+<td>Executable</td>
+<td>链接完成的可执行文件，如 <code>a.out</code>、<code>main</code> 等</td>
+</tr>
+<tr>
+<td><code>ET_DYN</code></td>
+<td>Shared Object</td>
+<td>动态链接库，如 <code>.so</code> 文件或 PIE 格式主程序</td>
+</tr>
+<tr>
+<td><code>ET_CORE</code></td>
+<td>Core Dump</td>
+<td>程序崩溃后生成的内存转储文件</td>
+</tr>
+</tbody></table>
+</blockquote>
+<h2 id="（2）readelf-详解（最推荐"><a href="#（2）readelf-详解（最推荐" class="headerlink" title="（2）readelf 详解（最推荐)"></a>（2）<code>readelf</code> 详解（最推荐)</h2><p><code>readelf</code> 是专门查看 ELF 文件结构的工具，功能丰富而直观。</p>
+<p><code>readelf -a hello</code>查看所有信息（相当于全展开）</p>
+<p>此外, <code>-h</code> 仅查看查看 ELF 文件头（ELF Header），<code>-l</code>查看程序头（Program Headers），<code>-S</code>查看节头（Section Headers），<code>-s</code> 查看符号表，<code>-x .text</code>查看指定节的十六进制内容。</p>
+<h2 id="（3）objdump-详解（适合反汇编）"><a href="#（3）objdump-详解（适合反汇编）" class="headerlink" title="（3）objdump 详解（适合反汇编）"></a>（3）<code>objdump</code> 详解（适合反汇编）</h2><p><code>objdump</code> 是 GNU 工具集中的反汇编分析工具，可以查看代码内容、段、符号等。</p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>objdump -d hello</code></td>
+<td>反汇编 <code>.text</code> 可执行段</td>
+</tr>
+<tr>
+<td><code>objdump -x hello</code></td>
+<td>查看 ELF 头、段、节等</td>
+</tr>
+<tr>
+<td><code>objdump -t hello</code></td>
+<td>符号表（类似 <code>nm</code>）</td>
+</tr>
+<tr>
+<td><code>objdump -s -j .data helo</code></td>
+<td>查看 <code>.data</code> 节的原始内容</td>
+</tr>
+</tbody></table>
+<h1 id="5、xv6-操作系统加载ELF可执行文件源码"><a href="#5、xv6-操作系统加载ELF可执行文件源码" class="headerlink" title="5、xv6 操作系统加载ELF可执行文件源码"></a>5、xv6 操作系统加载ELF可执行文件源码</h1><h2 id="5-1-ELF结构体定义"><a href="#5-1-ELF结构体定义" class="headerlink" title="5.1 ELF结构体定义"></a>5.1 ELF结构体定义</h2><p><code>elf.h</code>这里仅定义了操作系统加载程序需要的结构，<code>ELF Header</code>和 <code>Program Header</code>。未定义链接等所需的<code>section</code>头和段结构。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">// Format of an ELF executable file</span><br><span class="line"></span><br><span class="line">#define ELF_MAGIC 0x464C457FU  // &quot;\x7FELF&quot; in little endian</span><br><span class="line"></span><br><span class="line">// ELF 文件头结构（ELF Header）</span><br><span class="line">// 描述整个 ELF 文件的基本信息，是 ELF 文件的开头部分</span><br><span class="line">struct elfhdr &#123;</span><br><span class="line">  uint   magic;       // 魔数，必须为 ELF_MAGIC（用于标识这是一个 ELF 文件）</span><br><span class="line">  uchar  elf[12];     // ELF 标识信息（包含 ELF 版本、架构等），通常固定格式</span><br><span class="line">  ushort type;        // 文件类型（如可执行文件 ET_EXEC，目标文件 ET_REL 等）</span><br><span class="line">  ushort machine;     // 指定运行该 ELF 文件所需的机器架构（如 RISC-V、x86）</span><br><span class="line">  uint   version;     // ELF 文件格式的版本号（通常为 1）</span><br><span class="line">  uint64 entry;       // 程序入口地址（进程开始执行的虚拟地址）</span><br><span class="line">  uint64 phoff;       // 程序头表（Program Header Table）在文件中的偏移</span><br><span class="line">  uint64 shoff;       // 节头表（Section Header Table）在文件中的偏移（xv6 不使用）</span><br><span class="line">  uint   flags;       // 特定架构相关的标志位（一般为 0）</span><br><span class="line">  ushort ehsize;      // ELF 文件头本身的大小（单位：字节，通常是 64）</span><br><span class="line">  ushort phentsize;   // 每个程序头（Program Header）的大小（单位：字节）</span><br><span class="line">  ushort phnum;       // 程序头的个数（即可加载段的数量）</span><br><span class="line">  ushort shentsize;   // 每个节头（Section Header）的大小（单位：字节）</span><br><span class="line">  ushort shnum;       // 节头的数量（Section Header 数量）</span><br><span class="line">  ushort shstrndx;    // 节名称字符串表在节头表中的索引</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">// 程序段头结构（Program Header），用于描述 ELF 文件中每一个可加载段。</span><br><span class="line">// 用elf hdr 中phoff[phnum]顺序读取加载段</span><br><span class="line">struct proghdr &#123;</span><br><span class="line">  uint32 type;     // 段的类型，比如 LOAD（可加载段）、DYNAMIC、INTERP 等</span><br><span class="line">  uint32 flags;    // 段的访问权限，比如可读（R）、可写（W）、可执行（X）</span><br><span class="line">  uint64 off;      // 段在文件中的偏移（从文件起始位置算起）</span><br><span class="line">  uint64 vaddr;    // 段在内存中的虚拟地址（加载后放置的位置）</span><br><span class="line">  uint64 paddr;    // 段的物理地址（通常忽略，在某些平台/嵌入系统中用到）</span><br><span class="line">  uint64 filesz;   // 段在文件中占用的字节数（即实际存储在 ELF 文件中的大小）</span><br><span class="line">  uint64 memsz;    // 段在内存中应占用的字节数（可能比 filesz 大，比如包含 .bss）</span><br><span class="line">  uint64 align;    // 段对齐方式，通常是页大小（如 0x1000），用于内存和文件中对齐</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">// Values for Proghdr type</span><br><span class="line">#define ELF_PROG_LOAD           1</span><br><span class="line"></span><br><span class="line">// Flag bits for Proghdr flags</span><br><span class="line">#define ELF_PROG_FLAG_EXEC      1</span><br><span class="line">#define ELF_PROG_FLAG_WRITE     2</span><br><span class="line">#define ELF_PROG_FLAG_READ      4</span><br></pre></td></tr></table></figure>
+
+<h2 id="5-2-ELF可执行程序加载"><a href="#5-2-ELF可执行程序加载" class="headerlink" title="5.2 ELF可执行程序加载"></a>5.2 ELF可执行程序加载</h2><p>在 xv6 中，用户程序的加载由 <code>exec.c</code> 中的 <code>exec(char *path, char **argv)</code> 函数完成。它负责将一个 ELF 格式的可执行文件加载到当前进程的内存空间中，并准备好进入用户态运行。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">char *s, *last;</span><br><span class="line">int i, off;</span><br><span class="line">uint64 argc, sz = 0, sp, ustack[MAXARG], stackbase;</span><br><span class="line">struct elfhdr elf;</span><br><span class="line">struct inode *ip;</span><br><span class="line">struct proghdr ph;</span><br><span class="line">pagetable_t pagetable = 0, oldpagetable;</span><br><span class="line">struct proc *p = myproc();</span><br><span class="line"></span><br><span class="line">begin_op();                                                      // 文件系统操作事务启动</span><br><span class="line"></span><br><span class="line">if((ip = namei(path)) == 0)&#123;                                     // 根据路径找到文件的 inode。</span><br><span class="line">  end_op();</span><br><span class="line">  return -1;</span><br><span class="line">&#125;</span><br><span class="line">ilock(ip);                                                       // 加锁文件，准备读取内容。</span><br><span class="line"></span><br><span class="line">// 检查ELF头部</span><br><span class="line">if(readi(ip, 0, (uint64)&amp;elf, 0, sizeof(elf)) != sizeof(elf))   // 从文件中读取 ELF 文件头。</span><br><span class="line">  goto bad;</span><br><span class="line">if(elf.magic != ELF_MAGIC)                                      // 检查魔数是否为 0x464C457F（即 &quot;\x7FELF&quot;），确认文件是合法的 ELF 文件。</span><br><span class="line">  goto bad;</span><br><span class="line"></span><br><span class="line">if((pagetable = proc_pagetable(p)) == 0)                        // 为新程序分配一个干净的用户页表。</span><br><span class="line">  goto bad;</span><br><span class="line"></span><br><span class="line">// 将程序加载进内存</span><br><span class="line">for(i=0, off=elf.phoff; i&lt;elf.phnum; i++, off+=sizeof(ph))&#123;</span><br><span class="line">  if(readi(ip, 0, (uint64)&amp;ph, off, sizeof(ph)) != sizeof(ph))  // 遍历 ELF 文件的所有 Program Header。</span><br><span class="line">    goto bad;</span><br><span class="line">  if(ph.type != ELF_PROG_LOAD)                                  // 只处理 PT_LOAD 类型的段（用于真正加载的代码/数据）。</span><br><span class="line">    continue;</span><br><span class="line">  if(ph.memsz &lt; ph.filesz)                                      // 安全性检查</span><br><span class="line">    goto bad;</span><br><span class="line">  if(ph.vaddr + ph.memsz &lt; ph.vaddr)                            // 溢出检查</span><br><span class="line">    goto bad;</span><br><span class="line">  uint64 sz1;</span><br><span class="line">  if((sz1 = uvmalloc(pagetable, sz, ph.vaddr + ph.memsz)) == 0) // 该段在虚拟地址空间中分配足够内存</span><br><span class="line">    goto bad;</span><br><span class="line">  sz = sz1;</span><br><span class="line">  if((ph.vaddr % PGSIZE) != 0)                                  // 检查段地址是否按页对齐。</span><br><span class="line">    goto bad;</span><br><span class="line">  if(loadseg(pagetable, ph.vaddr, ip, ph.off, ph.filesz) &lt; 0)   // 从文件中读取段的内容到指定虚拟地址。</span><br><span class="line">    goto bad;</span><br><span class="line">&#125;</span><br><span class="line">iunlockput(ip);                                                 // 清理 inode，准备进入用户态</span><br><span class="line">end_op();</span><br><span class="line">ip = 0;</span><br></pre></td></tr></table></figure>
+
+<p>这种加载机制体现了一个最简化的操作系统加载器工作流程：<strong>从磁盘读取→解析结构→映射内存→加载内容→准备执行环境</strong>。它仅使用 ELF 的 Program Header，不依赖 Section Header，符合现代操作系统运行时加载的通用做法。</p>
+</div><div class="article-licensing box"><div class="licensing-title"><p>深入理解 ELF：主流可执行文件格式解析与 xv6 加载源码分析</p><p><a href="http://symbol23441.top/2025/07/11/深入理解-ELF：主流可执行文件格式解析与-xv6-加载源码分析/">http://symbol23441.top/2025/07/11/深入理解-ELF：主流可执行文件格式解析与-xv6-加载源码分析/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2025-07-11</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2025-07-11</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/xv6/">xv6</a><a class="link-muted mr-2" rel="tag" href="/tags/ELF/">ELF</a></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2025/07/11/%E8%A7%A3%E6%9E%90xv6%E7%9A%84%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8%E6%BA%90%E7%A0%81(%E4%BB%A5write%E4%B8%BA%E4%BE%8B)/"><span class="level-item">解析xv6的系统调用源码(以write为例)</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#1、主流可执行文件格式概览"><span class="level-left"><span class="level-item">1、主流可执行文件格式概览</span></span></a></li><li><a class="level is-mobile" href="#2、ELF文件结构"><span class="level-left"><span class="level-item">2、ELF文件结构</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#ELF-Header（文件头）"><span class="level-left"><span class="level-item">ELF Header（文件头）</span></span></a></li><li><a class="level is-mobile" href="#Program-Header-Table（程序头表）"><span class="level-left"><span class="level-item">Program Header Table（程序头表）</span></span></a></li><li><a class="level is-mobile" href="#Section-Header-Table（节头表）"><span class="level-left"><span class="level-item">Section Header Table（节头表）</span></span></a></li><li><a class="level is-mobile" href="#其余数据区"><span class="level-left"><span class="level-item">其余数据区</span></span></a></li></ul></li><li><a class="level is-mobile" href="#3、C程序各编译阶段对应文件与-ELF-类型"><span class="level-left"><span class="level-item">3、C程序各编译阶段对应文件与 ELF 类型</span></span></a></li><li><a class="level is-mobile" href="#4、ELF文件查看工具"><span class="level-left"><span class="level-item">4、ELF文件查看工具</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#（1）file-查看简要信息"><span class="level-left"><span class="level-item">（1）file 查看简要信息</span></span></a></li><li><a class="level is-mobile" href="#（2）readelf-详解（最推荐"><span class="level-left"><span class="level-item">（2）readelf 详解（最推荐)</span></span></a></li><li><a class="level is-mobile" href="#（3）objdump-详解（适合反汇编）"><span class="level-left"><span class="level-item">（3）objdump 详解（适合反汇编）</span></span></a></li></ul></li><li><a class="level is-mobile" href="#5、xv6-操作系统加载ELF可执行文件源码"><span class="level-left"><span class="level-item">5、xv6 操作系统加载ELF可执行文件源码</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#5-1-ELF结构体定义"><span class="level-left"><span class="level-item">5.1 ELF结构体定义</span></span></a></li><li><a class="level is-mobile" href="#5-2-ELF可执行程序加载"><span class="level-left"><span class="level-item">5.2 ELF可执行程序加载</span></span></a></li></ul></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/js/lightgallery.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script><script type="text/javascript" src="/js/imaegoo/universe.js"></script></body></html>

@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>xv6中的VirtIO虚拟磁盘驱动机制解析 - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="本文介绍了 xv6 操作系统中 VirtIO 虚拟磁盘驱动的核心原理与实现流程，内容主要包括：  驱动初始化阶段：通过 virtio_disk_init() 完成设备身份验证、特性协商、内存结构初始化以及中断注册。 I&amp;#x2F;O 请求流程：virtio_disk_rw() 构造请求命令、组织描述符链、写入可用队列并通知设备处理； DMA + 中断机制：设备使用 DMA 方式直接读写内存，完成后通过中断回"><meta property="og:type" content="blog"><meta property="og:title" content="xv6中的VirtIO虚拟磁盘驱动机制解析"><meta property="og:url" content="http://symbol23441.top/2025/07/11/xv6%E4%B8%AD%E7%9A%84VirtIO%E8%99%9A%E6%8B%9F%E7%A3%81%E7%9B%98%E9%A9%B1%E5%8A%A8%E6%9C%BA%E5%88%B6%E8%A7%A3%E6%9E%90/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="本文介绍了 xv6 操作系统中 VirtIO 虚拟磁盘驱动的核心原理与实现流程，内容主要包括：  驱动初始化阶段：通过 virtio_disk_init() 完成设备身份验证、特性协商、内存结构初始化以及中断注册。 I&amp;#x2F;O 请求流程：virtio_disk_rw() 构造请求命令、组织描述符链、写入可用队列并通知设备处理； DMA + 中断机制：设备使用 DMA 方式直接读写内存，完成后通过中断回"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/gallery/covers/OS.png"><meta property="article:published_time" content="2025-07-10T16:03:32.000Z"><meta property="article:modified_time" content="2025-07-10T16:03:32.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="article:tag" content="xv6"><meta property="article:tag" content="操作系统"><meta property="article:tag" content="virtio 驱动程序"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/gallery/covers/OS.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2025/07/11/xv6%E4%B8%AD%E7%9A%84VirtIO%E8%99%9A%E6%8B%9F%E7%A3%81%E7%9B%98%E9%A9%B1%E5%8A%A8%E6%9C%BA%E5%88%B6%E8%A7%A3%E6%9E%90/"},"headline":"xv6中的VirtIO虚拟磁盘驱动机制解析","image":["http://symbol23441.top/gallery/covers/OS.png"],"datePublished":"2025-07-10T16:03:32.000Z","dateModified":"2025-07-10T16:03:32.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"本文介绍了 xv6 操作系统中 VirtIO 虚拟磁盘驱动的核心原理与实现流程，内容主要包括：  驱动初始化阶段：通过 virtio_disk_init() 完成设备身份验证、特性协商、内存结构初始化以及中断注册。 I&#x2F;O 请求流程：virtio_disk_rw() 构造请求命令、组织描述符链、写入可用队列并通知设备处理； DMA + 中断机制：设备使用 DMA 方式直接读写内存，完成后通过中断回"}</script><link rel="canonical" href="http://symbol23441.top/2025/07/11/xv6%E4%B8%AD%E7%9A%84VirtIO%E8%99%9A%E6%8B%9F%E7%A3%81%E7%9B%98%E9%A9%B1%E5%8A%A8%E6%9C%BA%E5%88%B6%E8%A7%A3%E6%9E%90/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><div class="card-image"><span class="image is-7by3"><img class="fill" src="/gallery/covers/OS.png" alt="xv6中的VirtIO虚拟磁盘驱动机制解析"></span></div><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2025-07-10T16:03:32.000Z" title="7/11/2025, 12:03:32 AM">2025-07-11</time>发表</span><span class="level-item"><time dateTime="2025-07-10T16:03:32.000Z" title="7/11/2025, 12:03:32 AM">2025-07-11</time>更新</span><span class="level-item">9 分钟读完 (大约1356个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">xv6中的VirtIO虚拟磁盘驱动机制解析</h1><div class="content"><p>本文介绍了 xv6 操作系统中 VirtIO 虚拟磁盘驱动的核心原理与实现流程，内容主要包括：</p>
+<ul>
+<li><strong>驱动初始化阶段</strong>：通过 <code>virtio_disk_init()</code> 完成设备身份验证、特性协商、内存结构初始化以及中断注册。</li>
+<li><strong>I/O 请求流程</strong>：<code>virtio_disk_rw()</code> 构造请求命令、组织描述符链、写入可用队列并通知设备处理；</li>
+<li><strong>DMA + 中断机制</strong>：设备使用 DMA 方式直接读写内存，完成后通过中断回调 <code>virtio_disk_intr()</code> 通知驱动；</li>
+<li><strong>通信结构详解</strong>：包括 <code>desc</code> 描述符链、<code>avail</code> 可用队列、<code>used</code> 已用队列三大核心数据结构；</li>
+</ul>
+<p>适合深入理解 xv6 内核中虚拟磁盘驱动的底层通信机制与 virtio 协议结构。</p>
+<span id="more"></span>
+
+<p>在 QEMU 虚拟机中运行的 <code>xv6</code> 操作系统，通过 <strong>VirtIO 协议</strong> 与虚拟磁盘设备进行通信, 使用 <strong>MMIO（Memory-Mapped I/O）</strong> 将设备寄存器映射到内核地址空间，驱动程序通过访问这些内存地址完成设备的初始化与控制。</p>
+<p>例如，启动 QEMU 时添加如下选项来启用 virtio-mmio 磁盘：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">qemu ... -drive file=fs.img,<span class="keyword">if</span>=none,format=raw,id=x0 \</span><br><span class="line">         -device virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0</span><br></pre></td></tr></table></figure>
+
+<h2 id="1、初始化阶段：virtio-disk-init"><a href="#1、初始化阶段：virtio-disk-init" class="headerlink" title="1、初始化阶段：virtio_disk_init()"></a>1、初始化阶段：<code>virtio_disk_init()</code></h2><p>在内核启动早期，驱动需对 virtio 设备进行初始化，步骤包括：</p>
+<ul>
+<li>检查设备身份（魔术值、设备 ID、厂商 ID 等）</li>
+<li>协商设备特性（只启用驱动支持的功能）</li>
+<li>设置页大小</li>
+<li>初始化共享内存结构（描述符、可用队列、已用队列）</li>
+<li>初始化描述符空闲状态标志</li>
+<li>注册<code>virtio_disk_intr()</code>中断回调（在 <code>plic.c</code> 与 <code>trap.c</code> 中完成）</li>
+</ul>
+<h2 id="2、一次-I-O-请求的完整流程"><a href="#2、一次-I-O-请求的完整流程" class="headerlink" title="2、一次 I/O 请求的完整流程"></a>2、一次 I/O 请求的完整流程</h2><p>在用户进程访问文件或块设备时，内核调用 <code>virtio_disk_rw()</code> 发起磁盘 I/O。其过程如下：</p>
+<h3 id="2-1、发起请求（驱动-→-设备）"><a href="#2-1、发起请求（驱动-→-设备）" class="headerlink" title="2.1、发起请求（驱动 → 设备）"></a>2.1、发起请求（驱动 → 设备）</h3><p>在 <code>virtio_disk_rw()</code> 中，驱动发起一次磁盘 I/O 请求，主要包含以下步骤：</p>
+<ol>
+<li><strong>分配 3 个空闲描述符</strong>：用于构建请求的描述符链（命令头、数据块、状态字节）；</li>
+<li><strong>填写请求内容</strong>：<ul>
+<li>第1个描述符：请求头，包括操作类型（读/写）、扇区号等；</li>
+<li>第2个描述符：数据缓冲区地址（供读/写传输）；</li>
+<li>第3个描述符：状态字段，用于接收设备完成标志；</li>
+</ul>
+</li>
+<li><strong>组织描述符链</strong>：通过 <code>desc[i].next</code> 字段将这 3 个描述符串联成链；</li>
+<li><strong>更新队列</strong>：<ul>
+<li>将链头索引写入 <code>avail.ring[]</code>；</li>
+<li>递增 <code>avail.idx</code>；</li>
+</ul>
+</li>
+<li><strong>通知设备</strong>：通过写入 MMIO 寄存器 <code>QUEUE_NOTIFY</code>，通知设备开始处理请求；</li>
+<li><strong>挂起等待完成</strong>：当前进程调用 <code>sleep()</code>，等待设备中断通知 I/O 完成。</li>
+</ol>
+<h3 id="2-2、设备执行（DMA）"><a href="#2-2、设备执行（DMA）" class="headerlink" title="2.2、设备执行（DMA）"></a>2.2、设备执行（DMA）</h3><p>设备采用 <strong>DMA（Direct Memory Access）</strong> 方式访问内存。根据这组操作符链，直接读/写内核中的缓冲区（如 <code>b-&gt;data</code>），无需 CPU 协助。</p>
+<h3 id="2-3、中断响应回调（设备-→-驱动）"><a href="#2-3、中断响应回调（设备-→-驱动）" class="headerlink" title="2.3、中断响应回调（设备 → 驱动）"></a>2.3、中断响应回调（设备 → 驱动）</h3><p>设备完成请求后会触发中断，驱动中的 <code>virtio_disk_intr()</code> 被调用，执行以下操作：</p>
+<ol>
+<li>**读取 <code>used.idx</code>**：判断设备是否有新完成的请求；</li>
+<li>**遍历 <code>used.ring[]</code>**：获取设备返回的已完成请求（通过描述符链头部索引 <code>id</code>）；</li>
+<li><strong>检查状态字段</strong>：确认状态字节为 <code>0</code> 表示成功；</li>
+<li><strong>标记请求完成</strong>：将 <code>buf-&gt;disk = 0</code>，表示对应缓冲区已准备就绪；</li>
+<li><strong>唤醒等待进程</strong>：通过 <code>wakeup()</code> 恢复之前挂起等待该 I/O 的进程；</li>
+<li><strong>回收描述符链</strong>：释放对应的 3 个描述符，供下次使用。</li>
+</ol>
+<hr>
+<h2 id="3、VirtIO-通信结构概览"><a href="#3、VirtIO-通信结构概览" class="headerlink" title="3、VirtIO 通信结构概览"></a>3、VirtIO 通信结构概览</h2><p><img src="/2025/07/11/xv6%E4%B8%AD%E7%9A%84VirtIO%E8%99%9A%E6%8B%9F%E7%A3%81%E7%9B%98%E9%A9%B1%E5%8A%A8%E6%9C%BA%E5%88%B6%E8%A7%A3%E6%9E%90/xv6-virtio-disk%20%E9%A9%B1%E5%8A%A8.drawio.png" alt="xv6-virtio-disk 驱动.drawio"></p>
+<p>一次 I/O 请求的执行流程，主要依赖下列三类结构：</p>
+<h3 id="1-描述符（desc）"><a href="#1-描述符（desc）" class="headerlink" title="(1) 描述符（desc）"></a>(1) 描述符（desc）</h3><p>一次设备请求由多个描述符构成一个链，通常是 3 个：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">virtq_desc</span> &#123;</span></span><br><span class="line">  uint64 addr;   <span class="comment">// 数据地址（物理地址）</span></span><br><span class="line">  uint32 len;    <span class="comment">// 数据长度</span></span><br><span class="line">  uint16 flags;  <span class="comment">// 是否还有下一个</span></span><br><span class="line">  uint16 next;   <span class="comment">// 指向下一个描述符</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>每次请求由多个描述符组成链，常见为三个：<strong>命令头、数据块、状态字节</strong></p>
+<h3 id="2-可用队列-avail（驱动-→-设备）"><a href="#2-可用队列-avail（驱动-→-设备）" class="headerlink" title="(2)可用队列 avail（驱动 → 设备）"></a>(2)可用队列 avail（驱动 → 设备）</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">virtq_avail</span> &#123;</span></span><br><span class="line">  uint16 flags;</span><br><span class="line">  uint16 idx;             <span class="comment">// 驱动最新请求的编号</span></span><br><span class="line">  uint16 ring[NUM];       <span class="comment">// 传给设备的请求（描述符头部索引）</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>驱动通过 <code>ring[]</code> 提交请求，递增 <code>idx</code> 表示新请求就绪。</p>
+<h3 id="3-已用队列-used（设备-→-驱动）"><a href="#3-已用队列-used（设备-→-驱动）" class="headerlink" title="(3)已用队列 used（设备 → 驱动）"></a>(3)已用队列 used（设备 → 驱动）</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">virtq_used</span> &#123;</span></span><br><span class="line">  uint16 flags;</span><br><span class="line">  uint16 idx;             <span class="comment">// 设备已完成的请求数</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">used_elem</span> &#123;</span></span><br><span class="line">    uint32 id;            <span class="comment">// 对应的描述符链头部</span></span><br><span class="line">    uint32 len;           <span class="comment">// 传输字节数</span></span><br><span class="line">  &#125; ring[NUM];</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>设备执行完成后，在 <code>used.ring[]</code> 中写入链头索引，驱动比较 <code>used.idx</code> 判断哪些请求完成。</p>
+</div><div class="article-licensing box"><div class="licensing-title"><p>xv6中的VirtIO虚拟磁盘驱动机制解析</p><p><a href="http://symbol23441.top/2025/07/11/xv6中的VirtIO虚拟磁盘驱动机制解析/">http://symbol23441.top/2025/07/11/xv6中的VirtIO虚拟磁盘驱动机制解析/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2025-07-11</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2025-07-11</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/xv6/">xv6</a><a class="link-muted mr-2" rel="tag" href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a><a class="link-muted mr-2" rel="tag" href="/tags/virtio-%E9%A9%B1%E5%8A%A8%E7%A8%8B%E5%BA%8F/">virtio 驱动程序</a></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2025/07/11/%E8%A7%A3%E6%9E%90xv6%E7%9A%84%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8%E6%BA%90%E7%A0%81(%E4%BB%A5write%E4%B8%BA%E4%BE%8B)/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">解析xv6的系统调用源码(以write为例)</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2025/07/09/RISC-V%E6%8C%87%E4%BB%A4%E9%9B%86%E6%9E%B6%E6%9E%84%E4%B8%8Bxv6OS%E7%9A%84trap%E6%9C%BA%E5%88%B6/"><span class="level-item">RISC-V指令集架构下xv6OS的trap机制</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#1、初始化阶段：virtio-disk-init"><span class="level-left"><span class="level-item">1、初始化阶段：virtio_disk_init()</span></span></a></li><li><a class="level is-mobile" href="#2、一次-I-O-请求的完整流程"><span class="level-left"><span class="level-item">2、一次 I/O 请求的完整流程</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#2-1、发起请求（驱动-→-设备）"><span class="level-left"><span class="level-item">2.1、发起请求（驱动 → 设备）</span></span></a></li><li><a class="level is-mobile" href="#2-2、设备执行（DMA）"><span class="level-left"><span class="level-item">2.2、设备执行（DMA）</span></span></a></li><li><a class="level is-mobile" href="#2-3、中断响应回调（设备-→-驱动）"><span class="level-left"><span class="level-item">2.3、中断响应回调（设备 → 驱动）</span></span></a></li></ul></li><li><a class="level is-mobile" href="#3、VirtIO-通信结构概览"><span class="level-left"><span class="level-item">3、VirtIO 通信结构概览</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#1-描述符（desc）"><span class="level-left"><span class="level-item">(1) 描述符（desc）</span></span></a></li><li><a class="level is-mobile" href="#2-可用队列-avail（驱动-→-设备）"><span class="level-left"><span class="level-item">(2)可用队列 avail（驱动 → 设备）</span></span></a></li><li><a class="level is-mobile" href="#3-已用队列-used（设备-→-驱动）"><span class="level-left"><span class="level-item">(3)已用队列 used（设备 → 驱动）</span></span></a></li></ul></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/js/lightgallery.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script><script type="text/javascript" src="/js/imaegoo/universe.js"></script></body></html>

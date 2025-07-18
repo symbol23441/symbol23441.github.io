@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>RISC-V指令集架构下xv6OS的trap机制 - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="本文讲解RISC-V 架构下 xv6 操作系统的陷入机制（trap mechanism），从设计目的、硬件配合到软件实现进行全面梳理。首先说明操作系统为何需要通过陷入机制在用户态与内核态之间实现安全、受控的切换；然后介绍了 RISC-V 提供的相关特权寄存器（如 stvec、sepc、sstatus 等）及其在 trap 和 sret 返回时的硬件行为；最后，结合 xv6 的源码与地址布局，分析了"><meta property="og:type" content="blog"><meta property="og:title" content="RISC-V指令集架构下xv6OS的trap机制"><meta property="og:url" content="http://symbol23441.top/2025/07/09/RISC-V%E6%8C%87%E4%BB%A4%E9%9B%86%E6%9E%B6%E6%9E%84%E4%B8%8Bxv6OS%E7%9A%84trap%E6%9C%BA%E5%88%B6/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="本文讲解RISC-V 架构下 xv6 操作系统的陷入机制（trap mechanism），从设计目的、硬件配合到软件实现进行全面梳理。首先说明操作系统为何需要通过陷入机制在用户态与内核态之间实现安全、受控的切换；然后介绍了 RISC-V 提供的相关特权寄存器（如 stvec、sepc、sstatus 等）及其在 trap 和 sret 返回时的硬件行为；最后，结合 xv6 的源码与地址布局，分析了"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/gallery/covers/OS.png"><meta property="article:published_time" content="2025-07-09T15:26:40.000Z"><meta property="article:modified_time" content="2025-07-09T15:26:40.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="article:tag" content="RISC-V"><meta property="article:tag" content="xv6"><meta property="article:tag" content="操作系统"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/gallery/covers/OS.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2025/07/09/RISC-V%E6%8C%87%E4%BB%A4%E9%9B%86%E6%9E%B6%E6%9E%84%E4%B8%8Bxv6OS%E7%9A%84trap%E6%9C%BA%E5%88%B6/"},"headline":"RISC-V指令集架构下xv6OS的trap机制","image":["http://symbol23441.top/gallery/covers/OS.png"],"datePublished":"2025-07-09T15:26:40.000Z","dateModified":"2025-07-09T15:26:40.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"本文讲解RISC-V 架构下 xv6 操作系统的陷入机制（trap mechanism），从设计目的、硬件配合到软件实现进行全面梳理。首先说明操作系统为何需要通过陷入机制在用户态与内核态之间实现安全、受控的切换；然后介绍了 RISC-V 提供的相关特权寄存器（如 stvec、sepc、sstatus 等）及其在 trap 和 sret 返回时的硬件行为；最后，结合 xv6 的源码与地址布局，分析了"}</script><link rel="canonical" href="http://symbol23441.top/2025/07/09/RISC-V%E6%8C%87%E4%BB%A4%E9%9B%86%E6%9E%B6%E6%9E%84%E4%B8%8Bxv6OS%E7%9A%84trap%E6%9C%BA%E5%88%B6/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><div class="card-image"><span class="image is-7by3"><img class="fill" src="/gallery/covers/OS.png" alt="RISC-V指令集架构下xv6OS的trap机制"></span></div><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2025-07-09T15:26:40.000Z" title="7/9/2025, 11:26:40 PM">2025-07-09</time>发表</span><span class="level-item"><time dateTime="2025-07-09T15:26:40.000Z" title="7/9/2025, 11:26:40 PM">2025-07-09</time>更新</span><span class="level-item">21 分钟读完 (大约3089个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">RISC-V指令集架构下xv6OS的trap机制</h1><div class="content"><p>本文讲解RISC-V 架构下 xv6 操作系统的陷入机制（trap mechanism），从设计目的、硬件配合到软件实现进行全面梳理。首先说明操作系统为何需要通过陷入机制在用户态与内核态之间实现<strong>安全、受控的切换</strong>；然后介绍了 RISC-V 提供的相关特权寄存器（如 <code>stvec</code>、<code>sepc</code>、<code>sstatus</code> 等）及其在 trap 和 <code>sret</code> 返回时的硬件行为；最后，结合 xv6 的源码与地址布局，分析了其如何统一处理<strong>系统调用、外设中断和定时器中断</strong>，以及 <code>trampoline</code> 与 <code>trapframe</code> 在用户页表和内核页表中的精妙设计，实现了一个<strong>小巧但完整的中断与系统调用处理机制</strong>。</p>
+<span id="more"></span>
+
+<h1 id="1、操作系统陷入机制（trap）目的："><a href="#1、操作系统陷入机制（trap）目的：" class="headerlink" title="1、操作系统陷入机制（trap）目的："></a>1、操作系统陷入机制（trap）目的：</h1><p>在操作系统中，为了<strong>可靠、安全</strong>地管理计算机资源，必须对程序的权限进行严格区分。如果用户程序能够直接访问内核资源，一旦发生错误，可能导致系统崩溃；而恶意程序甚至可能窃取其他进程数据或控制整个系统。为此，引入<strong>陷入机制（Trap Mechanism）</strong>，<strong>受控切换</strong>用户态与内核态，隔离用户空间与内核空间，限制用户程序对底层资源与特权指令的直接访问，而而是通过系统调用由OS 内核代理执行。</p>
+<p>​     陷入机制的实现依赖<strong>软硬件的协同配合</strong>。软件无法突破 CPU 的权限限制，必须借助硬件提供的<strong>特权级控制与转移机制</strong>，才能安全地实现用户态与内核态的切换。</p>
+<h1 id="2、RISC-V-指令架构集的trap机制（硬件负责部分）"><a href="#2、RISC-V-指令架构集的trap机制（硬件负责部分）" class="headerlink" title="2、RISC-V 指令架构集的trap机制（硬件负责部分）"></a>2、RISC-V 指令架构集的trap机制（硬件负责部分）</h1><p>RISC-V 是一种开放的指令集架构，定义了系统硬件与软件之间的接口规范。如X86、ARM架构相比，RISC-V是完全开源开放的。<br>多核CPU中，每核都有一组自己的寄存器，RISC-V中与陷入机制相关的寄存器设计如下：</p>
+<ul>
+<li>stvec ： 陷入处理的程序跳转地址。</li>
+<li>sepc ： 保存陷入时候，原<code>pc</code>寄存器的值。由于返回恢复。（pc 寄存器会被stvec覆盖，原pc保存到sepc）</li>
+<li>scause ： 陷阱的原因。（8 代表系统调用，0x8000000000000009代表PLIC外部中断）</li>
+<li>sscratch ：临时寄存器。(xv6 中用来保存trapfram寄存器保存页的地址)</li>
+<li>sstatus ： S模式的状态寄存器。其中，SIE位表示是否启用设备中断，SPP表示陷阱来自用户空间还是内核空间，并控制sret 的返回模式。</li>
+</ul>
+<p>触发<code>trap硬件机制</code>，RISC-V 规定硬件完成以下操作：<br>1、若关中断且SIE位为0，则跳过。</p>
+<p>2、关中断（清空SIE位）</p>
+<p>3、设置sstatus的SPP位（表示陷入前是用户态还是内核态）</p>
+<p>4、设置scause原因值</p>
+<p>5、设置特权级为S-Mode（内核态）</p>
+<p>6、pc保存到sepc，且stvec 复制到pc。从新pc开始执行指令。</p>
+<p>注意：satp寄存器并不会切换，也即 用户页表和内核页表需要操作系统来控制切换，下放权限。</p>
+<p><code>sret</code>指令用于从陷入返回到用户态或上一级特权级，RISC-V规定执行sret时，硬件会完成以下操作：<br> 1、从sstatus的SPP位恢复之前的特权级；<br> 2、开中断，恢复sstatus的中断使能位SIE（由SPIE保存）；<br> 3、从sepc中恢复程序计数器到pc，继续执行原用户代码。</p>
+<h1 id="3、xv6-操作系统的trap设计"><a href="#3、xv6-操作系统的trap设计" class="headerlink" title="3、xv6 操作系统的trap设计"></a>3、xv6 操作系统的trap设计</h1><p>执行流程:</p>
+<ul>
+<li>设备中断、系统调用都会触发risc-v硬件的trap机制：切换特权级别、相关寄存器设置（具体参考第2章）。</li>
+<li>由stvec寄存器记录跳转地址载入pc，从该处开始执行。用户态触发trap机制，会跳转到trampoline蹦床程序–保存寄存器、切换内核栈、切换内核页表、刷新TLB快表，跳转到usertrap()执行后续处理</li>
+</ul>
+<blockquote>
+<p>注意：用户态触发和内核触发trap，其stvec跳转地址并不相同，因为内核执行中触发trap，无需切换页表、切换栈，并且保存寄存器只需简单压栈，返回仅需普通函数返回即可。stvec 的地址值控制，在usertrap()、usertapret() 中控制更改。</p>
+</blockquote>
+<ul>
+<li>执行完内核的中断处理（系统调用、设备驱动处理、定时器触发进程切换）后，执行usertapret()。usertapret() 关中断、设置trapframe、sstatue(SSP、SIE)，恢复sepc,跳入.userret。</li>
+<li>.userret  完成页表切换、刷新TLB、恢复寄存器，并将重新TRAPFRAME放入stvec寄存器，sret 返回用户态。</li>
+</ul>
+<p><img src="/2025/07/09/RISC-V%E6%8C%87%E4%BB%A4%E9%9B%86%E6%9E%B6%E6%9E%84%E4%B8%8Bxv6OS%E7%9A%84trap%E6%9C%BA%E5%88%B6/image-20250711043520774.png" alt="xv6 trap机制"></p>
+<h2 id="3-1-xv6的trap设计：统一处理系统调用、设备中断与异常"><a href="#3-1-xv6的trap设计：统一处理系统调用、设备中断与异常" class="headerlink" title="3.1 xv6的trap设计：统一处理系统调用、设备中断与异常"></a>3.1 xv6的trap设计：统一处理系统调用、设备中断与异常</h2><p>在 RISC-V 架构下，<strong>陷入机制（Trap Mechanism）</strong>是操作系统内核处理外部事件和用户请求的关键通路。xv6 利用了这一机制，统一处理三类主要事件：<strong>系统调用（syscall）</strong>、<strong>硬件中断（device interrupt）</strong> 和 <strong>程序异常（exception）</strong>。</p>
+<h3 id="1-系统调用：以软件异常方式进入内核"><a href="#1-系统调用：以软件异常方式进入内核" class="headerlink" title="(1)系统调用：以软件异常方式进入内核"></a>(1)系统调用：以软件异常方式进入内核</h3><p>用户程序在执行如 <code>write()</code>、<code>fork()</code> 等系统调用时，最终通过 RISC-V 指令 <code>ecall</code> 触发一个<strong>同步的陷入事件</strong>。此时：CPU 将当前指令地址保存在 <code>sepc</code>；设置 <code>scause = 8</code>，表示系统调用异常；切换到内核态（S-mode），跳转到 <code>stvec</code> 指定的陷入处理程序；xv6 中的 <code>usertrap()</code> 接管控制，读取参数并根据 <code>a7</code> 寄存器中的系统调用号进行分发处理；处理完毕后，通过 <code>sret</code> 指令返回用户态。</p>
+<p>这一过程就是典型的<strong>软件中断</strong>，本质上是程序主动请求内核服务的一种安全方式。</p>
+<h3 id="2-外设中断：通过-PLIC-统一管理并分发"><a href="#2-外设中断：通过-PLIC-统一管理并分发" class="headerlink" title="(2)外设中断：通过 PLIC 统一管理并分发"></a>(2)外设中断：通过 PLIC 统一管理并分发</h3><p>外部设备（如 UART 串口、磁盘等）在需要 CPU 服务时，会产生中断信号。这些信号由 RISC-V 的<strong>平台级中断控制器（PLIC, Platform-Level Interrupt Controller）</strong>集中管理，并根据中断优先级和目标 CPU 核心，将中断分发到相应处理器。一旦 CPU 收到PLIC外设中断：CPU 设置 <code>scause</code> 中的最高位（bit 63）为 1，表示是一个中断；同样跳转到 <code>stvec</code> 指定的处理函数；xv6 的内核在 <code>usertrap()</code> 或 <code>kerneltrap()</code> 中进一步调用 <code>devintr()</code>；<code>devintr()</code> 识别具体中断来源，并调用相应驱动程序处理（如 <code>uartintr()</code>）；中断完成后返回用户态或继续内核调度。</p>
+<p>这是典型的<strong>硬件中断</strong>，属于异步事件，由外设驱动触发。</p>
+<h3 id="3-定时器中断：CLINT-发起，M-mode-处理"><a href="#3-定时器中断：CLINT-发起，M-mode-处理" class="headerlink" title="(3)定时器中断：CLINT 发起，M-mode 处理"></a>(3)定时器中断：CLINT 发起，M-mode 处理</h3><p>与外设中断不同，<strong>定时器中断</strong>由 RISC-V 中的 <strong>CLINT（Core Local Interruptor）</strong> 发起，负责周期性向 CPU 发出<strong>定时信号</strong>，用于进程调度和抢占控制。</p>
+<p>关键区别在于：</p>
+<ul>
+<li><strong>定时器中断属于 M-Mode（机器模式）下的中断</strong>，不是普通 S-mode 能直接处理的；</li>
+<li>当 CLINT 中 <code>mtime</code> 到达设定值时，会向当前 hart（硬件线程）发起本地中断；</li>
+<li>中断首先由 M-mode trap 入口处理（如 <code>timervec</code>），然后跳转到 xv6 内核中执行调度逻辑；</li>
+<li>xv6 会在其中调用 <code>yield()</code> 实现进程切换。</li>
+</ul>
+<p>通过这种方式，<strong>xv6 实现了基于时钟的抢占式多任务调度</strong>。</p>
+<h2 id="3-2-trampoline-和-trapframe-的巧妙设计"><a href="#3-2-trampoline-和-trapframe-的巧妙设计" class="headerlink" title="3.2 trampoline 和 trapframe 的巧妙设计"></a>3.2 trampoline 和 trapframe 的巧妙设计</h2><p>在 xv6 中，<code>trampoline</code> 是一段关键的汇编程序代码，所有进程共享。它的作用是在<strong>用户态与内核态之间安全切换时</strong>，完成<strong>页表切换</strong>以及<strong>用户上下文的保存与恢复</strong>。因为陷入发生时使用的是用户页表，切换过程中又需切换为内核页表，因此必须有一段在两种页表下都可访问的“桥梁代码”。trampoline 就是这个“蹦床”。</p>
+<p>xv6 将 trampoline 映射在所有进程的最高虚拟地址页，即<code>TRAMPOLINE = MAXVA - PGSIZE</code>。该页在所有用户页表和内核页表中都映射到了相同的虚拟地址，且指向同一物理页。这样设计的好处是：<strong>无论当前使用的是用户页表还是内核页表，trampoline 的地址始终有效且不变</strong>，保证陷入与返回过程中执行不出错、逻辑连续。</p>
+<p>需要注意的是，trampoline 在内核页表中会有两处映射：一处是页表、进程表构建时的直接映射，另一处是为 <code>MAXVA - PGSIZE</code> 虚拟地址显式添加的映射，用于处理用户陷入与返回。</p>
+<p>在用户页表中，trapframe 被映射在 trampoline 下方的一页，并在中间插入一页未映射的“守护页”，用于防止非法访问。这使得任何越界行为都会触发访问异常，从而提升系统安全性。在内核页表中，系统为所有进程预留了一个连续的 trapframe 区，每个 trapframe 之间同样隔有一页守护页, 内核通过当前进程结构的p-&gt;trapframe 指针进行访问。</p>
+<p>下面是简化的内存示意图：</p>
+<p>用户空间</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">虚拟地址 (VA) ↑ 高地址</span><br><span class="line">────────────────────────────────────────────</span><br><span class="line">0xFFFFFFFFF000  TRAMPOLINE    ← trampoline 代码（共享映射，用户态可执行）</span><br><span class="line">0xFFFFFFFFE000  TRAPFRAME     ← 守护页，不映射物理内存。访问会触发异常</span><br><span class="line">0xFFFFFFFFD000  TRAPFRAME     ← 当前进程的 trapframe（只供 trampoline 使用）</span><br><span class="line">────────────────────────────────────────────</span><br><span class="line">...             空洞 / 无映射（高地址段留空，防越界）</span><br><span class="line">────────────────────────────────────────────</span><br><span class="line">用户堆栈        ↓ 进程用户栈（向下增长）</span><br><span class="line">堆             ↑ malloc() 申请的空间</span><br><span class="line">数据段          用户静态变量、全局变量</span><br><span class="line">代码段 (text)   用户程序代码</span><br><span class="line">0x000000000000  ← 用户空间起始地址</span><br></pre></td></tr></table></figure>
+
+<p>内核空间（内核页表映射）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">虚拟地址 (VA) ↑ 高地址</span><br><span class="line">────────────────────────────────────────────</span><br><span class="line">0xFFFFFFFFF000  TRAMPOLINE    ← trampoline 代码（共享映射，用户态可执行）</span><br><span class="line">────────────────────────────────────────────</span><br><span class="line">0x80000000+     ← 内核直映物理内存（kernel text/data/bss、栈、堆、页表等）</span><br><span class="line">0x80000000      ← KERNBASE（物理内存直映虚拟起点）</span><br><span class="line">────────────────────────────────────────────</span><br><span class="line">&lt;低地址无映射&gt;   真实物理地址用于设备地址（统一内存编码）</span><br></pre></td></tr></table></figure>
+
+</div><div class="article-licensing box"><div class="licensing-title"><p>RISC-V指令集架构下xv6OS的trap机制</p><p><a href="http://symbol23441.top/2025/07/09/RISC-V指令集架构下xv6OS的trap机制/">http://symbol23441.top/2025/07/09/RISC-V指令集架构下xv6OS的trap机制/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2025-07-09</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2025-07-09</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/RISC-V/">RISC-V</a><a class="link-muted mr-2" rel="tag" href="/tags/xv6/">xv6</a><a class="link-muted mr-2" rel="tag" href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2025/07/11/xv6%E4%B8%AD%E7%9A%84VirtIO%E8%99%9A%E6%8B%9F%E7%A3%81%E7%9B%98%E9%A9%B1%E5%8A%A8%E6%9C%BA%E5%88%B6%E8%A7%A3%E6%9E%90/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">xv6中的VirtIO虚拟磁盘驱动机制解析</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2025/07/08/xv6%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E8%BF%87%E7%A8%8B/"><span class="level-item">xv6操作系统启动过程</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#1、操作系统陷入机制（trap）目的："><span class="level-left"><span class="level-item">1、操作系统陷入机制（trap）目的：</span></span></a></li><li><a class="level is-mobile" href="#2、RISC-V-指令架构集的trap机制（硬件负责部分）"><span class="level-left"><span class="level-item">2、RISC-V 指令架构集的trap机制（硬件负责部分）</span></span></a></li><li><a class="level is-mobile" href="#3、xv6-操作系统的trap设计"><span class="level-left"><span class="level-item">3、xv6 操作系统的trap设计</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#3-1-xv6的trap设计：统一处理系统调用、设备中断与异常"><span class="level-left"><span class="level-item">3.1 xv6的trap设计：统一处理系统调用、设备中断与异常</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#1-系统调用：以软件异常方式进入内核"><span class="level-left"><span class="level-item">(1)系统调用：以软件异常方式进入内核</span></span></a></li><li><a class="level is-mobile" href="#2-外设中断：通过-PLIC-统一管理并分发"><span class="level-left"><span class="level-item">(2)外设中断：通过 PLIC 统一管理并分发</span></span></a></li><li><a class="level is-mobile" href="#3-定时器中断：CLINT-发起，M-mode-处理"><span class="level-left"><span class="level-item">(3)定时器中断：CLINT 发起，M-mode 处理</span></span></a></li></ul></li><li><a class="level is-mobile" href="#3-2-trampoline-和-trapframe-的巧妙设计"><span class="level-left"><span class="level-item">3.2 trampoline 和 trapframe 的巧妙设计</span></span></a></li></ul></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/js/lightgallery.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script><script type="text/javascript" src="/js/imaegoo/universe.js"></script></body></html>
