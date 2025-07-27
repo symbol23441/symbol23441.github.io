@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>异步非阻塞 IO 的真正价值：解决短频快线程的切换浪费，而非提升计算速度 - Mr.SymbolのBlog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Mr.Symbolのblog"><meta name="msapplication-TileImage" content="/img/s2.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mr.Symbolのblog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="本文围绕一个常见的系统拆分场景：上游模块 A 调用下游模块 B，分析了传统同步阻塞模型的问题：  每次请求都要两个线程（A 等 B），并发高时线程数成倍增加； 对于 A 这种处理轻、调用频繁的模块，大量时间浪费在线程等待与切换上。  为解决这个问题，引入了 异步非阻塞 IO —— 不再为每个请求占用一个线程，而是通过事件驱动（EventLoop）+IO多路复用（Selector） 实现线程复用。一"><meta property="og:type" content="blog"><meta property="og:title" content="异步非阻塞 IO 的真正价值：解决短频快线程的切换浪费，而非提升计算速度"><meta property="og:url" content="http://symbol23441.top/2025/07/28/%E5%BC%82%E6%AD%A5%E9%9D%9E%E9%98%BB%E5%A1%9E-IO-%E7%9A%84%E7%9C%9F%E6%AD%A3%E4%BB%B7%E5%80%BC%EF%BC%9A%E8%A7%A3%E5%86%B3%E7%9F%AD%E9%A2%91%E5%BF%AB%E7%BA%BF%E7%A8%8B%E7%9A%84%E5%88%87%E6%8D%A2%E6%B5%AA%E8%B4%B9%EF%BC%8C%E8%80%8C%E9%9D%9E%E6%8F%90%E5%8D%87%E8%AE%A1%E7%AE%97%E9%80%9F%E5%BA%A6/"><meta property="og:site_name" content="Mr.SymbolのBlog"><meta property="og:description" content="本文围绕一个常见的系统拆分场景：上游模块 A 调用下游模块 B，分析了传统同步阻塞模型的问题：  每次请求都要两个线程（A 等 B），并发高时线程数成倍增加； 对于 A 这种处理轻、调用频繁的模块，大量时间浪费在线程等待与切换上。  为解决这个问题，引入了 异步非阻塞 IO —— 不再为每个请求占用一个线程，而是通过事件驱动（EventLoop）+IO多路复用（Selector） 实现线程复用。一"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="http://symbol23441.top/img/og_image.png"><meta property="article:published_time" content="2025-07-27T17:54:21.000Z"><meta property="article:modified_time" content="2025-07-27T17:54:21.000Z"><meta property="article:author" content="Mr.Symbol"><meta property="article:tag" content="异步IO"><meta property="article:tag" content="JAVA"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/img/og_image.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://symbol23441.top/2025/07/28/%E5%BC%82%E6%AD%A5%E9%9D%9E%E9%98%BB%E5%A1%9E-IO-%E7%9A%84%E7%9C%9F%E6%AD%A3%E4%BB%B7%E5%80%BC%EF%BC%9A%E8%A7%A3%E5%86%B3%E7%9F%AD%E9%A2%91%E5%BF%AB%E7%BA%BF%E7%A8%8B%E7%9A%84%E5%88%87%E6%8D%A2%E6%B5%AA%E8%B4%B9%EF%BC%8C%E8%80%8C%E9%9D%9E%E6%8F%90%E5%8D%87%E8%AE%A1%E7%AE%97%E9%80%9F%E5%BA%A6/"},"headline":"异步非阻塞 IO 的真正价值：解决短频快线程的切换浪费，而非提升计算速度","image":["http://symbol23441.top/img/og_image.png"],"datePublished":"2025-07-27T17:54:21.000Z","dateModified":"2025-07-27T17:54:21.000Z","author":{"@type":"Person","name":"Mr.Symbol"},"publisher":{"@type":"Organization","name":"Mr.SymbolのBlog","logo":{"@type":"ImageObject","url":{"text":"Mr.SymbolのBlog"}}},"description":"本文围绕一个常见的系统拆分场景：上游模块 A 调用下游模块 B，分析了传统同步阻塞模型的问题：  每次请求都要两个线程（A 等 B），并发高时线程数成倍增加； 对于 A 这种处理轻、调用频繁的模块，大量时间浪费在线程等待与切换上。  为解决这个问题，引入了 异步非阻塞 IO —— 不再为每个请求占用一个线程，而是通过事件驱动（EventLoop）+IO多路复用（Selector） 实现线程复用。一"}</script><link rel="canonical" href="http://symbol23441.top/2025/07/28/%E5%BC%82%E6%AD%A5%E9%9D%9E%E9%98%BB%E5%A1%9E-IO-%E7%9A%84%E7%9C%9F%E6%AD%A3%E4%BB%B7%E5%80%BC%EF%BC%9A%E8%A7%A3%E5%86%B3%E7%9F%AD%E9%A2%91%E5%BF%AB%E7%BA%BF%E7%A8%8B%E7%9A%84%E5%88%87%E6%8D%A2%E6%B5%AA%E8%B4%B9%EF%BC%8C%E8%80%8C%E9%9D%9E%E6%8F%90%E5%8D%87%E8%AE%A1%E7%AE%97%E9%80%9F%E5%BA%A6/"><link rel="icon" href="/img/s2.png"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.15.2/css/all.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/css/justifiedGallery.min.css"><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/pace/1.0.2/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2"></head><body class="is-3-column"><script type="text/javascript" src="/js/imaegoo/night.js"></script><canvas id="universe"></canvas><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/">Mr.SymbolのBlog</a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a><a class="navbar-item night" id="night-nav" title="Night Mode" href="javascript:;"><i class="fas fa-moon" id="night-icon"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2025-07-27T17:54:21.000Z" title="7/28/2025, 1:54:21 AM">2025-07-28</time>发表</span><span class="level-item"><time dateTime="2025-07-27T17:54:21.000Z" title="7/28/2025, 1:54:21 AM">2025-07-28</time>更新</span><span class="level-item">11 分钟读完 (大约1640个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">异步非阻塞 IO 的真正价值：解决短频快线程的切换浪费，而非提升计算速度</h1><div class="content"><p>本文围绕一个常见的系统拆分场景：<strong>上游模块 A 调用下游模块 B</strong>，分析了传统同步阻塞模型的问题：</p>
+<ul>
+<li><strong>每次请求都要两个线程（A 等 B）</strong>，并发高时线程数成倍增加；</li>
+<li>对于 A 这种<strong>处理轻、调用频繁</strong>的模块，大量时间浪费在<strong>线程等待与切换</strong>上。</li>
+</ul>
+<p>为解决这个问题，引入了 <strong>异步非阻塞 IO</strong> —— 不再为每个请求占用一个线程，而是通过<strong>事件驱动（EventLoop</strong>）+<strong>IO多路复用（Selector）</strong> 实现线程复用。一个线程同时管理上千连接，<strong>极大减少线程开销、提升并发能力</strong>。</p>
+<p>本文还简要讲解了 Netty 的线程模型： Boss 接收连接、Worker 处理读写，<strong>全部基于事件循环</strong>，高效又可控。</p>
+<span id="more"></span>
+
+<p>在很多实际系统中，服务的架构会随着功能复杂度的提升，从<strong>单体串行处理</strong>演进为<strong>模块化解耦 + 上下游分工协作</strong>。比如：</p>
+<blockquote>
+<p>我们有一个任务处理系统，将其拆为 <strong>上游模块 A</strong> 和 <strong>下游模块 B</strong>：</p>
+<ul>
+<li>A 负责接收请求、预处理、发起调用</li>
+<li>B 负责处理核心业务逻辑并返回结果</li>
+</ul>
+</blockquote>
+<hr>
+<h2 id="1、问题出现：同步阻塞模型导致线程成倍增加，短频快任务线程创建切换繁重"><a href="#1、问题出现：同步阻塞模型导致线程成倍增加，短频快任务线程创建切换繁重" class="headerlink" title="1、问题出现：同步阻塞模型导致线程成倍增加，短频快任务线程创建切换繁重"></a>1、问题出现：<strong>同步阻塞模型导致线程成倍增加</strong>，短频快任务线程创建切换繁重</h2><p>在传统架构中，如果 A 向 B 发起调用是<strong>同步阻塞的</strong>：</p>
+<ul>
+<li>A 的线程会<strong>等待 B 响应</strong>才能继续执行；而 B 也需要自己的线程处理逻辑。</li>
+</ul>
+<p>结果是：<strong>每一个请求，需要两个线程来完成处理</strong>。</p>
+<p>当请求量升高，这种设计就暴露出两个致命问题：</p>
+<ol>
+<li><strong>线程数量线性膨胀</strong>：原本一个线程可以完成，现在需要两个；</li>
+<li><strong>线程切换成本高</strong>：特别是 A 节点本身是“短频快”型任务，任务处理逻辑往往很轻，比如解析参数、鉴权、转发请求，本身计算量极小。但频繁创建、阻塞、切换线程，代价极大。</li>
+</ol>
+<blockquote>
+<p>如果你在这种场景还使用“每请求一个线程”的模型，<strong>线程上下文切换反而成了性能瓶颈</strong>。CPU 大部分不是在算业务，而是在换线程栈、缓存失效、等待调度。</p>
+</blockquote>
+<h2 id="2、异步非阻塞IO-核心思想：避免浪费线程，去等待"><a href="#2、异步非阻塞IO-核心思想：避免浪费线程，去等待" class="headerlink" title="2、异步非阻塞IO 核心思想：避免浪费线程，去等待"></a>2、异步非阻塞IO 核心思想：<strong>避免浪费线程，去等待</strong></h2><ul>
+<li>不再为每个请求绑定一个线程；</li>
+<li>使用 <strong>事件驱动机制（Reactor）</strong> + <strong>多路复用（Selector）</strong>；</li>
+<li>一个线程监听多个连接，有事件就处理，没有就空转。</li>
+</ul>
+<p>这个就是典型的 <strong>异步非阻塞 IO 模型（Event-Driven NIO）</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">客户端请求1 ─┐</span><br><span class="line">客户端请求2 ─┼──▶ 单线程 Selector + 事件队列（A）</span><br><span class="line">客户端请求3 ─┘</span><br><span class="line">                 ↓</span><br><span class="line">          有响应事件就调度对应的回调处理逻辑</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>用更少的线程，处理更多连接</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>每个请求是否占用线程？</th>
+<th>并发上限瓶颈</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>同步阻塞（传统 Servlet）</td>
+<td>是</td>
+<td>线程数</td>
+<td>简单、低并发场景</td>
+</tr>
+<tr>
+<td>异步非阻塞（Netty/WebFlux）</td>
+<td>否</td>
+<td>IO/CPU</td>
+<td>高连接、高并发、短处理</td>
+</tr>
+</tbody></table>
+<p>在 Netty 或 WebFlux 中，一个 EventLoop 可以管理成千上万个连接，只在事件触发时才调度执行。</p>
+<h2 id="3、以netty为例"><a href="#3、以netty为例" class="headerlink" title="3、以netty为例"></a>3、以netty为例</h2><p>Netty 的核心就是：<strong>事件驱动 + 单线程处理多个连接</strong>，这正是异步非阻塞 IO 的经典模式。</p>
+<blockquote>
+<p>不为每个连接分配一个线程，而是用一个“事件循环线程”轮流处理很多连接的 IO 事件，有事件就执行、没事件就等待。</p>
+</blockquote>
+<h3 id="3-1、Netty线程模型结构图"><a href="#3-1、Netty线程模型结构图" class="headerlink" title="3.1、Netty线程模型结构图"></a>3.1、Netty线程模型结构图</h3><p><strong>Boss</strong> 负责接连接，<strong>Worker</strong> 负责收发数据，<strong>所有线程都是事件循环线程（EventLoop）</strong>，通过 <strong>Selector + 事件队列</strong> 实现“一人多工”，有效避免了线程阻塞和切换的浪费。</p>
+<table>
+<thead>
+<tr>
+<th>线程组</th>
+<th>是不是事件循环？</th>
+<th>职责是什么</th>
+<th>主要处理事件</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>BossGroup</strong></td>
+<td>是 EventLoop</td>
+<td>接收客户端连接（accept）</td>
+<td><code>OP_ACCEPT</code></td>
+</tr>
+<tr>
+<td><strong>WorkerGroup</strong></td>
+<td>是 EventLoop</td>
+<td>处理连接的数据读写（read/write）</td>
+<td><code>OP_READ / OP_WRITE</code></td>
+</tr>
+</tbody></table>
+<h3 id="3-2-执行流程示意：一个连接从建立到响应怎么走？"><a href="#3-2-执行流程示意：一个连接从建立到响应怎么走？" class="headerlink" title="3.2. 执行流程示意：一个连接从建立到响应怎么走？"></a>3.2. 执行流程示意：一个连接从建立到响应怎么走？</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Client ──连接请求──▶ BossGroup</span><br><span class="line">                  └── accept 连接成功</span><br><span class="line">                      └── 分配给某个 WorkerGroup 线程（EventLoop）</span><br><span class="line"></span><br><span class="line">WorkerGroup(EventLoop)</span><br><span class="line"> └── 监听该连接的 IO 事件：</span><br><span class="line">     ├── 有数据可读时：触发 read 事件 → 解码 → 执行业务逻辑</span><br><span class="line">     ├── 有数据可写时：触发 write 事件 → 响应客户端</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>每个连接绑定到一个固定的 Worker（EventLoop），这个线程会持续轮询所有它负责的连接，看是否有事件发生。</p>
+</blockquote>
+<p><strong>非阻塞</strong>：线程不会在某个连接的 IO 操作上停下来等待，Netty 用 Selector 检查哪些连接“准备好了”，才去处理。（selector 基于操作系统的支持，如Linux的select 和 epoll ）</p>
+<p><strong>异步</strong>：IO 操作发出后（如 write），不会阻塞当前线程等待结果，而是通过回调或 future 方式处理完成状态。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 示例：写数据是异步的</span></span><br><span class="line">ChannelFuture future = ctx.writeAndFlush(response);</span><br><span class="line">future.addListener(f -&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span> (f.isSuccess()) &#123;</span><br><span class="line">        log.info(<span class="string">&quot;发送成功&quot;</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        log.error(<span class="string">&quot;发送失败&quot;</span>, f.cause());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>在模块化任务系统中，对于<strong>处理轻、调用频繁</strong>的上游节点，<strong>线程切换和阻塞等待是主要开销</strong>；而异步非阻塞 IO 正是为这类场景设计，<strong>通过事件机制 + 多路复用</strong>，实现<strong>用少量线程高效处理大量连接</strong>，极大提升并发能力与系统稳定性。</p>
+<ul>
+<li>A 模块的请求处理本就快速；</li>
+<li>真正耗时的部分是等待下游 B 返回；</li>
+<li>如果这个等待过程中线程不释放，就是巨大的浪费。</li>
+</ul>
+<blockquote>
+<p>引入异步 IO，让 A 模块“有事就做，没事就让出资源”，完美契合它的处理特性。</p>
+</blockquote>
+</div><div class="article-licensing box"><div class="licensing-title"><p>异步非阻塞 IO 的真正价值：解决短频快线程的切换浪费，而非提升计算速度</p><p><a href="http://symbol23441.top/2025/07/28/异步非阻塞-IO-的真正价值：解决短频快线程的切换浪费，而非提升计算速度/">http://symbol23441.top/2025/07/28/异步非阻塞-IO-的真正价值：解决短频快线程的切换浪费，而非提升计算速度/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>Mr.Symbol</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2025-07-28</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2025-07-28</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/%E5%BC%82%E6%AD%A5IO/">异步IO</a><a class="link-muted mr-2" rel="tag" href="/tags/JAVA/">JAVA</a></div><!--!--></article></div><!--!--><div class="card"><nav class="post-navigation mt-4 level is-mobile card-content"><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2025/07/18/xv6%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90-%E9%A1%B5%E8%A1%A8%E6%9C%BA%E5%88%B6/"><span class="level-item">xv6源码解析:页表机制</span><i class="level-item fas fa-chevron-right"></i></a></div></nav></div><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#1、问题出现：同步阻塞模型导致线程成倍增加，短频快任务线程创建切换繁重"><span class="level-left"><span class="level-item">1、问题出现：同步阻塞模型导致线程成倍增加，短频快任务线程创建切换繁重</span></span></a></li><li><a class="level is-mobile" href="#2、异步非阻塞IO-核心思想：避免浪费线程，去等待"><span class="level-left"><span class="level-item">2、异步非阻塞IO 核心思想：避免浪费线程，去等待</span></span></a></li><li><a class="level is-mobile" href="#3、以netty为例"><span class="level-left"><span class="level-item">3、以netty为例</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#3-1、Netty线程模型结构图"><span class="level-left"><span class="level-item">3.1、Netty线程模型结构图</span></span></a></li><li><a class="level is-mobile" href="#3-2-执行流程示意：一个连接从建立到响应怎么走？"><span class="level-left"><span class="level-item">3.2. 执行流程示意：一个连接从建立到响应怎么走？</span></span></a></li></ul></li><li><a class="level is-mobile" href="#总结"><span class="level-left"><span class="level-item">总结</span></span></a></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/">Mr.SymbolのBlog</a><p class="is-size-7"><span>&copy; 2025 Mr.Symbol</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdnjs.loli.net/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://cdnjs.loli.net/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdnjs.loli.net/ajax/libs/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdnjs.loli.net/ajax/libs/lightgallery/1.6.8/js/lightgallery.min.js" defer></script><script src="https://cdnjs.loli.net/ajax/libs/justifiedGallery/3.7.0/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdnjs.loli.net/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script><script type="text/javascript" src="/js/imaegoo/universe.js"></script></body></html>
